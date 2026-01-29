@@ -7,39 +7,36 @@ This directory contains the planning documents and implementation history for th
 Plans are organized by priority and dependencies. Complete them in order for the best experience.
 
 ### [plan-1-repository-integration.md](plan-1-repository-integration.md)
-**🔴 Not Started - DO THIS FIRST**
+**🟢 Complete (Simplified) - 2026-01-29**
 
-Integrate the existing Container Manager Project with this repository's docker-compose.yml and .env configuration.
+Repository docker-compose.yml now matches production Synology configuration. Only remaining task is creating `.env` file on Synology to separate secrets from configuration.
 
-**Priority:** Critical
-**Duration:** 20-30 minutes
+**What Was Completed:**
+- ✅ Updated docker-compose.yml to match production Synology setup
+- ✅ Simplified from 120 lines to 48 lines (Synology-compatible syntax)
+- ✅ Made all resource limits configurable via .env file
+- ✅ Created comprehensive installation guide (docs/02-INSTALLATION.md)
+- ✅ Git-based approach documented (clone repo on Synology)
+- ✅ Container Manager Project workflow documented
 
-**Why This Matters:**
-- Ensures infrastructure matches repository documentation
-- Makes configuration manageable via `.env` file
-- Enables easier updates and version control
-- Required for monitoring integration (Plan 2)
+**Remaining:**
+- [ ] Follow installation guide to create `.env` file on Synology
+- [ ] Create Container Manager Project pointing to repository
 
-**Quick Overview:**
-1. Backup current configuration
-2. Copy docker-compose.yml and create .env
-3. Update Container Manager Project
-4. Test and verify
+**Priority:** Critical (but mostly done)
+**Duration:** 5 minutes (just create .env)
 
 ---
 
 ### [plan-2-monitoring-setup.md](plan-2-monitoring-setup.md)
-**⏸️ Blocked by Plan 1**
+**🟡 Ready to Start**
 
 Deploy monitoring scripts and configure automated health checks with DSM Task Scheduler.
 
-**Priority:** High
-**Duration:** 2-3 hours
-
-**What's Ready:**
-- ✅ Health check script (`scripts/monitoring/runner-health-check.sh`)
-- ✅ Dashboard script (`scripts/monitoring/runner-dashboard.sh`)
-- ✅ Documentation (`docs/04-MONITORING.md`)
+**Prerequisites:**
+- ✅ Plan 1 complete (docker-compose.yml matches production)
+- ✅ Monitoring scripts exist (runner-health-check.sh, runner-dashboard.sh)
+- ✅ Documentation exists (docs/04-MONITORING.md)
 
 **What's Needed:**
 - Deploy scripts to NAS
@@ -47,15 +44,15 @@ Deploy monitoring scripts and configure automated health checks with DSM Task Sc
 - Set up email alerts (optional)
 - Tune thresholds after observation
 
+**Priority:** High
+**Duration:** 2-3 hours
+
 ---
 
 ### [plan-3-repository-workflows.md](plan-3-repository-workflows.md)
 **🔴 Not Started**
 
 Implement CI/CD workflows for this repository to ensure code quality, security, and reliability.
-
-**Priority:** High
-**Duration:** 3-4 hours
 
 **Goals:**
 - Automated quality checks for all contributions
@@ -71,38 +68,38 @@ Implement CI/CD workflows for this repository to ensure code quality, security, 
 - Configuration files for linters
 - Demonstrates best practices for self-hosted runners
 
+**Priority:** High
+**Duration:** 3-4 hours
+
 ---
 
 ### [plan-4-documentation-guides.md](plan-4-documentation-guides.md)
-**🔴 Not Started**
+**🟡 In Progress**
 
 Complete comprehensive documentation and create ready-to-use workflow examples for users.
 
-**Priority:** Medium
-**Duration:** 10-14 hours
+**Progress:**
+- ✅ `docs/04-MONITORING.md` - Monitoring setup guide
+- ✅ `docs/02-INSTALLATION.md` - Comprehensive installation guide (NEW!)
+- ✅ `CLAUDE.md` - Guide for Claude Code
+- ✅ `README.md` - Repository introduction
+- ✅ `.env.example` - Configuration template
+- ✅ `docker-compose.yml` - Well-commented configuration
 
-**Documentation to Create:**
+**Still Needed:**
 - `docs/00-QUICK-START.md` - 5-minute TL;DR guide
 - `docs/01-PREREQUISITES.md` - System requirements
-- `docs/02-INSTALLATION.md` - Step-by-step setup
 - `docs/03-CONFIGURATION.md` - Configuration reference
-- `docs/05-TROUBLESHOOTING.md` - Common issues & solutions
+- `docs/05-TROUBLESHOOTING.md` - Common issues
 - `docs/06-MAINTENANCE.md` - Updates & cleanup
 - `docs/07-SECURITY.md` - Security best practices
 - `docs/08-WORKFLOWS.md` - GitHub Actions integration
 - `docs/FAQ.md` - Frequently asked questions
 - `CONTRIBUTING.md` - Contribution guidelines
-- `CHANGELOG.md` - Version history
+- Workflow examples in `examples/workflows/`
 
-**Workflow Examples to Create:**
-- `examples/workflows/` with 10+ ready-to-use workflow files
-- Language-specific examples (Node.js, Python, Java/Kotlin, Rust)
-- Advanced patterns (monorepo, releases, performance testing)
-- Complete documentation and customization guide
-
-**Also:**
-- Enhanced README with badges, visuals, features
-- Documentation polish and testing
+**Priority:** Medium
+**Duration:** 8-10 hours (reduced from 10-14)
 
 ---
 
@@ -111,7 +108,7 @@ Complete comprehensive documentation and create ready-to-use workflow examples f
 
 Fix runner crash-loop after Synology NAS restarts. Currently requires manual intervention (delete container + rebuild).
 
-**Priority:** High
+**Priority:** High (blocks production use)
 **Duration:** 2-3 hours
 
 **Problem:**
@@ -119,22 +116,11 @@ Fix runner crash-loop after Synology NAS restarts. Currently requires manual int
 - Container repeatedly restarts but doesn't recover
 - Requires manual deletion and rebuild of container
 
-**Suspected Causes:**
-- Volume mount timing issues
-- Network not ready during startup
-- Insufficient health check grace period
-- Runner state corruption
-
 **Proposed Solutions:**
 - Enhanced health checks with longer start period
 - Initialization script with pre-checks
 - Improved restart policy with delays
 - Startup delay to wait for volumes/network
-
-**Temporary Workaround:**
-- Delete container via Container Manager
-- Rebuild project
-- Runner recovers successfully
 
 ---
 
@@ -153,6 +139,33 @@ Complete implementation history from the original Planechaser project, documenti
 - ✅ Phase 5.5: Resource Management & Concurrency Tuning
 
 This document is kept for historical reference and lessons learned.
+
+---
+
+## Recent Updates (2026-01-29)
+
+### Repository Cleanup & Alignment
+- ✅ Squashed commit history (10 commits → 2 commits)
+- ✅ Fixed broken .gitignore (leading spaces prevented all patterns from working)
+- ✅ Cleaned up empty directories (removed config/, added .gitkeep files)
+- ✅ Aligned docker-compose.yml with production Synology configuration
+- ✅ Made all resource limits configurable via .env file
+- ✅ Created comprehensive installation guide (478 lines)
+
+### Configuration Improvements
+- ✅ Simplified docker-compose.yml (120 lines → 48 lines)
+- ✅ Removed unnecessary features (networks, healthcheck, logging, read_only)
+- ✅ Added environment variable support for all configurable values
+- ✅ Included resource tuning guide for different NAS configurations
+- ✅ Documented Container Manager Project approach
+
+### Documentation Added
+- ✅ `docs/02-INSTALLATION.md` - Complete installation guide
+  - Git-based repository cloning
+  - Container Manager Project creation
+  - Step-by-step verification
+  - Troubleshooting section
+  - Security best practices
 
 ---
 
@@ -197,22 +210,22 @@ The implementation plans serve multiple purposes:
 To reach version 1.0.0, complete these plans in order:
 
 1. ✅ **Foundation** - Repository created, scripts written, core docs done
-2. 🔴 **Plan 1** - Repository integration (NEXT)
-3. ⏸️ **Plan 2** - Monitoring setup (blocked by Plan 1)
+2. 🟢 **Plan 1** - Repository integration (MOSTLY COMPLETE - just create .env)
+3. 🟡 **Plan 2** - Monitoring setup (READY TO START)
 4. 🔴 **Plan 5** - Fix restart reliability (CRITICAL - blocks production use)
 5. 🔴 **Plan 3** - CI/CD workflows (recommended before v1.0.0)
-6. 🔴 **Plan 4** - Documentation & examples (recommended before v1.0.0)
+6. 🟡 **Plan 4** - Documentation & examples (in progress, ~60% complete)
 7. 🔄 **Final Review** - Test everything, polish, prepare release
 
 **Priority order:**
 - **Must complete:** Plans 1, 2, 5 (core functionality + reliability)
 - **Strongly recommended:** Plan 3 (quality gates for contributions)
-- **Nice to have:** Plan 4 (comprehensive docs and examples)
+- **Nice to have:** Plan 4 completion (comprehensive docs and examples)
 
 **Critical Path:**
-- Plan 1 → Plan 2 → Plan 5 (core infrastructure + monitoring + reliability)
-- Plan 3 can start after Plan 1 (needs working runner for CI/CD)
-- Plan 4 can be done anytime (documentation work)
+- Plan 1 (mostly done) → Plan 2 → Plan 5 (core infrastructure + monitoring + reliability)
+- Plan 3 can start anytime (needs working runner for CI/CD)
+- Plan 4 is ongoing (documentation work)
 
 **Note:** Plan 5 is CRITICAL - the runner must survive reboots for production use.
 
