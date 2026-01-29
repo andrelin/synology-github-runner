@@ -1,119 +1,47 @@
-version: '3.8'
-
 services:
   github-runner:
     image: myoung34/github-runner:latest
     container_name: github-runner
     restart: unless-stopped
 
+    # Resource limits (Synology-compatible)
+    mem_limit: 5g
+    memswap_limit: 5g
+    cpu_shares: 1536  # Higher priority (default is 1024)
+
     # Security hardening
     security_opt:
-      - no-new-privileges:true
+      - no-new-privileges:true  # Prevent privilege escalation
     cap_drop:
-      - ALL
+      - ALL  # Drop all Linux capabilities
     cap_add:
-      - CHOWN
-      - DAC_OVERRIDE
-      - SETGID
-      - SETUID
-      - NET_BIND_SERVICE
-    read_only: true
-
-    # Resource limits (adjust based on your hardware)
-    deploy:
-      resources:
-        limits:
-          cpus: '1.5'
-          memory: 5G
-        reservations:
-          cpus: '0.5'
-          memory: 2G
-
-    # CPU priority (higher = more priority)
-    cpu_shares: 1536
+      - CHOWN      # Needed for runner file management
+      - SETGID     # Needed for user/group operations
+      - SETUID     # Needed for user/group operations
+      - DAC_OVERRIDE  # Needed for file access
+    tmpfs:
+      - /tmp:mode=1777,size=1g  # Secure temporary storage
+      - /run:mode=755,size=512m  # Secure runtime storage
 
     environment:
-      # GitHub Configuration
+      # GitHub Configuration (from .env file)
+      - RUNNER_NAME=${RUNNER_NAME:-synology-general-runner}
       - REPO_URL=${REPO_URL}
-      - RUNNER_NAME=${RUNNER_NAME:-synology-runner}
-      - RUNNER_WORKDIR=/workspace
-      - RUNNER_GROUP=${RUNNER_GROUP:-default}
-      - LABELS=${LABELS:-self-hosted,Linux,X64,synology}
-
-      # Authentication (use GitHub PAT)
       - ACCESS_TOKEN=${GITHUB_PAT}
 
-      # Runner Configuration
+      # Labels for flexible workflow selection
+      - LABELS=${LABELS:-self-hosted,linux,synology,general}
+
+      # Optional: Gradle optimization for Java/Kotlin builds
+      - GRADLE_OPTS=${GRADLE_OPTS:--Xmx3g -XX:+UseG1GC -XX:MaxGCPauseMillis=200}
+
+      # Runner behavior
+      - RUNNER_WORKDIR=/workspace
       - RUNNER_SCOPE=repo
-      - DISABLE_AUTO_UPDATE=false
-
-      # Gradle Optimization (adjust for your projects)
-      - GRADLE_OPTS=-Xmx3g -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:MaxMetaspaceSize=512m
-      - ORG_GRADLE_PROJECT_org.gradle.workers.max=2
-
-      # Docker-in-Docker Configuration
-      - DOCKER_ENABLED=true
-      - DOCKER_HOST=unix:///var/run/docker.sock
 
     volumes:
-      # Workspace (persistent across restarts)
-      - ./data/workspace:/workspace
+      - /volume1/docker/github-runner/workspace:/workspace
+      - /volume1/docker/github-runner/cache:/cache
+      - /var/run/docker.sock:/var/run/docker.sock  # Allow runner to use Docker
 
-      # Cache (speeds up builds)
-      - ./data/cache:/cache
-
-      # Docker socket (for Docker-in-Docker)
-      - /var/run/docker.sock:/var/run/docker.sock
-
-      # Temporary directories (in-memory for security)
-      - type: tmpfs
-        target: /tmp
-        tmpfs:
-          size: 1G
-
-      - type: tmpfs
-        target: /run
-        tmpfs:
-          size: 512M
-
-      # Runner registration token (ephemeral)
-      - type: tmpfs
-        target: /runner
-        tmpfs:
-          size: 100M
-
-    networks:
-      - runner-network
-
-    # Health check
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep -f Runner.Listener || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
-
-    # Logging configuration
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-networks:
-  runner-network:
-    driver: bridge
-
-# Optional: Add additional services
-# Example: Add a local cache or artifact storage
-#
-# services:
-#   registry:
-#     image: registry:2
-#     restart: unless-stopped
-#     ports:
-#       - "5000:5000"
-#     volumes:
-#       - ./data/registry:/var/lib/registry
-#     networks:
-#       - runner-network
+    # No ports needed - runner connects outbound to GitHub
