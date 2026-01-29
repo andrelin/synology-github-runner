@@ -5,9 +5,10 @@ services:
     restart: unless-stopped
 
     # Resource limits (Synology-compatible)
-    mem_limit: 5g
-    memswap_limit: 5g
-    cpu_shares: 1536  # Higher priority (default is 1024)
+    # Configure these in .env file
+    mem_limit: ${RUNNER_MEMORY:-5g}
+    memswap_limit: ${RUNNER_MEMORY:-5g}
+    cpu_shares: ${RUNNER_CPU_SHARES:-1536}  # Higher priority (default is 1024)
 
     # Security hardening
     security_opt:
@@ -20,8 +21,8 @@ services:
       - SETUID     # Needed for user/group operations
       - DAC_OVERRIDE  # Needed for file access
     tmpfs:
-      - /tmp:mode=1777,size=1g  # Secure temporary storage
-      - /run:mode=755,size=512m  # Secure runtime storage
+      - /tmp:mode=1777,size=${TMPFS_TMP_SIZE:-1g}  # Secure temporary storage
+      - /run:mode=755,size=${TMPFS_RUN_SIZE:-512m}  # Secure runtime storage
 
     environment:
       # GitHub Configuration (from .env file)
