@@ -1,6 +1,11 @@
 services:
   github-runner:
-    image: myoung34/github-runner:latest
+    # Build custom image with Claude Code Review dependencies pre-installed
+    # This builds from the Dockerfile which extends myoung34/github-runner:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: synology-github-runner:latest  # Tag for the built image
     container_name: github-runner
     restart: unless-stopped
 
@@ -37,11 +42,16 @@ services:
       - GRADLE_OPTS=${GRADLE_OPTS:--Xmx3g -XX:+UseG1GC -XX:MaxGCPauseMillis=200}
 
       # Runner behavior
-      - RUNNER_WORKDIR=/workspace
-      - RUNNER_SCOPE=repo
+      # IMPORTANT: Use host path for Docker-in-Docker compatibility
+      # This allows tools like Qodana to bind mount workspace subdirectories
+      - RUNNER_WORKDIR=${RUNNER_WORKDIR:-/volume1/docker/github-runner/workspace}
+      # RUNNER_SCOPE: 'repo' for single repository, 'org' for organization-wide
+      - RUNNER_SCOPE=${RUNNER_SCOPE:-repo}
 
     volumes:
-      - /volume1/docker/github-runner/workspace:/workspace
+      # Mount workspace at the same path on host and container
+      # This ensures Docker-in-Docker bind mounts work correctly
+      - ${RUNNER_WORKDIR:-/volume1/docker/github-runner/workspace}:${RUNNER_WORKDIR:-/volume1/docker/github-runner/workspace}
       - /volume1/docker/github-runner/cache:/cache
       - /var/run/docker.sock:/var/run/docker.sock  # Allow runner to use Docker
 

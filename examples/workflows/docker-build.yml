@@ -1,0 +1,194 @@
+# Docker Build Workflow with Caching
+#
+# Optimized Docker image building for resource-constrained runners.
+# Features:
+# - Docker layer caching (faster rebuilds)
+# - Multi-stage builds
+# - Image tagging strategy
+# - Optional push to registry
+#
+# Copy this to: .github/workflows/docker.yml in your repository
+
+name: Docker Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+# Per-workflow, per-branch concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docker-build:
+    name: Build Docker Image
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 30
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # Step 2: Set up Docker Buildx (optional, for advanced features)
+      # Buildx provides better caching and multi-platform builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Step 3: Log in to Docker registry (if pushing)
+      # Uncomment and configure if you want to push to Docker Hub, GHCR, etc.
+      # - name: Login to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+      #
+      # OR for GitHub Container Registry:
+      # - name: Login to GitHub Container Registry
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 4: Extract metadata for tagging
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            myapp
+            # Add registry prefix if pushing:
+            # ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      # Step 5: Build Docker image
+      # Uses Docker cache from previous builds for faster execution
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false  # Set to true if you want to push to registry
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      # Step 6: Move cache (workaround for cache growing unbounded)
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      # Step 7: Test the image (optional but recommended)
+      - name: Test Docker image
+        run: |
+          # Example: Run container and check it starts
+          docker run --rm myapp:latest --version
+
+          # Or run a smoke test
+          # docker run --rm myapp:latest npm test:smoke
+
+      # Step 8: Save image as artifact (optional)
+      # Useful if you want to deploy the image later
+      - name: Save Docker image
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker save myapp:latest | gzip > myapp-${{ github.sha }}.tar.gz
+
+      - name: Upload Docker image artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: myapp-${{ github.sha }}.tar.gz
+          retention-days: 7
+
+      # Step 9: Display image info
+      - name: Image build summary
+        run: |
+          echo "✅ Docker image built successfully"
+          echo ""
+          echo "Tags:"
+          echo "${{ steps.meta.outputs.tags }}" | tr ',' '\n' | sed 's/^/  - /'
+          echo ""
+          echo "Image size:"
+          docker images myapp:latest --format "{{.Repository}}:{{.Tag}} - {{.Size}}"
+
+## Example Dockerfile (Multi-stage build)
+#
+# Multi-stage builds are recommended for smaller final images:
+#
+# # Build stage
+# FROM node:20-alpine AS builder
+# WORKDIR /app
+# COPY package*.json ./
+# RUN npm ci
+# COPY . .
+# RUN npm run build
+#
+# # Production stage
+# FROM node:20-alpine
+# WORKDIR /app
+# COPY --from=builder /app/dist ./dist
+# COPY --from=builder /app/node_modules ./node_modules
+# COPY package*.json ./
+# EXPOSE 3000
+# CMD ["node", "dist/index.js"]
+#
+## Pushing to Registry
+#
+# To push images to Docker Hub or GitHub Container Registry:
+#
+# 1. Uncomment the login step above
+# 2. Add secrets to your repository:
+#    - Settings → Secrets and variables → Actions
+#    - Add: DOCKER_USERNAME, DOCKER_PASSWORD
+#    - Or use GITHUB_TOKEN (already available)
+#
+# 3. Change `push: false` to `push: true` in build step
+#
+# 4. Update image name in metadata step:
+#    images: ghcr.io/${{ github.repository }}
+#
+## Caching Strategy
+#
+# This workflow uses Docker layer caching to speed up builds:
+#
+# First build:  ~20-30 minutes (downloads and builds everything)
+# Subsequent:   ~3-5 minutes (reuses cached layers)
+#
+# Cache is stored in /tmp/.buildx-cache on the runner
+# Each build reuses previous cache, making rebuilds much faster
+#
+## Resource Optimization
+#
+# For resource-constrained runners:
+#
+# 1. Use multi-stage builds (smaller images)
+# 2. Minimize layers in Dockerfile
+# 3. Use .dockerignore to exclude unnecessary files
+# 4. Build during off-peak hours if possible
+# 5. Clean up old images periodically:
+#    docker system prune -af --filter "until=168h"
+#
+## Advanced: Multi-platform builds
+#
+# To build for multiple platforms (amd64, arm64):
+#
+# - name: Build and push
+#   uses: docker/build-push-action@v5
+#   with:
+#     platforms: linux/amd64,linux/arm64
+#     push: true
+#     tags: ${{ steps.meta.outputs.tags }}
+#
+# Note: Multi-platform builds are slower and more resource-intensive

@@ -1,0 +1,42 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "synology",
+    "planechaser",
+    "andrelin",
+    "kubectl",
+    "cicd",
+    "kubectl",
+    "myoung",
+    "gitleaks",
+    "shellcheck",
+    "markdownlint",
+    "cspell",
+    "trivy",
+    "aquasec",
+    "zricethezav",
+    "koalaman",
+    "ghp",
+    "gradle",
+    "SIGHUP",
+    "SIGTERM",
+    "gitignored",
+    "dockerized",
+    "DSM",
+    "NAS",
+    "repo",
+    "repos",
+    "workflow",
+    "workflows",
+    "dockerfile",
+    "hardcoded"
+  ],
+  "ignorePaths": [
+    "node_modules/**",
+    ".git/**",
+    "*.log",
+    "workspace/**",
+    "cache/**"
+  ]
+}

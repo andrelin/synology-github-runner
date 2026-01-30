@@ -1,0 +1,351 @@
+# Rust CI Workflow
+#
+# Optimized for self-hosted Synology runners with resource constraints.
+# Features:
+# - Cargo dependency caching
+# - Incremental compilation
+# - Lint → Test → Build pipeline
+# - Clippy linting and rustfmt checks
+#
+# Copy this to: .github/workflows/ci.yml in your repository
+
+name: Rust CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+# Per-workflow, per-branch concurrency control
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Use faster linker (mold or lld)
+  RUSTFLAGS: "-C link-arg=-fuse-ld=lld"
+  # Incremental compilation for faster builds
+  CARGO_INCREMENTAL: 1
+  # Limit parallel compilation jobs (resource-constrained)
+  CARGO_BUILD_JOBS: 2
+
+jobs:
+  ci:
+    name: Build and Test
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 30
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # Step 2: Setup Rust toolchain with caching
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      # Step 3: Setup Rust caching (Swatinem's action)
+      # Caches: ~/.cargo/bin, ~/.cargo/registry, ~/.cargo/git, target/
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          # Cache key prefix (useful for cache invalidation)
+          prefix-key: "v1-rust"
+          # Directories to cache (default is usually fine)
+          # cache-directories: |
+          #   ~/.cargo/bin
+          #   ~/.cargo/registry/index
+          #   ~/.cargo/registry/cache
+          #   ~/.cargo/git/db
+          #   target
+
+      # Step 4: Check code formatting
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      # Step 5: Lint with Clippy
+      - name: Lint with Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+        # Use -D warnings to fail on warnings
+        # Remove to only show warnings: cargo clippy
+
+      # Step 6: Run tests
+      - name: Run tests
+        run: cargo test --all-features
+        env:
+          # Show test output
+          RUST_BACKTRACE: 1
+
+      # Step 7: Build in release mode
+      - name: Build release
+        run: cargo build --release
+
+      # Step 8: Upload build artifacts
+      - name: Upload binaries
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-binaries
+          path: target/release/*
+          retention-days: 7
+          # Exclude debug symbols and incremental files
+          # You might want to be more specific about which files to include
+
+## Customization Options
+
+### Multiple Rust Versions (Matrix Strategy)
+#
+# jobs:
+#   ci:
+#     strategy:
+#       matrix:
+#         rust: [stable, beta, nightly]
+#     steps:
+#       - uses: dtolnay/rust-toolchain@master
+#         with:
+#           toolchain: ${{ matrix.rust }}
+#           components: clippy, rustfmt
+#
+# Note: Creates multiple jobs - use carefully on single runner!
+# Better: Test only on stable
+
+### Cross-Compilation Example
+#
+# - name: Add target
+#   run: rustup target add x86_64-unknown-linux-musl
+#
+# - name: Build for musl
+#   run: cargo build --release --target x86_64-unknown-linux-musl
+
+### Code Coverage with tarpaulin
+#
+# - name: Install tarpaulin
+#   run: cargo install cargo-tarpaulin
+#
+# - name: Generate coverage
+#   run: cargo tarpaulin --out Xml --all-features
+#
+# - name: Upload coverage
+#   uses: codecov/codecov-action@v4
+#   with:
+#     file: ./cobertura.xml
+#     fail_ci_if_error: false
+
+### Benchmarking
+#
+# - name: Run benchmarks
+#   run: cargo bench
+#   # Requires bench configuration in Cargo.toml
+#
+# - name: Upload benchmark results
+#   uses: actions/upload-artifact@v4
+#   with:
+#     name: benchmarks
+#     path: target/criterion/
+
+### Documentation
+#
+# - name: Build documentation
+#   run: cargo doc --no-deps --all-features
+#   env:
+#     RUSTDOCFLAGS: "-D warnings"
+#
+# - name: Upload docs
+#   uses: actions/upload-artifact@v4
+#   with:
+#     name: documentation
+#     path: target/doc/
+
+### Security Audit
+#
+# - name: Install cargo-audit
+#   run: cargo install cargo-audit
+#
+# - name: Security audit
+#   run: cargo audit
+#   continue-on-error: true
+
+### Outdated Dependencies Check
+#
+# - name: Check for outdated dependencies
+#   run: |
+#     cargo install cargo-outdated
+#     cargo outdated
+#   continue-on-error: true
+
+### Cargo Deny (License/Security/Bans)
+#
+# - name: Install cargo-deny
+#   run: cargo install cargo-deny
+#
+# - name: Check licenses and security
+#   run: cargo deny check
+#   continue-on-error: true
+
+### Web Assembly (wasm) Build
+#
+# - name: Add wasm target
+#   run: rustup target add wasm32-unknown-unknown
+#
+# - name: Install wasm-pack
+#   run: cargo install wasm-pack
+#
+# - name: Build WASM
+#   run: wasm-pack build --target web
+
+### Docker Build for Rust App
+#
+# - name: Build Docker image
+#   run: docker build -t myapp:latest .
+#
+# - name: Test Docker image
+#   run: docker run --rm myapp:latest --version
+
+### Example Multi-Stage Dockerfile
+#
+# FROM rust:1.75 AS builder
+# WORKDIR /app
+# COPY Cargo.toml Cargo.lock ./
+# COPY src ./src
+# RUN cargo build --release
+#
+# FROM debian:bookworm-slim
+# COPY --from=builder /app/target/release/myapp /usr/local/bin/
+# CMD ["myapp"]
+
+### Workspace with Multiple Crates
+#
+# - name: Test all workspace members
+#   run: cargo test --workspace
+#
+# - name: Build specific crate
+#   run: cargo build --package my-crate --release
+#
+# - name: Check all features
+#   run: cargo check --workspace --all-features
+
+### Resource Optimization
+#
+# For memory-constrained environments:
+#
+# env:
+#   # Limit parallel jobs (default uses all CPUs)
+#   CARGO_BUILD_JOBS: 1
+#   # Disable incremental compilation (saves memory)
+#   CARGO_INCREMENTAL: 0
+#   # Reduce debuginfo (faster, less disk)
+#   CARGO_PROFILE_DEV_DEBUG: 0
+
+### Conditional Compilation
+#
+# - name: Build with specific features
+#   run: cargo build --features "feature1,feature2" --release
+#
+# - name: Build without default features
+#   run: cargo build --no-default-features --release
+
+### Testing Specific Components
+#
+# - name: Run unit tests only
+#   run: cargo test --lib
+#
+# - name: Run integration tests
+#   run: cargo test --test '*'
+#
+# - name: Run doc tests
+#   run: cargo test --doc
+
+### Caching Optimization
+#
+# For very large projects, you might want to:
+#
+# - name: Clean old cache
+#   run: cargo sweep --maxsize 5GB
+#   # Requires: cargo install cargo-sweep
+
+### Publishing to crates.io
+#
+# publish:
+#   runs-on: [self-hosted, Linux, X64]
+#   needs: ci
+#   if: github.ref == 'refs/heads/main' && startsWith(github.ref, 'refs/tags/v')
+#   steps:
+#     - uses: actions/checkout@v6
+#     - uses: dtolnay/rust-toolchain@stable
+#
+#     - name: Publish to crates.io
+#       env:
+#         CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+#       run: cargo publish
+
+### Example Cargo.toml Optimizations
+#
+# [profile.dev]
+# opt-level = 0          # No optimization (faster compile)
+# debug = true           # Include debug symbols
+# incremental = true     # Enable incremental compilation
+#
+# [profile.release]
+# opt-level = 3          # Maximum optimization
+# lto = true             # Link-time optimization (slower build, faster binary)
+# codegen-units = 1      # Better optimization, slower build
+# strip = true           # Strip symbols (smaller binary)
+
+### Custom Test Configuration
+#
+# - name: Run tests with specific configuration
+#   run: cargo test
+#   env:
+#     RUST_TEST_THREADS: 1  # Run tests serially (less memory)
+#     RUST_MIN_STACK: 8388608  # 8MB stack size
+
+## Troubleshooting
+
+### Out of Memory During Compilation
+# Reduce parallel jobs:
+# env:
+#   CARGO_BUILD_JOBS: 1
+
+### Slow Builds
+# 1. Use faster linker (lld or mold):
+#    RUSTFLAGS: "-C link-arg=-fuse-ld=lld"
+# 2. Enable sccache for distributed caching:
+#    cargo install sccache
+#    export RUSTC_WRAPPER=sccache
+# 3. Reduce optimization in dev builds:
+#    [profile.dev]
+#    opt-level = 0
+
+### Linker Errors
+# Install lld:
+# sudo apt-get install lld
+# Or use default linker by removing RUSTFLAGS
+
+### Cache Not Working
+# 1. Clear cache: rm -rf ~/.cargo/registry ~/.cargo/git target/
+# 2. Rebuild: cargo build
+# 3. Check Swatinem/rust-cache@v2 is latest version
+
+### Disk Space Issues
+# Clean target directory:
+# cargo clean
+# Or partial clean:
+# rm -rf target/debug
+
+## Performance Tips
+
+# 1. Use release builds for deployment:
+#    cargo build --release
+#
+# 2. Enable link-time optimization (LTO):
+#    In Cargo.toml: lto = "thin" or "fat"
+#
+# 3. Use cargo-make for complex build scripts:
+#    cargo install cargo-make
+#
+# 4. Profile your builds:
+#    cargo build --timings
+#    # Generates target/cargo-timings/cargo-timing.html

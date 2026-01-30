@@ -7,6 +7,10 @@
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
 [![Synology](https://img.shields.io/badge/Synology-B5B5B6?logo=synology&logoColor=white)](https://www.synology.com)
 
+[![Quality Checks](https://github.com/andrelin/synology-github-runner/actions/workflows/quality.yml/badge.svg)](https://github.com/andrelin/synology-github-runner/actions/workflows/quality.yml)
+[![Security Scanning](https://github.com/andrelin/synology-github-runner/actions/workflows/security.yml/badge.svg)](https://github.com/andrelin/synology-github-runner/actions/workflows/security.yml)
+[![Weekly Link Check](https://github.com/andrelin/synology-github-runner/actions/workflows/weekly-link-check.yml/badge.svg)](https://github.com/andrelin/synology-github-runner/actions/workflows/weekly-link-check.yml)
+
 ## ✨ Features
 
 - 🎯 **Quick Setup** - Get running in 30 minutes with automated installation
@@ -15,6 +19,7 @@
 - 💪 **Resource Optimized** - Works great on 2-core/8GB systems, scales to larger hardware
 - 📦 **Docker-in-Docker** - Build and push Docker images directly from workflows
 - 🔄 **Auto-Restart** - Resilient to crashes with automatic recovery
+- 🤖 **AI Code Review Ready** - Pre-configured with Anthropic SDK for Claude Code Review
 - 📝 **Comprehensive Docs** - Step-by-step guides for every aspect
 - 🎨 **Example Workflows** - Production-ready workflow templates included
 

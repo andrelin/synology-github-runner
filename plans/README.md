@@ -50,56 +50,77 @@ Deploy monitoring scripts and configure automated health checks with DSM Task Sc
 ---
 
 ### [plan-3-repository-workflows.md](plan-3-repository-workflows.md)
-**🔴 Not Started**
+**🟢 Complete - 2026-01-30**
 
-Implement CI/CD workflows for this repository to ensure code quality, security, and reliability.
+CI/CD workflows for this repository ensuring code quality, security, and reliability.
 
-**Goals:**
-- Automated quality checks for all contributions
-- Security scanning (dependencies, secrets, vulnerabilities)
-- Documentation validation (links, spelling, formatting)
-- Shell script linting with shellcheck
-- Docker configuration validation
-- Privacy validation (no personal info in public repo)
+**Completed Deliverables:**
+- ✅ `.github/workflows/quality.yml` - Shellcheck, Docker, Markdown, Spell check
+- ✅ `.github/workflows/security.yml` - Gitleaks, Trivy, Privacy validation
+- ✅ `.github/workflows/weekly-link-check.yml` - External link validation
+- ✅ Workflow status badges in README
+- ✅ Smart concurrency control (per-workflow, per-branch)
+- ✅ Skip workflows when only docs/plans change
+- ✅ Renovate automated dependency updates
+- ✅ CONTRIBUTING.md with workflow documentation
 
-**Deliverables:**
-- `.github/workflows/` with 6+ workflow files
-- Workflow status badges in README
-- Configuration files for linters
-- Demonstrates best practices for self-hosted runners
-
-**Priority:** High
-**Duration:** 3-4 hours
+**Priority:** Complete
+**Duration:** 3 hours actual
 
 ---
 
 ### [plan-4-documentation-guides.md](plan-4-documentation-guides.md)
-**🟡 In Progress**
+**🟢 Complete - 2026-01-30**
 
-Complete comprehensive documentation and create ready-to-use workflow examples for users.
+Comprehensive documentation and ready-to-use workflow examples for users.
 
-**Progress:**
-- ✅ `docs/04-MONITORING.md` - Monitoring setup guide
-- ✅ `docs/02-INSTALLATION.md` - Comprehensive installation guide (NEW!)
-- ✅ `CLAUDE.md` - Guide for Claude Code
-- ✅ `README.md` - Repository introduction
-- ✅ `.env.example` - Configuration template
-- ✅ `docker-compose.yml` - Well-commented configuration
+**Completed Deliverables:**
+- ✅ `docs/00-QUICK-START.md` - 5-minute TL;DR guide
+- ✅ `docs/01-PREREQUISITES.md` - Hardware/software requirements
+- ✅ `docs/02-INSTALLATION.md` - Step-by-step installation
+- ✅ `docs/03-CONFIGURATION.md` - Complete config reference
+- ✅ `docs/04-MONITORING.md` - Monitoring setup
+- ✅ `docs/05-TROUBLESHOOTING.md` - Comprehensive troubleshooting (2,100+ lines)
+- ✅ `docs/06-MAINTENANCE.md` - Update & cleanup procedures
+- ✅ `docs/07-SECURITY.md` - Security best practices (708 lines)
+- ✅ `docs/08-WORKFLOWS.md` - Advanced workflow patterns
+- ✅ `docs/FAQ.md` - 50+ questions answered
+- ✅ `examples/workflows/` - 7 production-ready workflow examples
+  - basic-ci.yml, orchestrator.yml, docker-build.yml
+  - nodejs-ci.yml, python-ci.yml, gradle-ci.yml, rust-ci.yml
 
-**Still Needed:**
-- `docs/00-QUICK-START.md` - 5-minute TL;DR guide
-- `docs/01-PREREQUISITES.md` - System requirements
-- `docs/03-CONFIGURATION.md` - Configuration reference
-- `docs/05-TROUBLESHOOTING.md` - Common issues
-- `docs/06-MAINTENANCE.md` - Updates & cleanup
-- `docs/07-SECURITY.md` - Security best practices
-- `docs/08-WORKFLOWS.md` - GitHub Actions integration
-- `docs/FAQ.md` - Frequently asked questions
-- `CONTRIBUTING.md` - Contribution guidelines
-- Workflow examples in `examples/workflows/`
+**Total:** 10 documentation guides + 7 workflow examples
+
+**Priority:** Complete
+**Duration:** 7 hours actual (completed in 3 phases)
+
+---
+
+### [plan-6-multi-repo-runner.md](plan-6-multi-repo-runner.md)
+**🔴 Not Started**
+
+Investigate and document how to configure a single runner to serve multiple repositories under a personal GitHub account.
+
+**Goals:**
+- Research how GitHub runners work with multiple repos
+- Test both personal account and organization-level approaches
+- Document simplest working solution with step-by-step instructions
+- Provide migration guide from single-repo to multi-repo setup
+
+**Key Questions:**
+- Can repository-level runner serve multiple repos in personal account?
+- Should users create a GitHub Organization?
+- What are pros/cons of each approach?
+- How do concurrent jobs from different repos interact?
+
+**Deliverables:**
+- `docs/09-MULTI-REPO-SETUP.md` - Complete multi-repo guide
+- Updated configuration documentation
+- Tested migration path
+- Clear recommendation: personal vs organization approach
 
 **Priority:** Medium
-**Duration:** 8-10 hours (reduced from 10-14)
+**Duration:** 2-3 hours
 
 ---
 
@@ -142,9 +163,35 @@ This document is kept for historical reference and lessons learned.
 
 ---
 
-## Recent Updates (2026-01-29)
+## Recent Updates
 
-### Repository Cleanup & Alignment
+### 2026-01-30: Claude Code Review Support
+
+**Added AI-Powered Code Review Capabilities:**
+- ✅ Created custom Dockerfile extending `myoung34/github-runner:latest`
+- ✅ Pre-installed Anthropic Python SDK (v0.72.0) for Claude Code Review
+- ✅ Updated docker-compose.yml to build custom image
+- ✅ Image tagged as `synology-github-runner:latest`
+- ✅ Created comprehensive workflow guide (docs/08-WORKFLOWS.md)
+- ✅ Added Claude Code Review example with Python script
+- ✅ Updated README with AI Code Review feature
+- ✅ Updated CHANGELOG for v1.1.0 release
+
+**Prerequisites Verified (in runner image):**
+- ✅ Python 3.8.10 (compatible with Anthropic SDK)
+- ✅ GitHub CLI 2.86.0 (for PR interactions)
+- ✅ pip 20.0.2 (for package management)
+- ✅ Anthropic SDK 0.72.0 (pre-installed)
+
+**Benefits:**
+- No runtime dependency installation needed
+- Faster workflow execution (dependencies ready)
+- Supports AI-powered code review out of the box
+- Compatible with Claude Code Review and similar tools
+
+### 2026-01-29: Repository Cleanup & Alignment
+
+**Repository Cleanup:**
 - ✅ Squashed commit history (10 commits → 2 commits)
 - ✅ Fixed broken .gitignore (leading spaces prevented all patterns from working)
 - ✅ Cleaned up empty directories (removed config/, added .gitkeep files)
@@ -152,14 +199,14 @@ This document is kept for historical reference and lessons learned.
 - ✅ Made all resource limits configurable via .env file
 - ✅ Created comprehensive installation guide (478 lines)
 
-### Configuration Improvements
-- ✅ Simplified docker-compose.yml (120 lines → 48 lines)
+**Configuration Improvements:**
+- ✅ Simplified docker-compose.yml (120 lines → 48 lines, now 53 with build)
 - ✅ Removed unnecessary features (networks, healthcheck, logging, read_only)
 - ✅ Added environment variable support for all configurable values
 - ✅ Included resource tuning guide for different NAS configurations
 - ✅ Documented Container Manager Project approach
 
-### Documentation Added
+**Documentation Added:**
 - ✅ `docs/02-INSTALLATION.md` - Complete installation guide
   - Git-based repository cloning
   - Container Manager Project creation

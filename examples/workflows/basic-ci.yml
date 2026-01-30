@@ -1,0 +1,126 @@
+# Basic CI Workflow
+#
+# This is a simple CI workflow that runs tests on every push and pull request.
+# Perfect for getting started with your self-hosted runner.
+#
+# Copy this to: .github/workflows/ci.yml in your repository
+
+name: Basic CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:  # Manual trigger
+
+# Per-workflow, per-branch concurrency control
+# Cancels older runs of THIS workflow on THIS branch
+# But allows different workflows and branches to queue
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Single job that runs on self-hosted runner
+  build-and-test:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 30  # Fail if takes longer than 30 minutes
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # Step 2: Setup build environment (example: Node.js)
+      # Customize for your tech stack
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'  # Cache npm dependencies
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Run linter
+      - name: Lint code
+        run: npm run lint
+
+      # Step 5: Run tests
+      - name: Run tests
+        run: npm test
+
+      # Step 6: Build project
+      - name: Build
+        run: npm run build
+
+      # Optional: Upload build artifacts
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: dist/
+          retention-days: 7
+
+## Customization Guide
+#
+# 1. Change tech stack:
+#    - For Python: Replace Node.js setup with actions/setup-python@v6
+#    - For Java/Kotlin: Use actions/setup-java@v6
+#    - For Rust: Use dtolnay/rust-toolchain@stable
+#
+# 2. Add more steps:
+#    - Code coverage
+#    - Security scanning
+#    - Performance tests
+#
+# 3. Customize triggers:
+#    - Add schedule: Run nightly builds
+#    - Add paths: Only trigger on specific file changes
+#
+# 4. Resource optimization:
+#    - Set GRADLE_OPTS in .env for Java/Kotlin
+#    - Use caching for dependencies (shown above)
+#    - Use concurrency control (shown above)
+#
+## Example Variations
+#
+# Python:
+#   - name: Setup Python
+#     uses: actions/setup-python@v6
+#     with:
+#       python-version: '3.11'
+#       cache: 'pip'
+#
+#   - name: Install dependencies
+#     run: pip install -r requirements.txt
+#
+#   - name: Run tests
+#     run: pytest
+#
+# Java/Kotlin (Gradle):
+#   - name: Setup Java
+#     uses: actions/setup-java@v6
+#     with:
+#       distribution: 'temurin'
+#       java-version: '17'
+#       cache: 'gradle'
+#
+#   - name: Run tests
+#     run: ./gradlew test
+#     env:
+#       GRADLE_OPTS: "-Xmx3g -XX:+UseG1GC"  # Configure in runner .env
+#
+# Rust:
+#   - name: Setup Rust
+#     uses: dtolnay/rust-toolchain@stable
+#     with:
+#       components: clippy, rustfmt
+#
+#   - name: Run tests
+#     run: cargo test
+#
+#   - name: Lint
+#     run: cargo clippy -- -D warnings

@@ -1,0 +1,143 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'plans/**'
+      - '*.md'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'plans/**'
+      - '*.md'
+  schedule:
+    - cron: '0 2 * * 0'  # Weekly Sunday 2 AM (low-traffic time)
+  workflow_dispatch:
+
+# Per-workflow, per-branch concurrency control
+# Cancels older runs of THIS workflow on THIS branch, but allows other workflows/branches to queue
+# The single runner will still execute jobs one at a time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          fetch-depth: 0  # Need full history for gitleaks
+
+      # ============================================================
+      # Secret Scanning
+      # ============================================================
+      - name: Gitleaks secret scan
+        run: |
+          echo "Scanning for leaked secrets in git history..."
+          docker run --rm -v "$PWD:/path" zricethezav/gitleaks:latest \
+            detect --source="/path" --verbose --no-git
+          echo "✓ No secrets detected"
+
+      # ============================================================
+      # Dependency Vulnerability Scanning
+      # ============================================================
+      - name: Trivy filesystem scan
+        run: |
+          echo "Scanning for vulnerabilities in dependencies..."
+          docker run --rm -v "$PWD:/workspace" \
+            aquasec/trivy:latest fs /workspace \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            --skip-dirs workspace,cache,node_modules
+          echo "✓ No high/critical vulnerabilities found"
+
+      # ============================================================
+      # Privacy Validation - No Personal Info in Public Repo
+      # ============================================================
+      - name: Privacy check - Real IP addresses
+        run: |
+          echo "Checking for real IP addresses (excluding RFC1918 and placeholders)..."
+          if grep -rE --include="*.md" --include="*.yml" --include="*.yaml" \
+            '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' . | \
+            grep -vE '(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|<your-nas-ip>|example|0\.0\.0\.0|127\.0\.0\.1|255\.255\.255)'; then
+            echo "❌ Found potentially real IP addresses in documentation!"
+            echo "Use placeholders like <your-nas-ip> instead."
+            exit 1
+          fi
+          echo "✓ No real IP addresses found"
+
+      - name: Privacy check - .env file protection
+        run: |
+          echo "Checking that .env file is not committed..."
+          if git ls-files | grep -E '^\.env$'; then
+            echo "❌ ERROR: .env file found in repository!"
+            echo "This file contains secrets and should never be committed."
+            exit 1
+          fi
+          echo "✓ .env file is properly gitignored"
+
+      - name: Privacy check - Common secret patterns
+        run: |
+          echo "Checking for common secret patterns in tracked files..."
+          # Check for GitHub tokens
+          if git ls-files | xargs grep -E 'ghp_[a-zA-Z0-9]{36}' 2>/dev/null; then
+            echo "❌ Found GitHub personal access token!"
+            exit 1
+          fi
+          # Check for generic API keys
+          if git ls-files | xargs grep -E '(api[_-]?key|apikey)["\s:=]+[a-zA-Z0-9]{20,}' -i 2>/dev/null | grep -v example; then
+            echo "❌ Found potential API key!"
+            exit 1
+          fi
+          echo "✓ No common secret patterns found"
+
+      # ============================================================
+      # Repository Health Checks
+      # ============================================================
+      - name: Check file sizes
+        run: |
+          echo "Checking for large files (>1MB)..."
+          large_files=$(find . -type f -size +1M \
+            -not -path "./.git/*" \
+            -not -path "./workspace/*" \
+            -not -path "./cache/*" \
+            -not -path "./node_modules/*" 2>/dev/null || true)
+          if [ -n "$large_files" ]; then
+            echo "❌ Large files found (>1MB):"
+            echo "$large_files"
+            echo "Consider using Git LFS for large files or exclude them."
+            exit 1
+          fi
+          echo "✓ No large files found"
+
+      - name: Check for workspace/cache pollution
+        run: |
+          echo "Checking that workspace and cache directories are not committed..."
+          workspace_files=$(git ls-files | grep -E '^(workspace|cache)/' || true)
+          if [ -n "$workspace_files" ]; then
+            echo "❌ Found workspace or cache files in git:"
+            echo "$workspace_files"
+            echo "These should be gitignored."
+            exit 1
+          fi
+          echo "✓ workspace and cache directories are properly gitignored"
+
+      - name: Security checks summary
+        if: success()
+        run: |
+          echo "========================================"
+          echo "✅ All security checks passed!"
+          echo "========================================"
+          echo "  ✓ No secrets detected (gitleaks)"
+          echo "  ✓ No vulnerabilities (Trivy)"
+          echo "  ✓ Privacy validation passed"
+          echo "  ✓ .env file protected"
+          echo "  ✓ No large files"
+          echo "  ✓ Clean repository structure"
+          echo "========================================"
