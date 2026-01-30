@@ -7,6 +7,23 @@
 
   ## [Unreleased]
 
+  ## [1.1.0] - 2026-01-30
+
+  ### Added
+  - Claude Code Review support with pre-installed Anthropic Python SDK
+  - Custom Dockerfile extending myoung34/github-runner:latest
+  - Build process integrated into docker-compose.yml
+  - Workflow examples for AI-powered code review
+
+  ### Changed
+  - Docker Compose now builds custom image instead of using base image directly
+  - Image tagged as `synology-github-runner:latest` for easy identification
+
+  ### Documentation
+  - Added AI Code Review feature to README
+  - Created workflow examples guide (docs/08-WORKFLOWS.md)
+  - Updated Quick Start guide with build step information
+
   ## [1.0.0] - 2026-01-29
 
   ### Added
@@ -27,6 +44,7 @@
   - 📦 Docker-in-Docker support
   - 🔄 Auto-restart on failure
 
-  [Unreleased]: https://github.com/andrelin/synology-github-runner/compare/v1.0.0...HEAD
+  [Unreleased]: https://github.com/andrelin/synology-github-runner/compare/v1.1.0...HEAD
+  [1.1.0]: https://github.com/andrelin/synology-github-runner/releases/tag/v1.1.0
   [1.0.0]: https://github.com/andrelin/synology-github-runner/releases/tag/v1.0.0
   

@@ -64,7 +64,7 @@ chmod 600 .env
 mkdir -p workspace cache
 ```
 
-### Step 4: Start via Container Manager (1 minute)
+### Step 4: Build and Start via Container Manager (2 minutes)
 
 1. Open **Container Manager** in DSM
 2. Go to **Project** → **Create**
@@ -74,7 +74,11 @@ mkdir -p workspace cache
    - **Source:** `Create docker-compose.yml`
 4. Click **Next** → **Next** → **Done**
 
-Container Manager will start the runner automatically.
+Container Manager will:
+- Build the custom runner image (includes Anthropic SDK for Claude Code Review)
+- Start the runner automatically
+
+**Note:** First build takes 2-3 minutes. Subsequent starts are instant.
 
 ### Step 5: Verify (30 seconds)
 

@@ -80,26 +80,26 @@ Complete comprehensive documentation and create ready-to-use workflow examples f
 
 **Progress:**
 - ✅ `docs/04-MONITORING.md` - Monitoring setup guide
-- ✅ `docs/02-INSTALLATION.md` - Comprehensive installation guide (NEW!)
+- ✅ `docs/02-INSTALLATION.md` - Comprehensive installation guide
+- ✅ `docs/00-QUICK-START.md` - Quick start guide (updated with build step)
+- ✅ `docs/08-WORKFLOWS.md` - GitHub Actions integration guide (NEW!)
 - ✅ `CLAUDE.md` - Guide for Claude Code
 - ✅ `README.md` - Repository introduction
 - ✅ `.env.example` - Configuration template
 - ✅ `docker-compose.yml` - Well-commented configuration
 
 **Still Needed:**
-- `docs/00-QUICK-START.md` - 5-minute TL;DR guide
 - `docs/01-PREREQUISITES.md` - System requirements
 - `docs/03-CONFIGURATION.md` - Configuration reference
 - `docs/05-TROUBLESHOOTING.md` - Common issues
 - `docs/06-MAINTENANCE.md` - Updates & cleanup
 - `docs/07-SECURITY.md` - Security best practices
-- `docs/08-WORKFLOWS.md` - GitHub Actions integration
 - `docs/FAQ.md` - Frequently asked questions
 - `CONTRIBUTING.md` - Contribution guidelines
 - Workflow examples in `examples/workflows/`
 
 **Priority:** Medium
-**Duration:** 8-10 hours (reduced from 10-14)
+**Duration:** 6-8 hours (reduced from 8-10, ~70% complete)
 
 ---
 
@@ -142,9 +142,35 @@ This document is kept for historical reference and lessons learned.
 
 ---
 
-## Recent Updates (2026-01-29)
+## Recent Updates
 
-### Repository Cleanup & Alignment
+### 2026-01-30: Claude Code Review Support
+
+**Added AI-Powered Code Review Capabilities:**
+- ✅ Created custom Dockerfile extending `myoung34/github-runner:latest`
+- ✅ Pre-installed Anthropic Python SDK (v0.72.0) for Claude Code Review
+- ✅ Updated docker-compose.yml to build custom image
+- ✅ Image tagged as `synology-github-runner:latest`
+- ✅ Created comprehensive workflow guide (docs/08-WORKFLOWS.md)
+- ✅ Added Claude Code Review example with Python script
+- ✅ Updated README with AI Code Review feature
+- ✅ Updated CHANGELOG for v1.1.0 release
+
+**Prerequisites Verified (in runner image):**
+- ✅ Python 3.8.10 (compatible with Anthropic SDK)
+- ✅ GitHub CLI 2.86.0 (for PR interactions)
+- ✅ pip 20.0.2 (for package management)
+- ✅ Anthropic SDK 0.72.0 (pre-installed)
+
+**Benefits:**
+- No runtime dependency installation needed
+- Faster workflow execution (dependencies ready)
+- Supports AI-powered code review out of the box
+- Compatible with Claude Code Review and similar tools
+
+### 2026-01-29: Repository Cleanup & Alignment
+
+**Repository Cleanup:**
 - ✅ Squashed commit history (10 commits → 2 commits)
 - ✅ Fixed broken .gitignore (leading spaces prevented all patterns from working)
 - ✅ Cleaned up empty directories (removed config/, added .gitkeep files)
@@ -152,14 +178,14 @@ This document is kept for historical reference and lessons learned.
 - ✅ Made all resource limits configurable via .env file
 - ✅ Created comprehensive installation guide (478 lines)
 
-### Configuration Improvements
-- ✅ Simplified docker-compose.yml (120 lines → 48 lines)
+**Configuration Improvements:**
+- ✅ Simplified docker-compose.yml (120 lines → 48 lines, now 53 with build)
 - ✅ Removed unnecessary features (networks, healthcheck, logging, read_only)
 - ✅ Added environment variable support for all configurable values
 - ✅ Included resource tuning guide for different NAS configurations
 - ✅ Documented Container Manager Project approach
 
-### Documentation Added
+**Documentation Added:**
 - ✅ `docs/02-INSTALLATION.md` - Complete installation guide
   - Git-based repository cloning
   - Container Manager Project creation

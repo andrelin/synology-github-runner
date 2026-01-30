@@ -19,6 +19,7 @@
 - 💪 **Resource Optimized** - Works great on 2-core/8GB systems, scales to larger hardware
 - 📦 **Docker-in-Docker** - Build and push Docker images directly from workflows
 - 🔄 **Auto-Restart** - Resilient to crashes with automatic recovery
+- 🤖 **AI Code Review Ready** - Pre-configured with Anthropic SDK for Claude Code Review
 - 📝 **Comprehensive Docs** - Step-by-step guides for every aspect
 - 🎨 **Example Workflows** - Production-ready workflow templates included
 
