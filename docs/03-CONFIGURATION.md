@@ -19,24 +19,32 @@ nano .env
 
 ### REPO_URL
 
-**Description:** The GitHub repository URL where the runner will be registered.
+**Description:** The GitHub repository or organization URL where the runner will be registered.
 
-**Format:** `https://github.com/owner/repository`
+**Formats:**
+- **Repository-level:** `https://github.com/owner/repository` (runner serves one repo)
+- **Organization-level:** `https://github.com/owner` (runner serves all repos in org)
 
 **Examples:**
 ```bash
-# Personal repository
+# Repository-level (single repository)
 REPO_URL=https://github.com/andrelin/planechaser
 
-# Organization repository
-REPO_URL=https://github.com/my-org/my-project
+# Organization-level (all repositories in organization)
+REPO_URL=https://github.com/andrelin
 ```
 
 **Important:**
 - ✅ Must include `https://`
-- ✅ Must be exact repository URL (case-sensitive)
+- ✅ Must be exact URL (case-sensitive)
 - ❌ Do not add trailing slash
 - ❌ Do not use SSH format (git@github.com:...)
+
+**Which should I use?**
+- **Repository-level:** Use when runner is dedicated to one repository
+- **Organization-level:** Use when multiple repositories need to share the runner
+
+See [Organization-Level Runners](#organization-level-runners) section below for setup details.
 
 ### GITHUB_PAT
 
@@ -46,9 +54,14 @@ REPO_URL=https://github.com/my-org/my-project
 
 **Generate at:** https://github.com/settings/tokens
 
-**Required scopes:**
+**Required scopes (repository-level):**
 - ✅ `repo` (full control of private repositories)
 - ✅ `workflow` (update GitHub Action workflows)
+
+**Required scopes (organization-level):**
+- ✅ `repo` (full control of private repositories)
+- ✅ `workflow` (update GitHub Action workflows)
+- ✅ `admin:org` → `manage_runners:org` (manage organization runners)
 
 **Example:**
 ```bash

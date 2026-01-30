@@ -45,7 +45,8 @@ services:
       # IMPORTANT: Use host path for Docker-in-Docker compatibility
       # This allows tools like Qodana to bind mount workspace subdirectories
       - RUNNER_WORKDIR=${RUNNER_WORKDIR:-/volume1/docker/github-runner/workspace}
-      - RUNNER_SCOPE=repo
+      # RUNNER_SCOPE: 'repo' for single repository, 'org' for organization-wide
+      - RUNNER_SCOPE=${RUNNER_SCOPE:-repo}
 
     volumes:
       # Mount workspace at the same path on host and container
