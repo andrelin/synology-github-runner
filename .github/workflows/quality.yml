@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # ============================================================
       # Shell Script Validation
@@ -64,9 +64,9 @@ jobs:
       # Documentation Validation
       # ============================================================
       - name: Setup Node.js for documentation tools
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install documentation tools
         run: |
