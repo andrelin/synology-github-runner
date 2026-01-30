@@ -42,11 +42,15 @@ services:
       - GRADLE_OPTS=${GRADLE_OPTS:--Xmx3g -XX:+UseG1GC -XX:MaxGCPauseMillis=200}
 
       # Runner behavior
-      - RUNNER_WORKDIR=/workspace
+      # IMPORTANT: Use host path for Docker-in-Docker compatibility
+      # This allows tools like Qodana to bind mount workspace subdirectories
+      - RUNNER_WORKDIR=${RUNNER_WORKDIR:-/volume1/docker/github-runner/workspace}
       - RUNNER_SCOPE=repo
 
     volumes:
-      - /volume1/docker/github-runner/workspace:/workspace
+      # Mount workspace at the same path on host and container
+      # This ensures Docker-in-Docker bind mounts work correctly
+      - ${RUNNER_WORKDIR:-/volume1/docker/github-runner/workspace}:${RUNNER_WORKDIR:-/volume1/docker/github-runner/workspace}
       - /volume1/docker/github-runner/cache:/cache
       - /var/run/docker.sock:/var/run/docker.sock  # Allow runner to use Docker
 

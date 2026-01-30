@@ -622,6 +622,133 @@ on:
    - Missing colons
    - Invalid characters
 
+## Docker-in-Docker Bind Mount Errors
+
+### Problem
+
+Workflows that use Docker (Qodana, Trivy, container builds) fail with bind mount errors.
+
+### Symptoms
+
+```
+Error response from daemon: invalid mount config for type "bind":
+bind source path does not exist: /workspace/_temp/qodana/caches
+```
+
+Or similar errors mentioning:
+- `/workspace/_temp/...`
+- `/home/runner/work/...`
+- `bind source path does not exist`
+
+### Root Cause
+
+When you run Docker inside the runner container (Docker-in-Docker), the inner Docker command talks to the **host Docker daemon** via `/var/run/docker.sock`. When the inner Docker tries to bind mount a path like `/workspace/_temp/qodana/caches`, the host Docker daemon looks for that path on the **host filesystem**, not inside the runner container.
+
+**Example:**
+- Runner container workspace: `/workspace` → maps to host: `/volume1/docker/github-runner/workspace`
+- Qodana runs: `docker run -v /workspace/_temp/qodana/caches:/data/cache`
+- Host Docker daemon looks for `/workspace/_temp/qodana/caches` on host → **doesn't exist!**
+
+### Solution 1: Use Matching Paths (Recommended)
+
+Configure the runner to use the same workspace path on both host and container.
+
+**1. Update your `.env` file:**
+```bash
+# Add or update this line
+RUNNER_WORKDIR=/volume1/docker/github-runner/workspace
+```
+
+**2. Restart the runner:**
+```bash
+docker-compose down
+docker-compose up -d
+```
+
+**3. Verify the configuration:**
+```bash
+docker exec github-runner env | grep RUNNER_WORKDIR
+# Should show: RUNNER_WORKDIR=/volume1/docker/github-runner/workspace
+```
+
+**How this works:**
+- Host path: `/volume1/docker/github-runner/workspace`
+- Container path: `/volume1/docker/github-runner/workspace` (same!)
+- When inner Docker runs `docker run -v /volume1/docker/github-runner/workspace/_temp/...`, the host can find it
+
+### Solution 2: Use Environment Variables in Workflows
+
+For workflows that support it, use environment variables to specify cache paths:
+
+```yaml
+jobs:
+  qodana:
+    runs-on: [self-hosted, Linux, X64]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Qodana Scan
+        uses: JetBrains/qodana-action@v2024.1
+        with:
+          # Use a path that exists on the host
+          cache-dir: ${{ runner.workspace }}/qodana-cache
+```
+
+### Solution 3: Create Symlink (Workaround)
+
+If you can't change `RUNNER_WORKDIR`, create a symlink on the host:
+
+```bash
+# SSH to NAS
+ssh admin@<your-nas-ip>
+
+# Create symlink
+sudo ln -s /volume1/docker/github-runner/workspace /workspace
+
+# Verify
+ls -la /workspace
+```
+
+**⚠️ Warning:** This requires root access and may affect other containers.
+
+### Verification
+
+After applying Solution 1, test your Qodana workflow:
+
+```bash
+# Check runner configuration
+docker exec github-runner env | grep RUNNER_WORKDIR
+
+# Check workspace mount
+docker inspect github-runner | grep -A 5 "Mounts"
+
+# Check the path exists in container
+docker exec github-runner ls -la /volume1/docker/github-runner/workspace
+```
+
+Then trigger your Qodana workflow and verify it completes without bind mount errors.
+
+### Common Tools Affected
+
+These tools commonly run Docker-in-Docker and may need this fix:
+- **Qodana** - JetBrains code quality
+- **Trivy** - Container security scanning
+- **Docker buildx** - Multi-platform builds
+- **docker-compose** (when run in workflows)
+- **Container testing frameworks**
+
+### Additional Notes
+
+**Why not just use `/workspace`?**
+- Synology's volume paths start with `/volume1/`
+- Using a non-standard path helps avoid conflicts with other software
+- It makes the configuration more explicit and Synology-specific
+
+**Already updated docker-compose.yml?**
+- The latest version (as of 2026-01-30) includes this fix by default
+- Pull the latest changes: `git pull origin main`
+- Update your `.env` file with `RUNNER_WORKDIR`
+
 ## Permission Errors
 
 ### Problem
