@@ -6,10 +6,10 @@ on:
   pull_request:
   workflow_dispatch:
 
-# CRITICAL: Only one job at a time across entire repository
+# CRITICAL: Only one job at a time across entire repository and all branches
 # This demonstrates strict concurrency control for resource-constrained runners
 concurrency:
-  group: synology-runner-${{ github.ref }}
+  group: synology-runner
   cancel-in-progress: false  # Queue jobs, don't cancel
 
 jobs:

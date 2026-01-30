@@ -37,8 +37,9 @@ All workflows MUST use this pattern to ensure only one job runs at a time:
 
 ```yaml
 # Global concurrency control - CRITICAL
+# Single group name ensures only ONE job runs at a time across ALL branches
 concurrency:
-  group: synology-runner-${{ github.ref }}
+  group: synology-runner
   cancel-in-progress: false  # Queue jobs, don't cancel
 
 jobs:
@@ -81,9 +82,9 @@ on:
   pull_request:
   workflow_dispatch:
 
-# CRITICAL: Only one job at a time across entire repository
+# CRITICAL: Only one job at a time across entire repository and all branches
 concurrency:
-  group: synology-runner-${{ github.ref }}
+  group: synology-runner
   cancel-in-progress: false
 
 jobs:
@@ -422,12 +423,12 @@ These workflows demonstrate critical patterns for resource-constrained environme
 1. **Strict Concurrency Control:**
    ```yaml
    concurrency:
-     group: synology-runner-${{ github.ref }}
+     group: synology-runner
      cancel-in-progress: false  # Queue, don't cancel
    ```
-   - Only one job at a time across entire repository
+   - Only one job at a time across entire repository AND all branches
    - Jobs queue instead of failing
-   - Ref-based grouping prevents conflicts
+   - Single global group ensures no parallel execution
 
 2. **Combined Jobs:**
    - Multiple related checks in single job
