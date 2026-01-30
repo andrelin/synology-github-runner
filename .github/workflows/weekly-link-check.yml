@@ -98,22 +98,25 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const files = `${{ steps.link_check.outputs.files }}`;
+            const runUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+
             const body = `## Weekly Link Check Failed
 
-Some external links in the documentation are broken or unreachable.
+            Some external links in the documentation are broken or unreachable.
 
-**Files with issues:**
-\`\`\`
-${{ steps.link_check.outputs.files }}
-\`\`\`
+            **Files with issues:**
+            \`\`\`
+            ${files}
+            \`\`\`
 
-**Next steps:**
-1. Review the [workflow run logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-2. Check if broken links are permanent or temporary
-3. Update or remove permanently broken links
-4. Close this issue once resolved
+            **Next steps:**
+            1. Review the [workflow run logs](${runUrl})
+            2. Check if broken links are permanent or temporary
+            3. Update or remove permanently broken links
+            4. Close this issue once resolved
 
-**Note:** This is from the weekly scheduled link check. Some failures may be due to temporary external site issues.`;
+            **Note:** This is from the weekly scheduled link check. Some failures may be due to temporary external site issues.`;
 
             await github.rest.issues.create({
               owner: context.repo.owner,
