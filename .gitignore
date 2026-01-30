@@ -85,5 +85,3 @@ docker-compose.override.yml
 # ==============================================================================
 *.sh.bak
 shellcheck.log
-# GitHub directory
-.github/

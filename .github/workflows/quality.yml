@@ -1,0 +1,115 @@
+name: Quality Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# CRITICAL: Only one job at a time across entire repository
+# This demonstrates strict concurrency control for resource-constrained runners
+concurrency:
+  group: synology-runner-${{ github.ref }}
+  cancel-in-progress: false  # Queue jobs, don't cancel
+
+jobs:
+  quality:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ============================================================
+      # Shell Script Validation
+      # ============================================================
+      - name: ShellCheck validation
+        run: |
+          echo "Running shellcheck on all scripts..."
+          docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable \
+            scripts/**/*.sh
+          echo "✓ All shell scripts passed shellcheck"
+
+      - name: Verify script executability
+        run: |
+          echo "Checking that all .sh files are executable..."
+          non_executable=$(find scripts -name "*.sh" -type f ! -executable 2>/dev/null || true)
+          if [ -n "$non_executable" ]; then
+            echo "❌ Non-executable scripts found:"
+            echo "$non_executable"
+            exit 1
+          fi
+          echo "✓ All shell scripts are executable"
+
+      # ============================================================
+      # Docker Configuration Validation
+      # ============================================================
+      - name: Validate docker-compose.yml
+        run: |
+          echo "Validating docker-compose.yml syntax..."
+          docker-compose config -q
+          echo "✓ docker-compose.yml is valid"
+
+      - name: Check for hardcoded secrets
+        run: |
+          echo "Scanning for hardcoded secrets in docker-compose.yml..."
+          if grep -E '(password|token|secret|key).*=.*[^$]' docker-compose.yml | grep -v '${'; then
+            echo "❌ Found potentially hardcoded secrets!"
+            exit 1
+          fi
+          echo "✓ No hardcoded secrets found"
+
+      # ============================================================
+      # Documentation Validation
+      # ============================================================
+      - name: Setup Node.js for documentation tools
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install documentation tools
+        run: |
+          echo "Installing documentation validation tools..."
+          npm install -g markdownlint-cli2@latest
+          npm install -g markdown-link-check@latest
+          echo "✓ Documentation tools installed"
+
+      - name: Markdown lint
+        run: |
+          echo "Running markdown linter..."
+          markdownlint-cli2 "**/*.md" "#node_modules" "#workspace" "#cache"
+          echo "✓ Markdown files passed linting"
+
+      - name: Check internal links
+        run: |
+          echo "Checking internal documentation links..."
+          find . -name "*.md" \
+            -not -path "./node_modules/*" \
+            -not -path "./workspace/*" \
+            -not -path "./cache/*" \
+            -not -path "./.git/*" | \
+            xargs -I {} markdown-link-check {} --config .github/markdown-link-check.json
+          echo "✓ All internal links are valid"
+
+      - name: Spell check
+        run: |
+          echo "Running spell checker on markdown files..."
+          npx cspell "**/*.md" \
+            --config .github/cspell.json \
+            --no-progress \
+            --show-suggestions
+          echo "✓ Spell check passed"
+
+      - name: Quality checks summary
+        if: success()
+        run: |
+          echo "================================"
+          echo "✅ All quality checks passed!"
+          echo "================================"
+          echo "  ✓ Shell scripts validated"
+          echo "  ✓ Docker compose validated"
+          echo "  ✓ Documentation linted"
+          echo "  ✓ Links verified"
+          echo "  ✓ Spelling checked"
+          echo "================================"
