@@ -3,7 +3,15 @@ name: Quality Checks
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'plans/**'
+      - '*.md'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'plans/**'
+      - '*.md'
   workflow_dispatch:
 
 # Per-workflow, per-branch concurrency control

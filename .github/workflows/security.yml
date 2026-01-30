@@ -3,7 +3,15 @@ name: Security Scanning
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'plans/**'
+      - '*.md'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'plans/**'
+      - '*.md'
   schedule:
     - cron: '0 2 * * 0'  # Weekly Sunday 2 AM (low-traffic time)
   workflow_dispatch:
