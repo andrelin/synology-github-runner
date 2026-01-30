@@ -1,0 +1,260 @@
+# Orchestrator Workflow Pattern
+#
+# For resource-constrained single-runner setups, this pattern runs jobs SEQUENTIALLY
+# using job dependencies (needs:). This prevents resource exhaustion and ensures
+# only one heavy job runs at a time.
+#
+# Use this pattern when:
+# - You have a single runner with limited resources
+# - Jobs are resource-intensive (Docker builds, large test suites)
+# - You want to ensure jobs complete successfully before proceeding
+#
+# Copy this to: .github/workflows/ci.yml in your repository
+
+name: Orchestrated CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Per-workflow, per-branch concurrency control
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================================
+  # Phase 1: Code Quality Checks (Fast)
+  # ============================================================
+
+  lint:
+    name: Code Linting
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+
+  # ============================================================
+  # Phase 2: Unit Tests (Medium)
+  # Runs AFTER lint completes
+  # ============================================================
+
+  test-unit:
+    name: Unit Tests
+    runs-on: [self-hosted, Linux, X64]
+    needs: [lint]  # Wait for lint to complete
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage/
+
+  # ============================================================
+  # Phase 3: Integration Tests (Heavy)
+  # Runs AFTER unit tests complete
+  # ============================================================
+
+  test-integration:
+    name: Integration Tests
+    runs-on: [self-hosted, Linux, X64]
+    needs: [test-unit]  # Wait for unit tests
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run integration tests
+        run: npm run test:integration
+
+  # ============================================================
+  # Phase 4: Build (Heavy)
+  # Runs AFTER all tests pass
+  # ============================================================
+
+  build:
+    name: Build Application
+    runs-on: [self-hosted, Linux, X64]
+    needs: [test-unit, test-integration]  # Wait for all tests
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+          retention-days: 30
+
+  # ============================================================
+  # Phase 5: Docker Build (Very Heavy - Optional)
+  # Runs AFTER build completes
+  # ============================================================
+
+  docker:
+    name: Build Docker Image
+    runs-on: [self-hosted, Linux, X64]
+    needs: [build]  # Wait for build
+    timeout-minutes: 30
+    # Only run on main branch pushes
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --tag myapp:${{ github.sha }} \
+            --tag myapp:latest \
+            .
+
+      - name: Save image for deployment
+        run: docker save myapp:latest | gzip > myapp.tar.gz
+
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: myapp.tar.gz
+          retention-days: 7
+
+  # ============================================================
+  # Phase 6: Deploy (Final Step)
+  # Runs AFTER all previous jobs complete successfully
+  # ============================================================
+
+  deploy:
+    name: Deploy to Production
+    runs-on: [self-hosted, Linux, X64]
+    needs: [docker]  # Wait for Docker build
+    timeout-minutes: 10
+    # Only deploy from main branch
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: production-build
+          path: dist/
+
+      - name: Deploy application
+        run: |
+          echo "Deploying to production..."
+          # Add your deployment commands here
+          # Examples:
+          # - rsync to web server
+          # - Update Docker container
+          # - Deploy to cloud platform
+
+      - name: Deployment complete
+        run: |
+          echo "✅ Deployment successful"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref_name }}"
+
+## Execution Flow
+#
+# Sequential execution ensures only one resource-intensive job runs at a time:
+#
+# 1. lint (fast, ~5 min)
+#      ↓
+# 2. test-unit (medium, ~15 min)
+#      ↓
+# 3. test-integration (heavy, ~25 min)
+#      ↓
+# 4. build (heavy, ~15 min)
+#      ↓
+# 5. docker (very heavy, ~20 min) [only on main]
+#      ↓
+# 6. deploy (fast, ~5 min) [only on main]
+#
+# Total time: ~85 min for full pipeline
+# Benefits:
+#   - No resource exhaustion
+#   - Early failure (lint fails = stop)
+#   - Clear progress tracking
+#   - Single runner handles entire pipeline
+#
+## Customization Tips
+#
+# 1. Add parallel jobs where safe:
+#    If you have multiple independent test suites that are light on resources,
+#    they can run in parallel using the same needs: dependency.
+#
+#    Example:
+#    test-frontend:
+#      needs: [lint]
+#    test-backend:
+#      needs: [lint]
+#
+# 2. Skip unnecessary steps on PRs:
+#    Use `if:` conditions to skip deploy/docker on pull requests
+#
+# 3. Add manual approval for deploy:
+#    Use `environment:` with protection rules in GitHub settings
+#
+# 4. Optimize with caching:
+#    - Cache dependencies (npm, pip, gradle)
+#    - Cache Docker layers
+#    - Reuse build artifacts between jobs
+#
+# 5. Adjust timeouts:
+#    Set realistic timeout-minutes for each job based on your project
