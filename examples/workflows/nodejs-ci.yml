@@ -1,0 +1,255 @@
+# Node.js CI Workflow
+#
+# Optimized for self-hosted Synology runners with resource constraints.
+# Features:
+# - Dependency caching (npm/yarn/pnpm)
+# - Multiple Node versions (optional)
+# - Lint → Test → Build pipeline
+# - Code coverage upload
+#
+# Copy this to: .github/workflows/ci.yml in your repository
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+# Per-workflow, per-branch concurrency control
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Build and Test
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 20
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # Step 2: Setup Node.js with caching
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'  # Or '18', '22', etc.
+          # Automatically caches node_modules based on package manager
+          cache: 'npm'  # Or 'yarn', 'pnpm'
+
+      # Step 3: Install dependencies
+      # Using 'ci' instead of 'install' for reproducible builds
+      - name: Install dependencies
+        run: npm ci
+        # For yarn: yarn install --frozen-lockfile
+        # For pnpm: pnpm install --frozen-lockfile
+
+      # Step 4: Lint code
+      - name: Lint code
+        run: npm run lint
+        # Add || true to continue even if linting fails
+        # run: npm run lint || true
+
+      # Step 5: Run tests
+      - name: Run tests
+        run: npm test
+        env:
+          NODE_ENV: test
+          # Limit memory if needed
+          NODE_OPTIONS: --max-old-space-size=2048
+
+      # Step 6: Generate code coverage (optional)
+      - name: Generate coverage report
+        run: npm run test:coverage
+        # Only if you have coverage configured
+        continue-on-error: true
+
+      # Step 7: Upload coverage to Codecov (optional)
+      # - name: Upload coverage
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     file: ./coverage/lcov.info
+      #     fail_ci_if_error: false
+
+      # Step 8: Build project
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      # Step 9: Upload build artifacts
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+      # Step 10: Run E2E tests (optional)
+      # - name: E2E tests
+      #   run: npm run test:e2e
+      #   timeout-minutes: 10
+
+## Customization Options
+
+### Multiple Node Versions (Matrix Strategy)
+#
+# Test against multiple Node versions:
+#
+# jobs:
+#   ci:
+#     strategy:
+#       matrix:
+#         node-version: [18, 20, 22]
+#     steps:
+#       - uses: actions/setup-node@v6
+#         with:
+#           node-version: ${{ matrix.node-version }}
+#
+# Note: This creates multiple jobs, so use carefully on single runner!
+# Better approach: Test only on your target version (e.g., 20)
+
+### Using Yarn Instead of npm
+#
+# - name: Setup Node.js
+#   uses: actions/setup-node@v6
+#   with:
+#     node-version: '20'
+#     cache: 'yarn'
+#
+# - name: Install dependencies
+#   run: yarn install --frozen-lockfile
+#
+# - name: Build
+#   run: yarn build
+
+### Using pnpm
+#
+# - name: Setup pnpm
+#   uses: pnpm/action-setup@v2
+#   with:
+#     version: 8
+#
+# - name: Setup Node.js
+#   uses: actions/setup-node@v6
+#   with:
+#     node-version: '20'
+#     cache: 'pnpm'
+#
+# - name: Install dependencies
+#   run: pnpm install --frozen-lockfile
+
+### TypeScript Project Example
+#
+# - name: Type check
+#   run: npm run type-check
+#   # Or: npx tsc --noEmit
+#
+# - name: Build
+#   run: npm run build
+#   # Usually runs tsc automatically
+
+### React/Next.js/Vite Projects
+#
+# Works the same, just ensure your package.json has:
+# - "build": "next build" (Next.js)
+# - "build": "vite build" (Vite)
+# - "build": "react-scripts build" (CRA)
+
+### Monorepo with Turborepo/Nx
+#
+# - name: Build all packages
+#   run: npx turbo run build
+#   # Or: npx nx run-many --target=build --all
+#
+# - name: Test all packages
+#   run: npx turbo run test
+#   # Or: npx nx run-many --target=test --all
+
+### Resource Optimization for Large Projects
+#
+# jobs:
+#   ci:
+#     steps:
+#       - name: Install dependencies
+#         run: npm ci
+#         env:
+#           # Limit concurrent npm downloads
+#           NPM_CONFIG_MAXSOCKETS: 2
+#
+#       - name: Build
+#         run: npm run build
+#         env:
+#           # Limit Node.js memory (2GB)
+#           NODE_OPTIONS: --max-old-space-size=2048
+#           # Disable source maps if they're large
+#           GENERATE_SOURCEMAP: false
+
+### Caching Additional Directories
+#
+# - name: Cache build cache
+#   uses: actions/cache@v4
+#   with:
+#     path: |
+#       .next/cache
+#       .turbo
+#       node_modules/.cache
+#     key: build-cache-${{ hashFiles('**/package-lock.json') }}
+#     restore-keys: |
+#       build-cache-
+
+### Running Scripts in Parallel (Use Carefully!)
+#
+# - name: Lint and test (parallel)
+#   run: npm run lint & npm run test & wait
+#   # Only if both are lightweight and don't compete for resources
+
+### Deploy to Production (Example)
+#
+# deploy:
+#   runs-on: [self-hosted, Linux, X64]
+#   needs: ci
+#   if: github.ref == 'refs/heads/main'
+#   steps:
+#     - uses: actions/checkout@v6
+#     - uses: actions/setup-node@v6
+#       with:
+#         node-version: '20'
+#
+#     - name: Download build artifacts
+#       uses: actions/download-artifact@v4
+#       with:
+#         name: dist
+#         path: dist/
+#
+#     - name: Deploy to server
+#       run: |
+#         rsync -avz --delete dist/ user@server:/var/www/app/
+#         ssh user@server 'pm2 restart app'
+#       env:
+#         SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
+## Troubleshooting
+
+### Out of Memory
+# If builds fail with heap out of memory:
+# env:
+#   NODE_OPTIONS: --max-old-space-size=2048  # 2GB limit
+
+### Slow npm install
+# Use npm ci instead of npm install (faster, deterministic)
+# Cache is automatic with actions/setup-node
+
+### Tests timing out
+# Increase timeout or split tests:
+# - name: Run unit tests
+#   run: npm run test:unit
+#   timeout-minutes: 10
+# - name: Run integration tests
+#   run: npm run test:integration
+#   timeout-minutes: 15

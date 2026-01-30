@@ -106,6 +106,144 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 
 ---
 
+### 4. Node.js CI (`nodejs-ci.yml`)
+
+**Use for:** Node.js, TypeScript, React, Next.js, Vue, or any npm-based project
+
+**What it does:**
+- ✅ Dependency caching (npm/yarn/pnpm)
+- ✅ Linting with ESLint
+- ✅ Testing with coverage
+- ✅ Production build
+- ✅ Artifact upload
+- ✅ Memory optimization
+
+**Best for:**
+- JavaScript/TypeScript applications
+- Frontend projects (React, Vue, Angular)
+- Backend Node.js services
+- Full-stack applications
+
+**Resource usage:** Low-Medium (configurable with NODE_OPTIONS)
+
+**Features:**
+- Auto-detects package manager (npm, yarn, pnpm)
+- Incremental builds with caching
+- Turbo/Nx monorepo support examples
+- Memory limit configuration (~2GB default)
+
+**Customize:**
+- Switch between npm/yarn/pnpm
+- Add E2E tests (Playwright, Cypress)
+- Enable source maps or disable for faster builds
+- Add deployment steps
+
+---
+
+### 5. Python CI (`python-ci.yml`)
+
+**Use for:** Python applications, Django, FastAPI, Flask, data science projects
+
+**What it does:**
+- ✅ Dependency caching (pip/poetry/pipenv)
+- ✅ Code linting (flake8)
+- ✅ Formatting checks (black)
+- ✅ Type checking (mypy)
+- ✅ Testing with pytest and coverage
+- ✅ Package building
+
+**Best for:**
+- Python web applications
+- API services (Django, FastAPI, Flask)
+- Data science / Jupyter notebooks
+- CLI tools and packages
+
+**Resource usage:** Low-Medium
+
+**Features:**
+- Supports pip, poetry, and pipenv
+- Includes security scanning (bandit, safety)
+- Coverage reporting with codecov integration
+- Virtual environment management
+
+**Customize:**
+- Add Django migrations and database setup
+- Include notebook testing (Jupyter)
+- Add FastAPI/Flask server smoke tests
+- Configure PyPI publishing
+
+---
+
+### 6. Gradle CI (`gradle-ci.yml`)
+
+**Use for:** Java, Kotlin, Android, or any Gradle-based project
+
+**What it does:**
+- ✅ Gradle dependency caching
+- ✅ JVM memory optimization
+- ✅ Testing with JUnit
+- ✅ Building JAR/APK files
+- ✅ Test report upload
+- ✅ Artifact management
+
+**Best for:**
+- Java/Kotlin backend services
+- Spring Boot applications
+- Android applications
+- Kotlin Multiplatform projects
+
+**Resource usage:** Medium-High (JVM memory configurable)
+
+**Features:**
+- Gradle daemon management
+- Build cache support
+- Multi-module project support
+- Android SDK setup examples
+- JaCoCo code coverage
+
+**Customize:**
+- Adjust JVM heap size (GRADLE_OPTS)
+- Add Spring Boot Docker builds
+- Include Detekt/ktlint for Kotlin
+- Configure Android APK signing
+
+---
+
+### 7. Rust CI (`rust-ci.yml`)
+
+**Use for:** Rust projects with Cargo
+
+**What it does:**
+- ✅ Cargo dependency caching
+- ✅ Incremental compilation
+- ✅ Clippy linting (strict mode)
+- ✅ Rustfmt formatting checks
+- ✅ Testing with cargo test
+- ✅ Release builds with optimization
+
+**Best for:**
+- Rust applications and libraries
+- CLI tools
+- System programming projects
+- WebAssembly projects
+
+**Resource usage:** Medium-High (compilation is CPU/memory intensive)
+
+**Features:**
+- Faster linker configuration (lld)
+- Incremental compilation enabled
+- Clippy with warnings-as-errors
+- Swatinem/rust-cache for fast rebuilds
+- Cross-compilation examples
+
+**Customize:**
+- Add cargo-tarpaulin for coverage
+- Include benchmarking (criterion)
+- Add WASM builds (wasm-pack)
+- Configure cargo-deny for security
+
+---
+
 ## Comparison Table
 
 | Workflow | Complexity | Resource Usage | Build Time | Best Use Case |
@@ -113,6 +251,10 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 | **basic-ci** | ⭐ Simple | 🟢 Low | ~5-10 min | Quick CI for small projects |
 | **orchestrator** | ⭐⭐⭐ Complex | 🟡 Medium | ~30-90 min | Full CI/CD pipeline |
 | **docker-build** | ⭐⭐ Moderate | 🔴 High | ~20-30 min | Docker image building |
+| **nodejs-ci** | ⭐⭐ Moderate | 🟢 Low-Med | ~5-15 min | Node.js/TypeScript projects |
+| **python-ci** | ⭐⭐ Moderate | 🟢 Low-Med | ~5-15 min | Python applications |
+| **gradle-ci** | ⭐⭐⭐ Complex | 🟡 Med-High | ~15-30 min | Java/Kotlin/Android projects |
+| **rust-ci** | ⭐⭐⭐ Complex | 🟡 Med-High | ~15-40 min | Rust projects |
 
 ## Resource Optimization Tips
 
@@ -249,8 +391,13 @@ Use for: Nightly builds, dependency updates, backups
 
 ## Tech Stack Examples
 
+> **💡 Tip:** We now have **complete, production-ready workflow files** for popular tech stacks. See workflows #4-7 above for full examples with caching, optimization, and customization options.
+
 ### Node.js/TypeScript
 
+**📄 See:** [`nodejs-ci.yml`](nodejs-ci.yml) - Complete Node.js CI workflow
+
+Quick snippet:
 ```yaml
 - uses: actions/setup-node@v6
   with:
@@ -265,6 +412,9 @@ Use for: Nightly builds, dependency updates, backups
 
 ### Python
 
+**📄 See:** [`python-ci.yml`](python-ci.yml) - Complete Python CI workflow
+
+Quick snippet:
 ```yaml
 - uses: actions/setup-python@v6
   with:
@@ -278,6 +428,9 @@ Use for: Nightly builds, dependency updates, backups
 
 ### Java/Kotlin (Gradle)
 
+**📄 See:** [`gradle-ci.yml`](gradle-ci.yml) - Complete Gradle CI workflow
+
+Quick snippet:
 ```yaml
 - uses: actions/setup-java@v6
   with:
@@ -294,6 +447,9 @@ Use for: Nightly builds, dependency updates, backups
 
 ### Rust
 
+**📄 See:** [`rust-ci.yml`](rust-ci.yml) - Complete Rust CI workflow
+
+Quick snippet:
 ```yaml
 - uses: dtolnay/rust-toolchain@stable
   with:

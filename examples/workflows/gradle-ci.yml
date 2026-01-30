@@ -1,0 +1,354 @@
+# Gradle CI Workflow (Java/Kotlin/Android)
+#
+# Optimized for self-hosted Synology runners with resource constraints.
+# Features:
+# - Gradle dependency caching
+# - Memory optimization for JVM
+# - Build → Test → Assemble pipeline
+# - Android build support (optional)
+#
+# Copy this to: .github/workflows/ci.yml in your repository
+
+name: Gradle CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+# Per-workflow, per-branch concurrency control
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Build and Test
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 30
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # Step 2: Setup Java with Gradle caching
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'  # Or 'adopt', 'zulu', 'corretto'
+          java-version: '17'       # Or '11', '21', etc.
+          cache: 'gradle'          # Automatically caches Gradle dependencies
+
+      # Step 3: Make gradlew executable (if needed)
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # Step 4: Run tests
+      - name: Run tests
+        run: ./gradlew test
+        env:
+          # Memory optimization (configured in runner's .env file)
+          GRADLE_OPTS: "-Xmx3g -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+          # Limit parallel workers (important for single runner!)
+          ORG_GRADLE_PROJECT_org.gradle.workers.max: "2"
+          ORG_GRADLE_PROJECT_org.gradle.parallel: "false"
+
+      # Step 5: Build project
+      - name: Build
+        run: ./gradlew build
+        env:
+          GRADLE_OPTS: "-Xmx3g -XX:+UseG1GC"
+
+      # Step 6: Upload test results
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            **/build/test-results/test/
+            **/build/reports/tests/
+          retention-days: 7
+
+      # Step 7: Upload build artifacts
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            **/build/libs/*.jar
+            **/build/outputs/
+          retention-days: 7
+
+      # Step 8: Publish test report (optional)
+      # - name: Publish test report
+      #   uses: dorny/test-reporter@v1
+      #   if: always()
+      #   with:
+      #     name: Test Results
+      #     path: '**/build/test-results/test/*.xml'
+      #     reporter: java-junit
+
+## Customization Options
+
+### Kotlin Multiplatform Project
+#
+# jobs:
+#   test-jvm:
+#     runs-on: [self-hosted, Linux, X64]
+#     steps:
+#       - uses: actions/checkout@v6
+#       - uses: actions/setup-java@v6
+#         with:
+#           distribution: 'temurin'
+#           java-version: '17'
+#           cache: 'gradle'
+#
+#       - name: Test JVM
+#         run: ./gradlew :shared:testDebugUnitTest
+#
+#   test-android:
+#     runs-on: [self-hosted, Linux, X64]
+#     needs: test-jvm  # Sequential execution
+#     steps:
+#       - uses: actions/checkout@v6
+#       - uses: actions/setup-java@v6
+#         with:
+#           distribution: 'temurin'
+#           java-version: '17'
+#           cache: 'gradle'
+#
+#       - name: Test Android
+#         run: ./gradlew :android:testDebugUnitTest
+
+### Android Project with SDK
+#
+# - name: Setup Android SDK
+#   uses: android-actions/setup-android@v3
+#
+# - name: Accept Android licenses
+#   run: yes | sdkmanager --licenses
+#
+# - name: Build APK
+#   run: ./gradlew assembleDebug
+#   env:
+#     GRADLE_OPTS: "-Xmx3g"
+#
+# - name: Upload APK
+#   uses: actions/upload-artifact@v4
+#   with:
+#     name: app-debug
+#     path: app/build/outputs/apk/debug/*.apk
+
+### Code Quality Checks
+#
+# - name: Lint check
+#   run: ./gradlew ktlintCheck
+#   # Or for Android: ./gradlew lint
+#
+# - name: Detekt (Kotlin static analysis)
+#   run: ./gradlew detekt
+#   continue-on-error: true
+#
+# - name: Check code style
+#   run: ./gradlew checkstyle
+#   # For Java projects
+
+### Multiple Gradle Tasks
+#
+# - name: Verify and build
+#   run: ./gradlew clean check build
+#   # Runs multiple tasks sequentially
+
+### Assemble Release Build
+#
+# - name: Assemble release
+#   if: github.ref == 'refs/heads/main'
+#   run: ./gradlew assembleRelease
+#   env:
+#     GRADLE_OPTS: "-Xmx3g"
+#     # Signing configs from secrets:
+#     KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+#     KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+#     KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+### Gradle Daemon Management
+#
+# - name: Stop Gradle daemon
+#   if: always()
+#   run: ./gradlew --stop
+#   # Ensures daemon doesn't consume resources after build
+
+### Caching Additional Directories
+#
+# - name: Cache Kotlin compiler
+#   uses: actions/cache@v4
+#   with:
+#     path: |
+#       ~/.kotlin
+#       **/build/kotlin
+#     key: kotlin-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+
+### Resource-Aware Build Configuration
+#
+# For very memory-constrained environments:
+#
+# - name: Build with minimal resources
+#   run: ./gradlew build
+#   env:
+#     GRADLE_OPTS: "-Xmx2g -XX:+UseSerialGC"  # Even more conservative
+#     ORG_GRADLE_PROJECT_org.gradle.workers.max: "1"
+#     ORG_GRADLE_PROJECT_org.gradle.parallel: "false"
+#     ORG_GRADLE_PROJECT_org.gradle.daemon: "false"  # Disable daemon
+
+### Incremental Builds
+#
+# Gradle automatically uses incremental builds. To maximize benefits:
+#
+# - name: Build (incremental)
+#   run: ./gradlew build --build-cache
+#   # Enables build cache (faster subsequent builds)
+
+### Publishing to Maven
+#
+# - name: Publish to Maven Central
+#   if: github.ref == 'refs/heads/main'
+#   run: ./gradlew publish
+#   env:
+#     ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
+#     ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+#     ORG_GRADLE_PROJECT_signing.keyId: ${{ secrets.GPG_KEY_ID }}
+#     ORG_GRADLE_PROJECT_signing.password: ${{ secrets.GPG_PASSWORD }}
+#     ORG_GRADLE_PROJECT_signing.secretKeyRingFile: ${{ secrets.GPG_FILE }}
+
+### Docker Build (for Spring Boot apps)
+#
+# - name: Build Docker image
+#   run: ./gradlew bootBuildImage
+#   env:
+#     GRADLE_OPTS: "-Xmx3g"
+#
+# - name: Push to registry
+#   run: |
+#     docker tag myapp:latest registry.example.com/myapp:latest
+#     docker push registry.example.com/myapp:latest
+
+### Spring Boot Application
+#
+# - name: Build Spring Boot JAR
+#   run: ./gradlew bootJar
+#
+# - name: Run integration tests
+#   run: ./gradlew integrationTest
+#   env:
+#     SPRING_PROFILES_ACTIVE: test
+#
+# - name: Build and start (smoke test)
+#   run: |
+#     ./gradlew bootJar
+#     java -jar build/libs/*.jar --server.port=8080 &
+#     sleep 10
+#     curl http://localhost:8080/actuator/health
+#     kill %1
+
+### Multi-Module Project
+#
+# - name: Test all modules
+#   run: ./gradlew test
+#
+# - name: Build specific module
+#   run: ./gradlew :api:build
+#
+# - name: Assemble all modules
+#   run: ./gradlew assemble
+
+### Code Coverage with JaCoCo
+#
+# - name: Generate coverage report
+#   run: ./gradlew jacocoTestReport
+#
+# - name: Upload coverage to Codecov
+#   uses: codecov/codecov-action@v4
+#   with:
+#     file: ./build/reports/jacoco/test/jacocoTestReport.xml
+#     fail_ci_if_error: false
+
+### Performance Profiling
+#
+# - name: Build with profiling
+#   run: ./gradlew build --profile
+#
+# - name: Upload profiling report
+#   uses: actions/upload-artifact@v4
+#   with:
+#     name: gradle-profile
+#     path: build/reports/profile/
+
+### Dependency Verification
+#
+# - name: Check for dependency updates
+#   run: ./gradlew dependencyUpdates
+#   continue-on-error: true
+#
+# - name: Verify dependencies
+#   run: ./gradlew dependencies --configuration runtimeClasspath
+
+## Troubleshooting
+
+### Out of Memory
+# Increase heap size in GRADLE_OPTS:
+# env:
+#   GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=512m"
+
+### Slow Builds
+# 1. Enable build cache:
+#    ./gradlew build --build-cache
+# 2. Enable Gradle daemon (enabled by default)
+# 3. Increase parallel workers (if you have spare CPU):
+#    ORG_GRADLE_PROJECT_org.gradle.workers.max: "3"
+
+### Gradle Daemon Issues
+# If daemon causes issues:
+# 1. Stop daemon: ./gradlew --stop
+# 2. Disable daemon:
+#    ORG_GRADLE_PROJECT_org.gradle.daemon: "false"
+
+### Permission Denied on gradlew
+# Run before build:
+# chmod +x gradlew
+
+### Android SDK Not Found
+# Ensure ANDROID_HOME is set:
+# env:
+#   ANDROID_HOME: /usr/local/lib/android/sdk
+
+### Flaky Tests
+# Rerun failed tests:
+# ./gradlew test --rerun-tasks
+
+## Resource Limits Reference
+
+# For 2-core/8GB NAS:
+# GRADLE_OPTS: "-Xmx2g -XX:+UseG1GC"
+# org.gradle.workers.max: "1"
+#
+# For 4-core/8GB NAS:
+# GRADLE_OPTS: "-Xmx3g -XX:+UseG1GC"
+# org.gradle.workers.max: "2"
+#
+# For 4-core/16GB NAS:
+# GRADLE_OPTS: "-Xmx6g -XX:+UseG1GC"
+# org.gradle.workers.max: "3"
+
+## Gradle Configuration Files
+
+# Create gradle.properties in project root:
+# org.gradle.jvmargs=-Xmx3g -XX:+UseG1GC
+# org.gradle.workers.max=2
+# org.gradle.parallel=false
+# org.gradle.caching=true
+#
+# Workflow env vars override gradle.properties
