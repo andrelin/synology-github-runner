@@ -1,0 +1,6 @@
+{
+  "extends": [
+    "github>statens-pensjonskasse/renovate-presets:daily-automerge-non-major",
+    "github>statens-pensjonskasse/renovate-presets:renovate-comments(\\.yaml$,(\\.yml$))"
+  ]
+}

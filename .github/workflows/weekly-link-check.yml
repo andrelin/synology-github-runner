@@ -1,0 +1,128 @@
+name: Weekly Link Check
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Weekly Sunday 3 AM (low-traffic time)
+  workflow_dispatch:
+
+# Per-workflow, per-branch concurrency control
+# Cancels older runs of THIS workflow on THIS branch, but allows other workflows/branches to queue
+# The single runner will still execute jobs one at a time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  external-links:
+    runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version: '24.13.0'
+
+      - name: Install link checker
+        run: |
+          echo "Installing markdown-link-check..."
+          npm install -g markdown-link-check@latest
+          echo "✓ Link checker installed"
+
+      - name: Check external links
+        id: link_check
+        continue-on-error: true  # Don't fail workflow on external link issues
+        run: |
+          echo "Checking external links in documentation..."
+          echo "This may take several minutes depending on external site response times."
+          echo ""
+
+          failed_files=""
+          while IFS= read -r file; do
+            echo "Checking: $file"
+            if ! markdown-link-check "$file" --config .github/markdown-link-check.json; then
+              failed_files="${failed_files}${file}\n"
+            fi
+          done < <(find . -name "*.md" \
+            -not -path "./node_modules/*" \
+            -not -path "./workspace/*" \
+            -not -path "./cache/*" \
+            -not -path "./.git/*")
+
+          if [ -n "$failed_files" ]; then
+            echo "failed=true" >> $GITHUB_OUTPUT
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$failed_files" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "failed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Report results
+        if: always()
+        run: |
+          echo "========================================"
+          if [ "${{ steps.link_check.outputs.failed }}" = "true" ]; then
+            echo "⚠️  External Link Check - Issues Found"
+            echo "========================================"
+            echo ""
+            echo "Some external links are broken or unreachable."
+            echo "This is INFORMATIONAL ONLY and does not block PRs."
+            echo ""
+            echo "Files with broken links:"
+            echo "${{ steps.link_check.outputs.files }}"
+            echo ""
+            echo "Common reasons for link check failures:"
+            echo "  • Temporary external site downtime"
+            echo "  • Rate limiting from external sites"
+            echo "  • Network timeout issues"
+            echo "  • Moved or removed external content"
+            echo ""
+            echo "Action required:"
+            echo "  1. Review the logs above for specific broken links"
+            echo "  2. Verify if links are permanently broken or temporarily down"
+            echo "  3. Update or remove permanently broken links"
+            echo "  4. Ignore temporary failures (external sites)"
+          else
+            echo "✅ External Link Check - All Passed!"
+            echo "========================================"
+            echo ""
+            echo "All external links are valid and reachable."
+          fi
+          echo "========================================"
+
+      - name: Create issue on failure
+        if: steps.link_check.outputs.failed == 'true' && github.event_name == 'schedule'
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const files = `${{ steps.link_check.outputs.files }}`;
+            const runUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+
+            const body = `## Weekly Link Check Failed
+
+            Some external links in the documentation are broken or unreachable.
+
+            **Files with issues:**
+            \`\`\`
+            ${files}
+            \`\`\`
+
+            **Next steps:**
+            1. Review the [workflow run logs](${runUrl})
+            2. Check if broken links are permanent or temporary
+            3. Update or remove permanently broken links
+            4. Close this issue once resolved
+
+            **Note:** This is from the weekly scheduled link check. Some failures may be due to temporary external site issues.`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Weekly Link Check: Broken External Links Detected',
+              body: body,
+              labels: ['documentation', 'automated']
+            });

@@ -7,6 +7,10 @@
 [![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
 [![Synology](https://img.shields.io/badge/Synology-B5B5B6?logo=synology&logoColor=white)](https://www.synology.com)
 
+[![Quality Checks](https://github.com/andrelin/synology-github-runner/actions/workflows/quality.yml/badge.svg)](https://github.com/andrelin/synology-github-runner/actions/workflows/quality.yml)
+[![Security Scanning](https://github.com/andrelin/synology-github-runner/actions/workflows/security.yml/badge.svg)](https://github.com/andrelin/synology-github-runner/actions/workflows/security.yml)
+[![Weekly Link Check](https://github.com/andrelin/synology-github-runner/actions/workflows/weekly-link-check.yml/badge.svg)](https://github.com/andrelin/synology-github-runner/actions/workflows/weekly-link-check.yml)
+
 ## ✨ Features
 
 - 🎯 **Quick Setup** - Get running in 30 minutes with automated installation
