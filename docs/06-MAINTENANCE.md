@@ -39,6 +39,7 @@ Keep your GitHub self-hosted runner healthy, updated, and running efficiently.
 The runner Docker image is updated regularly with security patches and new features.
 
 **Check for updates:**
+
 ```bash
 # SSH into NAS
 ssh admin@<your-nas-ip>
@@ -52,6 +53,7 @@ docker-compose pull
 ```
 
 **Apply update:**
+
 ```bash
 # Stop and remove old container
 docker-compose down
@@ -67,12 +69,14 @@ docker-compose logs -f
 ```
 
 **Expected output:**
-```
+
+```text
 ✓ Runner successfully configured
 ✓ Runner listener started successfully
 ```
 
 **Verify in GitHub:**
+
 - Settings → Actions → Runners
 - Your runner should show as "Idle" (green)
 
@@ -81,6 +85,7 @@ docker-compose logs -f
 When new features or fixes are released in this repository:
 
 **Pull updates:**
+
 ```bash
 cd /volume1/docker/synology-github-runner
 
@@ -95,6 +100,7 @@ git pull origin main
 ```
 
 **Apply changes:**
+
 ```bash
 # Review what changed
 git diff HEAD~1
@@ -107,6 +113,7 @@ docker-compose up -d
 ```
 
 **Preserve your settings:**
+
 - `.env` file is gitignored (your secrets are safe)
 - `workspace/` and `cache/` are gitignored (preserved)
 - Custom modifications to `docker-compose.yml` may be overwritten
@@ -116,17 +123,20 @@ docker-compose up -d
 Keep Synology software up to date:
 
 **DSM updates:**
+
 1. Control Panel → Update & Restore
 2. Check for DSM updates
 3. Download and install
 4. Restart NAS if required
 
 **Container Manager updates:**
+
 1. Package Center → Installed
 2. Find "Container Manager"
 3. Update if available
 
 **After updates:**
+
 ```bash
 # Verify runner still works
 docker ps | grep github-runner
@@ -141,11 +151,13 @@ docker-compose up -d
 ### Viewing Logs
 
 **Via Container Manager:**
+
 1. Container Manager → Container
 2. Select `github-runner`
 3. Click **Details** → **Log** tab
 
 **Via SSH:**
+
 ```bash
 cd /volume1/docker/synology-github-runner
 
@@ -167,6 +179,7 @@ docker-compose logs > runner-logs-$(date +%Y%m%d).txt
 Docker handles log rotation automatically, but you can configure limits:
 
 **Edit docker-compose.yml:**
+
 ```yaml
 services:
   github-runner:
@@ -178,6 +191,7 @@ services:
 ```
 
 **Apply changes:**
+
 ```bash
 docker-compose down
 docker-compose up -d
@@ -186,6 +200,7 @@ docker-compose up -d
 ### Cleaning Old Logs
 
 **Manual cleanup:**
+
 ```bash
 # Clear container logs (careful - erases all logs)
 docker-compose down
@@ -200,16 +215,19 @@ docker-compose up -d
 ### Monitor Disk Usage
 
 **Overall disk usage:**
+
 ```bash
 df -h /volume1
 ```
 
 **Docker disk usage:**
+
 ```bash
 docker system df
 ```
 
 **Workspace and cache:**
+
 ```bash
 du -sh /volume1/docker/synology-github-runner/workspace
 du -sh /volume1/docker/synology-github-runner/cache
@@ -218,6 +236,7 @@ du -sh /volume1/docker/synology-github-runner/cache
 ### Clean Up Docker
 
 **Remove unused Docker data:**
+
 ```bash
 # Safe cleanup (removes stopped containers, unused images)
 docker system prune -f
@@ -234,6 +253,7 @@ docker volume prune -f    # Remove unused volumes
 **Scheduled cleanup:**
 
 Create a monthly cron job:
+
 ```bash
 # Edit crontab
 crontab -e
@@ -245,6 +265,7 @@ crontab -e
 ### Clean Workspace and Cache
 
 **Workspace cleanup:**
+
 ```bash
 cd /volume1/docker/synology-github-runner
 
@@ -253,6 +274,7 @@ rm -rf workspace/*
 ```
 
 **Cache cleanup:**
+
 ```bash
 # Warning: Next build will be slower (needs to rebuild cache)
 rm -rf cache/*
@@ -265,6 +287,7 @@ rm -rf cache/npm/*
 ```
 
 **When to clean:**
+
 - Disk space < 20% free
 - Builds failing due to disk space
 - Cache corruption suspected
@@ -275,14 +298,17 @@ rm -rf cache/npm/*
 If consistently running out of space:
 
 **Option 1: Clean up other data on NAS**
+
 - Review and delete old files
 - Move large files to external storage
 - Compress old backups
 
 **Option 2: Add storage volume**
+
 - Install additional hard drive
 - Create new volume
 - Move runner to new volume:
+
   ```bash
   # Copy to new location
   cp -r /volume1/docker/synology-github-runner /volume2/docker/
@@ -292,6 +318,7 @@ If consistently running out of space:
   ```
 
 **Option 3: External storage**
+
 - Mount external drive
 - Move `cache/` to external storage
 - Update docker-compose.yml volume paths
@@ -301,14 +328,17 @@ If consistently running out of space:
 ### What to Backup
 
 **Critical (backup regularly):**
+
 - ✅ `.env` file (contains secrets)
 - ✅ `docker-compose.yml` (if customized)
 - ✅ Custom scripts or configurations
 
 **Optional (nice to have):**
+
 - ✅ `cache/` directory (speeds up next build, but can rebuild)
 
 **No need to backup:**
+
 - ❌ `workspace/` (temporary, rebuilt each run)
 - ❌ Docker images (can re-pull)
 - ❌ Container data (ephemeral)
@@ -316,6 +346,7 @@ If consistently running out of space:
 ### Backup Procedure
 
 **Secure backup of .env:**
+
 ```bash
 cd /volume1/docker/synology-github-runner
 
@@ -331,11 +362,13 @@ gpg -c .env  # Creates .env.gpg
 ```
 
 **Backup docker-compose.yml:**
+
 ```bash
 cp docker-compose.yml ~/backup/docker-compose.yml.$(date +%Y%m%d)
 ```
 
 **Backup entire configuration:**
+
 ```bash
 # Create tarball (excludes workspace/cache)
 tar -czf ~/backup/runner-config-$(date +%Y%m%d).tar.gz \
@@ -348,6 +381,7 @@ tar -czf ~/backup/runner-config-$(date +%Y%m%d).tar.gz \
 ### Restore Procedure
 
 **Restore from backup:**
+
 ```bash
 # Navigate to runner directory
 cd /volume1/docker/synology-github-runner
@@ -365,6 +399,7 @@ docker-compose up -d
 ```
 
 **Full restore from tarball:**
+
 ```bash
 # Extract backup
 cd /volume1/docker
@@ -383,6 +418,7 @@ docker-compose up -d
 ### Check Runner Status
 
 **In GitHub:**
+
 1. Go to repository → **Settings → Actions → Runners**
 2. Check status:
    - 🟢 **Idle** - Ready for jobs (good)
@@ -390,12 +426,14 @@ docker-compose up -d
    - 🔴 **Offline** - Not connected (bad - investigate)
 
 **Via Container Manager:**
+
 1. Container Manager → Container
 2. Find `github-runner`
 3. Status should be: **Running** (green play icon)
 4. Check CPU/Memory graphs
 
 **Via SSH:**
+
 ```bash
 # Check if container is running
 docker ps | grep github-runner
@@ -410,6 +448,7 @@ docker-compose logs --tail=50 | grep -i error
 ### Performance Monitoring
 
 **Monitor during workflow execution:**
+
 ```bash
 # Watch resources in real-time
 docker stats github-runner
@@ -419,10 +458,12 @@ docker stats github-runner
 ```
 
 **Check historical performance:**
+
 - Container Manager → Container → github-runner → Details
 - View CPU and Memory graphs
 
 **Identify bottlenecks:**
+
 - **High CPU** - Increase `RUNNER_CPU_SHARES`
 - **High Memory** - Increase `RUNNER_MEMORY`
 - **Disk I/O** - Consider SSD cache or faster drives
@@ -430,6 +471,7 @@ docker stats github-runner
 ### Automated Health Checks
 
 **Use monitoring script:**
+
 ```bash
 # Run health check
 /volume1/scripts/runner-health-check.sh
@@ -441,6 +483,7 @@ docker stats github-runner
 See [Monitoring Guide](04-MONITORING.md) for setup.
 
 **Create monitoring cron job:**
+
 ```bash
 # Edit crontab
 crontab -e
@@ -465,6 +508,7 @@ crontab -e
    - **Copy token immediately**
 
 2. **Update .env:**
+
    ```bash
    cd /volume1/docker/synology-github-runner
    nano .env
@@ -473,6 +517,7 @@ crontab -e
    ```
 
 3. **Restart container:**
+
    ```bash
    docker-compose down
    docker-compose up -d
@@ -494,12 +539,14 @@ crontab -e
 **Quarterly security review:**
 
 1. **Check container security:**
+
    ```bash
    docker inspect github-runner | grep -A 10 SecurityOpt
    # Should show: no-new-privileges:true
    ```
 
 2. **Verify .env permissions:**
+
    ```bash
    ls -la .env
    # Should show: -rw------- (600 permissions)
@@ -510,6 +557,7 @@ crontab -e
    - Check runner activity in GitHub
 
 4. **Update security patches:**
+
    ```bash
    # Pull latest runner image (includes security updates)
    docker-compose pull
@@ -518,6 +566,7 @@ crontab -e
    ```
 
 5. **Review access logs:**
+
    ```bash
    # Check who's accessing via SSH
    last -20
@@ -531,6 +580,7 @@ crontab -e
 ### Optimize Resource Allocation
 
 **Review current usage:**
+
 ```bash
 # During a workflow run
 docker stats github-runner
@@ -541,6 +591,7 @@ docker stats github-runner
 **Adjust based on patterns:**
 
 **If consistently < 50% memory used:**
+
 ```bash
 # Reduce memory allocation
 nano .env
@@ -548,6 +599,7 @@ nano .env
 ```
 
 **If hitting memory limits:**
+
 ```bash
 # Increase memory
 nano .env
@@ -556,6 +608,7 @@ nano .env
 ```
 
 **If CPU underutilized:**
+
 ```bash
 # Lower priority to give resources to other services
 nano .env
@@ -563,6 +616,7 @@ nano .env
 ```
 
 **After changes:**
+
 ```bash
 docker-compose down
 docker-compose up -d
@@ -571,6 +625,7 @@ docker-compose up -d
 ### Optimize Workflow Performance
 
 **Enable caching:**
+
 ```yaml
 - uses: actions/setup-node@v6
   with:
@@ -578,6 +633,7 @@ docker-compose up -d
 ```
 
 **Use sequential jobs:**
+
 ```yaml
 jobs:
   test:
@@ -585,6 +641,7 @@ jobs:
 ```
 
 **Clean cache periodically:**
+
 ```bash
 # If builds are getting slower
 rm -rf cache/*
@@ -597,6 +654,7 @@ See [Workflow Examples](../examples/workflows/) for optimization patterns.
 ### Runner Stops Working After Update
 
 **Rollback procedure:**
+
 ```bash
 # Pull previous image version
 docker pull myoung34/github-runner:<previous-version>
@@ -612,6 +670,7 @@ docker-compose up -d
 ### Disk Fills Up Quickly
 
 **Identify culprit:**
+
 ```bash
 # Find large files
 du -h --max-depth=2 /volume1/docker/synology-github-runner | sort -h
@@ -621,6 +680,7 @@ docker system df -v
 ```
 
 **Solutions:**
+
 - Clean Docker cache more frequently
 - Reduce `cache/` size
 - Move cache to external storage
@@ -629,12 +689,14 @@ docker system df -v
 ### Performance Degrades Over Time
 
 **Common causes:**
+
 - Cache corruption
 - Log files growing
 - Docker images accumulating
 - Memory leaks (rare)
 
 **Reset procedure:**
+
 ```bash
 # Stop container
 docker-compose down
@@ -652,7 +714,7 @@ docker-compose up -d
 
 ### Monthly Checklist
 
-```
+```text
 [ ] Update runner Docker image
 [ ] Clean Docker cache (docker system prune -af)
 [ ] Check disk space (df -h)
@@ -666,7 +728,7 @@ docker-compose up -d
 
 ### Quarterly Checklist
 
-```
+```text
 [ ] Rotate GitHub Personal Access Token
 [ ] Full security audit
 [ ] Review and optimize resource allocation
@@ -681,6 +743,7 @@ docker-compose up -d
 ## Automated Maintenance Script
 
 **Create maintenance script:**
+
 ```bash
 #!/bin/bash
 # /volume1/scripts/runner-maintenance.sh
@@ -712,11 +775,13 @@ echo "Maintenance complete!"
 ```
 
 **Make executable:**
+
 ```bash
 chmod +x /volume1/scripts/runner-maintenance.sh
 ```
 
 **Schedule monthly:**
+
 ```bash
 # Run first Sunday of month at 3 AM
 0 3 1-7 * 0 /volume1/scripts/runner-maintenance.sh

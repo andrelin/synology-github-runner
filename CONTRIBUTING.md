@@ -1,6 +1,7 @@
 # Contributing to synology-github-runner
 
-Thank you for your interest in contributing! This project helps developers run unlimited GitHub Actions on their Synology NAS.
+Thank you for your interest in contributing! This project helps developers run unlimited GitHub Actions on their
+Synology NAS.
 
 ## How to Contribute
 
@@ -41,6 +42,7 @@ git checkout -b fix/issue-description
 Follow these guidelines:
 
 **Shell Scripts:**
+
 - Use `#!/bin/bash` and `set -euo pipefail`
 - Run `shellcheck` before committing
 - Make scripts executable: `chmod +x scripts/**/*.sh`
@@ -48,6 +50,7 @@ Follow these guidelines:
 - Test on actual Synology hardware if possible
 
 **Documentation:**
+
 - Use clear, concise language
 - Include code examples
 - Add cross-references to related docs
@@ -55,12 +58,14 @@ Follow these guidelines:
 - Run spell checker
 
 **Docker/Compose:**
+
 - Validate with `docker-compose config`
 - Never commit secrets
 - Use `.env` for configuration
 - Include security hardening
 
 **Privacy (CRITICAL):**
+
 - ❌ No personal IP addresses (use `<your-nas-ip>`)
 - ❌ No real domain names (use `example.com`)
 - ❌ No personal service names
@@ -127,6 +132,7 @@ chore(deps): update runner image to latest version
 ```
 
 **Commit Types:**
+
 - `feat` - New features
 - `fix` - Bug fixes
 - `docs` - Documentation only
@@ -182,12 +188,14 @@ When you create a PR, workflows will:
 ### If Workflows Fail
 
 **Quality Check Failures:**
+
 - Run shellcheck locally and fix issues
 - Check markdown syntax
 - Fix broken internal links
 - Correct spelling errors
 
 **Security Scan Failures:**
+
 - Remove any committed secrets
 - Check for personal information in docs
 - Ensure .env is not committed

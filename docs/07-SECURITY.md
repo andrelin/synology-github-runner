@@ -4,9 +4,11 @@ Security best practices and hardening for your GitHub self-hosted runner on Syno
 
 ## Security Overview
 
-Running a self-hosted runner means you're executing arbitrary code from GitHub workflows on your infrastructure. Proper security is critical.
+Running a self-hosted runner means you're executing arbitrary code from GitHub workflows on your infrastructure.
+Proper security is critical.
 
 **Security layers:**
+
 1. ✅ **Container security** - Isolation and privilege restriction
 2. ✅ **Network security** - Minimal attack surface
 3. ✅ **Secret management** - Secure credential storage
@@ -51,10 +53,12 @@ Running a self-hosted runner means you're executing arbitrary code from GitHub w
 **Use minimum required scopes:**
 
 ✅ **Required:**
+
 - `repo` - Access to repositories
 - `workflow` - Modify workflows
 
 ❌ **Not needed (don't add):**
+
 - `admin:org` - Too much power
 - `delete_repo` - Dangerous
 - `admin:public_key` - Unnecessary
@@ -66,6 +70,7 @@ If token is compromised, damage is limited to repository access and workflow mod
 ### Token Expiration
 
 **Set expiration date:**
+
 - ✅ 90 days recommended
 - ✅ 30-60 days for high-security environments
 - ❌ Never use "No expiration"
@@ -77,11 +82,13 @@ If token is compromised, damage is limited to repository access and workflow mod
 **Secure storage:**
 
 ✅ **Good:**
+
 - Password manager (1Password, Bitwarden, LastPass)
 - Encrypted file with GPG
 - Secrets management system (HashiCorp Vault)
 
 ❌ **Bad:**
+
 - Plain text file
 - Email
 - Slack/Discord messages
@@ -89,6 +96,7 @@ If token is compromised, damage is limited to repository access and workflow mod
 - Committed to git
 
 **Backup token securely:**
+
 ```bash
 # Encrypt .env file
 gpg -c .env
@@ -104,14 +112,18 @@ gpg .env.gpg
 
 1. **Create new token** (GitHub → Settings → Tokens)
 2. **Update .env:**
+
    ```bash
    nano /volume1/docker/synology-github-runner/.env
    # Update GITHUB_PAT=ghp_new_token
    ```
+
 3. **Restart runner:**
+
    ```bash
    docker-compose down && docker-compose up -d
    ```
+
 4. **Revoke old token** in GitHub
 5. **Set calendar reminder** for next rotation
 
@@ -155,12 +167,14 @@ tmpfs:
 ```
 
 **What this does:**
+
 - ✅ Prevents container from gaining additional privileges
 - ✅ Limits Linux capabilities to minimum needed
 - ✅ Uses in-memory tmpfs (cleared on restart)
 - ✅ Prevents privilege escalation attacks
 
 **Verify security settings:**
+
 ```bash
 docker inspect github-runner | grep -A 10 SecurityOpt
 docker inspect github-runner | grep -A 20 CapDrop
@@ -171,6 +185,7 @@ docker inspect github-runner | grep -A 20 CapDrop
 For maximum security, enable read-only root filesystem:
 
 **Add to docker-compose.yml:**
+
 ```yaml
 services:
   github-runner:
@@ -182,6 +197,7 @@ services:
 ```
 
 **Trade-offs:**
+
 - ✅ Enhanced security (can't modify container filesystem)
 - ❌ May break some workflows that write outside workspace
 - ❌ More complex configuration
@@ -193,12 +209,14 @@ services:
 **Use specific image versions:**
 
 Instead of `latest`, pin to specific version:
+
 ```yaml
 image: myoung34/github-runner:2.311.0  # Specific version
 # Instead of: myoung34/github-runner:latest
 ```
 
 **Verify image checksums:**
+
 ```bash
 # Get image digest
 docker inspect myoung34/github-runner:latest | grep Digest
@@ -207,6 +225,7 @@ docker inspect myoung34/github-runner:latest | grep Digest
 ```
 
 **Scan images for vulnerabilities:**
+
 ```bash
 # Using Trivy
 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
@@ -218,11 +237,13 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
 ### Minimal Attack Surface
 
 **No inbound ports needed:**
+
 - ✅ Runner connects **outbound** to GitHub
 - ✅ No ports exposed in docker-compose.yml
 - ✅ No need to open firewall inbound rules
 
 **Required outbound access:**
+
 - `github.com` - Port 443 (HTTPS)
 - `api.github.com` - Port 443 (HTTPS)
 - Package registries (npm, PyPI, Maven, etc.) - Port 443/80
@@ -231,13 +252,14 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
 
 **Recommended firewall rules (outbound only):**
 
-```
+```text
 ALLOW outbound HTTPS (port 443) to any
 ALLOW outbound HTTP (port 80) to any
 DENY inbound ALL (no inbound ports needed)
 ```
 
 **Synology Firewall:**
+
 1. Control Panel → Security → Firewall
 2. Edit rules for your NAS
 3. Ensure outbound 443/80 allowed
@@ -257,6 +279,7 @@ DENY inbound ALL (no inbound ports needed)
    - Assign runner to isolated network
 
 **Example docker-compose.yml:**
+
 ```yaml
 services:
   github-runner:
@@ -278,11 +301,13 @@ networks:
 Control Panel → Network → General → DNS Server
 
 **Recommended:**
+
 - Google: `8.8.8.8`, `8.8.4.4`
 - Cloudflare: `1.1.1.1`, `1.0.0.1`
 - Quad9: `9.9.9.9`, `149.112.112.112`
 
 **Avoid:**
+
 - ISP DNS (may be unreliable or tracked)
 - Public DNS from unknown providers
 
@@ -291,11 +316,13 @@ Control Panel → Network → General → DNS Server
 ### Never Commit Secrets
 
 **Protected by .gitignore:**
+
 - ✅ `.env` file (contains GITHUB_PAT)
 - ✅ `workspace/` (may contain secrets)
 - ✅ `cache/` (may cache secrets)
 
 **Verify .gitignore:**
+
 ```bash
 # Check .env is gitignored
 git check-ignore .env
@@ -307,6 +334,7 @@ git ls-files | grep .env
 ```
 
 **If .env was accidentally committed:**
+
 ```bash
 # Remove from git history (dangerous - backup first)
 git filter-branch --force --index-filter \
@@ -318,6 +346,7 @@ git push origin --force --all
 ```
 
 **Then:**
+
 1. Rotate GitHub PAT immediately
 2. Review repository access logs
 3. Check for unauthorized access
@@ -327,24 +356,28 @@ git push origin --force --all
 **Use GitHub Secrets, not hardcoded values:**
 
 ❌ **Bad:**
+
 ```yaml
 env:
-  API_KEY: "sk_live_xxxxxxxxxxxx"  # Exposed in code
+  API_KEY: "hardcoded_secret_value"  # Exposed in code - DO NOT DO THIS
 ```
 
 ✅ **Good:**
+
 ```yaml
 env:
   API_KEY: ${{ secrets.API_KEY }}  # From GitHub Secrets
 ```
 
 **Add secrets to GitHub:**
+
 1. Repository → Settings → Secrets and variables → Actions
 2. Click **New repository secret**
 3. Add name and value
 4. Click **Add secret**
 
 **Secrets are:**
+
 - ✅ Encrypted at rest
 - ✅ Masked in logs
 - ✅ Only accessible to workflows
@@ -353,6 +386,7 @@ env:
 ### File Permissions
 
 **Protect .env file:**
+
 ```bash
 # Set restrictive permissions (owner read/write only)
 chmod 600 .env
@@ -366,6 +400,7 @@ chown admin:administrators .env
 ```
 
 **Check permissions regularly:**
+
 ```bash
 # Weekly check
 find /volume1/docker/synology-github-runner -name ".env" -exec ls -la {} \;
@@ -376,11 +411,13 @@ find /volume1/docker/synology-github-runner -name ".env" -exec ls -la {} \;
 ### GitHub Repository Access
 
 **Principle of least privilege:**
+
 - ✅ Only add runner to repositories that need it
 - ✅ Use separate runners for different trust levels
 - ✅ Don't use same runner for public and private repos
 
 **Repository settings:**
+
 1. Settings → Actions → Runners
 2. Review which repositories can access runner
 3. Remove access for unused repos
@@ -388,6 +425,7 @@ find /volume1/docker/synology-github-runner -name ".env" -exec ls -la {} \;
 ### Synology NAS Access
 
 **Limit SSH access:**
+
 ```bash
 # DSM → Control Panel → Terminal & SNMP
 # - Enable SSH only when needed
@@ -398,6 +436,7 @@ find /volume1/docker/synology-github-runner -name ".env" -exec ls -la {} \;
 ```
 
 **SSH key authentication (more secure than passwords):**
+
 ```bash
 # On your computer, generate key
 ssh-keygen -t ed25519 -C "github-runner-access"
@@ -415,11 +454,13 @@ ssh-copy-id -i ~/.ssh/id_ed25519.pub admin@<your-nas-ip>
 **The runner has access to Docker socket** (for Docker-in-Docker builds).
 
 **Security implications:**
+
 - ⚠️ Container can manage other containers
 - ⚠️ Potential for container escape
 - ⚠️ Workflows can access Docker socket
 
 **Mitigations:**
+
 - ✅ Only run trusted workflows
 - ✅ Review workflow code before running
 - ✅ Use separate runner for untrusted code
@@ -430,6 +471,7 @@ ssh-copy-id -i ~/.ssh/id_ed25519.pub admin@<your-nas-ip>
 ### Monitor Runner Activity
 
 **Check GitHub Actions logs regularly:**
+
 1. Repository → Actions
 2. Review recent workflow runs
 3. Look for:
@@ -439,6 +481,7 @@ ssh-copy-id -i ~/.ssh/id_ed25519.pub admin@<your-nas-ip>
    - Runs from unknown users (in org repos)
 
 **Set up notifications:**
+
 1. Repository → Settings → Notifications
 2. Enable email for workflow failures
 3. Set up Slack/Discord webhooks (optional)
@@ -446,6 +489,7 @@ ssh-copy-id -i ~/.ssh/id_ed25519.pub admin@<your-nas-ip>
 ### Monitor Container Activity
 
 **Check container logs for suspicious activity:**
+
 ```bash
 # Recent logs
 docker-compose logs --tail=200 | grep -i "error\|warning\|fail"
@@ -458,6 +502,7 @@ docker logs github-runner 2>&1 | grep -i "connection"
 ```
 
 **Monitor resource usage:**
+
 ```bash
 # Real-time monitoring
 docker stats github-runner
@@ -473,6 +518,7 @@ docker stats github-runner
 **Enable container logging:**
 
 In docker-compose.yml:
+
 ```yaml
 services:
   github-runner:
@@ -484,6 +530,7 @@ services:
 ```
 
 **Review logs regularly:**
+
 ```bash
 # Weekly review
 docker-compose logs --since 7d > weekly-logs.txt
@@ -491,6 +538,7 @@ grep -i "error\|fail\|unauthorized\|denied" weekly-logs.txt
 ```
 
 **Long-term log storage:**
+
 ```bash
 # Archive monthly
 mkdir -p /volume1/logs/runner-archive
@@ -502,6 +550,7 @@ docker-compose logs > /volume1/logs/runner-archive/logs-$(date +%Y-%m).txt
 ### Update Runner Image Regularly
 
 **Monthly security updates:**
+
 ```bash
 # Pull latest image
 docker-compose pull
@@ -518,6 +567,7 @@ docker-compose logs --tail=50
 ```
 
 **Subscribe to security updates:**
+
 - Watch GitHub repository: https://github.com/myoung34/docker-github-actions-runner
 - Enable notifications for releases
 
@@ -540,6 +590,7 @@ docker-compose logs --tail=50
 ### Update Dependencies
 
 **Update workflow dependencies:**
+
 ```yaml
 # Keep actions up to date
 - uses: actions/checkout@v6  # Not v4
@@ -548,6 +599,7 @@ docker-compose logs --tail=50
 
 **Enable Dependabot:**
 Create `.github/dependabot.yml`:
+
 ```yaml
 version: 2
 updates:
@@ -562,6 +614,7 @@ updates:
 ### Code Review
 
 **Review workflow code before running:**
+
 - ✅ Check for hardcoded secrets
 - ✅ Review external actions used
 - ✅ Verify input validation
@@ -569,6 +622,7 @@ updates:
 - ✅ Review permissions requested
 
 **Red flags:**
+
 - ❌ Hardcoded credentials
 - ❌ `curl | bash` patterns
 - ❌ Downloading executables without verification
@@ -580,11 +634,13 @@ updates:
 **Use specific versions, not `@main`:**
 
 ❌ **Bad:**
+
 ```yaml
 - uses: actions/checkout@main  # Mutable, can change
 ```
 
 ✅ **Good:**
+
 ```yaml
 - uses: actions/checkout@v6  # Specific version
 
@@ -595,6 +651,7 @@ updates:
 ### Least Privilege Workflows
 
 **Limit workflow permissions:**
+
 ```yaml
 permissions:
   contents: read      # Read-only access to repo
@@ -607,6 +664,7 @@ permissions:
 ### Input Validation
 
 **Always validate inputs:**
+
 ```yaml
 on:
   workflow_dispatch:
@@ -661,36 +719,43 @@ jobs:
 ### Contact and Reporting
 
 **Report security issues:**
+
 - Repository security: [GitHub Security Advisories](https://github.com/andrelin/synology-github-runner/security/advisories/new)
 - Runner image issues: https://github.com/myoung34/docker-github-actions-runner/security
 
 **Don't:**
+
 - ❌ Disclose vulnerabilities publicly before patch available
 - ❌ Share exploit code publicly
 
 ## Security Best Practices Summary
 
 ### Daily
+
 - Monitor workflow runs for anomalies
 
 ### Weekly
+
 - Review GitHub Actions logs
 - Check runner resource usage
 - Verify runner is up to date
 
 ### Monthly
+
 - Update runner Docker image
 - Review security settings
 - Check for DSM updates
 - Clean and audit logs
 
 ### Quarterly
+
 - Rotate GitHub PAT (or 90 days)
 - Conduct security audit
 - Review and update workflows
 - Test incident response plan
 
 ### Annually
+
 - Comprehensive security review
 - Update security documentation
 - Review and update access controls

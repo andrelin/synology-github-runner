@@ -2,7 +2,9 @@
 
 ## Overview
 
-This guide shows how to install the GitHub self-hosted runner on your Synology NAS using **Container Manager Projects**. This method uses the Synology UI for container management while keeping your configuration in sync with the repository.
+This guide shows how to install the GitHub self-hosted runner on your Synology NAS using **Container Manager
+Projects**. This method uses the Synology UI for container management while keeping your configuration in sync with
+the repository.
 
 **Estimated time:** 15-20 minutes
 
@@ -18,6 +20,7 @@ Before starting, ensure you have:
   - Generate at: https://github.com/settings/tokens
 
 **Hardware Requirements:**
+
 - **Minimum:** 2 CPU cores, 8GB RAM, 20GB free space
 - **Recommended:** 4 CPU cores, 16GB RAM, 50GB free space
 
@@ -57,6 +60,7 @@ ls -la
 ```
 
 You should see:
+
 - `docker-compose.yml` - Runner configuration
 - `.env.example` - Configuration template
 - `scripts/` - Monitoring and setup scripts
@@ -104,6 +108,7 @@ GRADLE_OPTS=-Xmx3g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
 ```
 
 **Resource Tuning Guide:**
+
 - **2-core/8GB NAS:** Use defaults (5g memory, -Xmx3g)
 - **4-core/16GB NAS:** `RUNNER_MEMORY=10g`, `GRADLE_OPTS=-Xmx6g ...`
 - **4-core/8GB NAS (tight):** `RUNNER_MEMORY=4g`, `GRADLE_OPTS=-Xmx2g ...`
@@ -129,6 +134,7 @@ ls -la
 ```
 
 You should see:
+
 - `workspace/` - Runner working directory (gitignored)
 - `cache/` - Build cache directory (gitignored)
 - `.env` - Your secrets (gitignored)
@@ -177,6 +183,7 @@ Now use the Synology Container Manager UI:
    - Click **Done**
 
 The Container Manager will:
+
 - Read the `docker-compose.yml` file
 - Read the `.env` file for secrets
 - Create the container
@@ -198,7 +205,8 @@ The Container Manager will:
 2. Click **Details** button
 3. Go to **Log** tab
 4. Look for:
-   ```
+
+   ```text
    ✓ Runner successfully configured
    ✓ Runner listener started successfully
    ```
@@ -242,16 +250,19 @@ jobs:
 ### Starting/Stopping via Container Manager
 
 **Stop Runner:**
+
 1. Container Manager → Container
 2. Select `github-runner`
 3. Click **Stop** (square icon)
 
 **Start Runner:**
+
 1. Container Manager → Container
 2. Select `github-runner`
 3. Click **Start** (play icon)
 
 **Restart Runner:**
+
 1. Container Manager → Container
 2. Select `github-runner`
 3. Click **Restart** (circular arrow icon)
@@ -261,11 +272,13 @@ jobs:
 If you update `.env` or pull new changes from git:
 
 **Option 1: Via Container Manager UI**
+
 1. Project → `github-runner` project
 2. Click **Build** button
 3. Container Manager will recreate the container with new config
 
 **Option 2: Via SSH (if preferred)**
+
 ```bash
 ssh admin@<your-nas-ip>
 cd /volume1/docker/synology-github-runner
@@ -280,12 +293,14 @@ docker-compose up -d
 When new versions are released:
 
 1. **SSH into Synology:**
+
    ```bash
    ssh admin@<your-nas-ip>
    cd /volume1/docker/synology-github-runner
    ```
 
 2. **Pull latest changes:**
+
    ```bash
    git pull origin main
    ```
@@ -308,6 +323,7 @@ When new versions are released:
 To update the runner Docker image to latest:
 
 **Via Container Manager UI:**
+
 1. Container → `github-runner` container
 2. Click **Stop**
 3. Registry → Search `myoung34/github-runner`
@@ -319,7 +335,7 @@ To update the runner Docker image to latest:
 
 After installation:
 
-```
+```text
 /volume1/docker/synology-github-runner/  # Repository root
 ├── .git/                                # Git metadata
 ├── .env                                 # Your secrets (gitignored)
@@ -340,12 +356,14 @@ After installation:
 ## Container Manager Best Practices
 
 **✅ DO:**
+
 - Use Project tab for managing compose-based containers
 - Use Container tab for viewing status and logs
 - Update configuration via SSH + git pull
 - Rebuild project after config changes
 
 **❌ DON'T:**
+
 - Don't edit docker-compose.yml in Container Manager UI
 - Don't manually create containers for compose projects
 - Don't delete workspace/ or cache/ directories
@@ -358,6 +376,7 @@ After installation:
 **Problem:** `bash: git: command not found`
 
 **Solution:**
+
 1. DSM → Package Center
 2. Search "Git Server"
 3. Install and retry
@@ -367,6 +386,7 @@ After installation:
 **Problem:** Runner doesn't show in GitHub UI
 
 **Solution:**
+
 1. Container Manager → Container → `github-runner` → **Details** → **Log**
 2. Check for errors
 3. Verify `.env` has correct `REPO_URL` and `GITHUB_PAT`
@@ -379,6 +399,7 @@ After installation:
 **Problem:** Container status is "Exited" instead of "Running"
 
 **Solution:**
+
 1. View logs: Container → Details → Log
 2. Common issues:
    - Invalid `GITHUB_PAT`
@@ -393,13 +414,16 @@ After installation:
 **Problem:** Workflows fail with OOM errors
 
 **Solution:**
+
 1. SSH and edit `.env`:
+
    ```bash
    cd /volume1/docker/synology-github-runner
    nano .env
    ```
 
 2. Increase memory:
+
    ```bash
    RUNNER_MEMORY=8g  # Increase from 5g
    GRADLE_OPTS=-Xmx5g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
@@ -413,7 +437,9 @@ After installation:
 **Problem:** Container Manager fails to build project
 
 **Solution:**
+
 1. Check docker-compose.yml syntax:
+
    ```bash
    ssh admin@<your-nas-ip>
    cd /volume1/docker/synology-github-runner
@@ -421,12 +447,14 @@ After installation:
    ```
 
 2. Check .env file exists:
+
    ```bash
    ls -la .env
    cat .env
    ```
 
 3. Check workspace/cache directories exist:
+
    ```bash
    ls -la workspace/ cache/
    ```
@@ -434,6 +462,7 @@ After installation:
 ## Security Best Practices
 
 1. **Secure .env file:**
+
    ```bash
    chmod 600 .env
    chown admin:administrators .env

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added (2026-01-30)
+
 - **AI Code Review:** Pre-installed Anthropic Python SDK (v0.72.0)
 - **Custom Docker Image:** Dockerfile extending myoung34/github-runner:latest
 - **Build Process:** Integrated into docker-compose.yml with automatic image building
@@ -23,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Utility Script:** Claude Code Review dependency installer
 
 ### Added (2026-01-29)
+
 - **Core Infrastructure:**
   - Docker Compose configuration with security hardening
   - Configurable resource limits via environment variables
@@ -47,12 +49,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Smart concurrency control for resource-constrained runners
 
 ### Changed
+
 - **Docker Compose:** Now builds custom image instead of using base image directly
 - **Image Tagging:** Tagged as `synology-github-runner:latest` for easy identification
 - **CI Optimization:** Quality and security workflows skip execution for docs-only changes
 - **Configuration:** Simplified docker-compose.yml from 120 to 53 lines (Synology-compatible)
 
 ### Features
+
 - 🚀 Quick setup with Container Manager Projects
 - 🔒 Security hardened (minimal privileges, no-new-privileges flag)
 - 📊 Built-in monitoring with health checks and dashboard

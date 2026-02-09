@@ -46,6 +46,7 @@ nano .env
 ```
 
 **Required settings:**
+
 ```bash
 REPO_URL=https://github.com/your-username/your-repo
 GITHUB_PAT=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -54,6 +55,7 @@ GITHUB_PAT=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 Save and exit (Ctrl+X, Y, Enter).
 
 **Secure the file:**
+
 ```bash
 chmod 600 .env
 ```
@@ -75,6 +77,7 @@ mkdir -p workspace cache
 4. Click **Next** → **Next** → **Done**
 
 Container Manager will:
+
 - Build the custom runner image (includes Anthropic SDK for Claude Code Review)
 - Start the runner automatically
 
@@ -83,13 +86,16 @@ Container Manager will:
 ### Step 5: Verify (30 seconds)
 
 **Check Container:**
+
 - Container Manager → Container → `github-runner` should show **Running**
 
 **Check GitHub:**
+
 - Go to your repository → **Settings → Actions → Runners**
 - Your runner should show as **Idle** (green circle)
 
 **Check Logs:**
+
 ```bash
 # Via SSH (optional)
 cd /volume1/docker/synology-github-runner
@@ -97,7 +103,8 @@ docker-compose logs -f
 ```
 
 Look for:
-```
+
+```text
 ✓ Runner successfully configured
 ✓ Runner listener started successfully
 ```
@@ -132,6 +139,7 @@ jobs:
 ### Tune Your Setup
 
 See [Configuration Guide](03-CONFIGURATION.md) to:
+
 - Optimize resource limits for your hardware
 - Add custom runner labels
 - Configure security hardening
@@ -149,6 +157,7 @@ jobs:
 ### Set Up Monitoring
 
 See [Monitoring Guide](04-MONITORING.md) to:
+
 - Configure health checks
 - Set up automated alerts
 - View real-time dashboard
@@ -160,6 +169,7 @@ See [Monitoring Guide](04-MONITORING.md) to:
 **Problem:** Runner doesn't show in GitHub Settings → Actions → Runners
 
 **Solution:**
+
 1. Check container logs: Container Manager → `github-runner` → Details → Log
 2. Verify `GITHUB_PAT` is correct and not expired
 3. Verify `REPO_URL` is correct (must include https://)
@@ -170,6 +180,7 @@ See [Monitoring Guide](04-MONITORING.md) to:
 **Problem:** Container status is "Exited" instead of "Running"
 
 **Solution:**
+
 1. View logs: Container Manager → `github-runner` → Details → Log
 2. Common causes:
    - Invalid GitHub PAT (expired or wrong scopes)
@@ -183,6 +194,7 @@ See [Monitoring Guide](04-MONITORING.md) to:
 
 **Solution:**
 Edit `.env` and increase memory:
+
 ```bash
 RUNNER_MEMORY=8g  # Increase from default 5g
 GRADLE_OPTS=-Xmx5g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
@@ -192,19 +204,35 @@ Rebuild in Container Manager: Project → `github-runner` → Build
 
 ## Getting Help
 
-- 📖 [Full Documentation](README.md)
+- 📖 [Full Documentation](../README.md)
 - 🔧 [Troubleshooting Guide](05-TROUBLESHOOTING.md)
 - 🐛 [Report Issues](https://github.com/andrelin/synology-github-runner/issues)
 
 ## Congratulations! 🎉
 
-You now have unlimited GitHub Actions minutes on your Synology NAS!
+Your self-hosted GitHub Actions runner is now active on your Synology NAS!
+
+**What you've gained:**
+
+- 💰 **Zero per-minute costs** for private repositories (eliminates $0.008/minute charges)
+
+**What you've traded:**
+
+- 🔧 **Convenience** - You now own maintenance, monitoring, and troubleshooting
+- 📊 **Performance** - Hardware-dependent; may be faster, comparable, or slower than GitHub-hosted
+- 🚦 **Parallelism** - This setup runs a single runner; you could run multiple with sufficient hardware, but
+  most consumer NAS devices run one
 
 **Actual time to set up:** 3-5 minutes (if you have prerequisites ready)
+
+> **⚠️ Important:** If you're using this for **public repositories**,
+> you've gained nothing (public repos already have unlimited free minutes on GitHub-hosted runners).
+> Self-hosting only makes sense for private repos exceeding the free tier.
 
 ---
 
 **Next steps:**
+
 - [Prerequisites Guide](01-PREREQUISITES.md) - Detailed requirements
 - [Installation Guide](02-INSTALLATION.md) - Step-by-step with explanations
 - [Configuration Guide](03-CONFIGURATION.md) - Customize your setup

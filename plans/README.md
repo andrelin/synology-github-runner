@@ -7,11 +7,15 @@ This directory contains the planning documents and implementation history for th
 Plans are organized by priority and dependencies. Complete them in order for the best experience.
 
 ### [plan-1-repository-integration.md](plan-1-repository-integration.md)
+
 **🟢 Complete (Simplified) - 2026-01-29**
 
-Repository docker-compose.yml now matches production Synology configuration. Only remaining task is creating `.env` file on Synology to separate secrets from configuration.
+Repository docker-compose.yml now matches production Synology configuration.
+Only remaining task is creating `.env` file on Synology to separate secrets from
+configuration.
 
 **What Was Completed:**
+
 - ✅ Updated docker-compose.yml to match production Synology setup
 - ✅ Simplified from 120 lines to 48 lines (Synology-compatible syntax)
 - ✅ Made all resource limits configurable via .env file
@@ -20,6 +24,7 @@ Repository docker-compose.yml now matches production Synology configuration. Onl
 - ✅ Container Manager Project workflow documented
 
 **Remaining:**
+
 - [ ] Follow installation guide to create `.env` file on Synology
 - [ ] Create Container Manager Project pointing to repository
 
@@ -29,16 +34,19 @@ Repository docker-compose.yml now matches production Synology configuration. Onl
 ---
 
 ### [plan-2-monitoring-setup.md](plan-2-monitoring-setup.md)
+
 **🟡 Ready to Start**
 
 Deploy monitoring scripts and configure automated health checks with DSM Task Scheduler.
 
 **Prerequisites:**
+
 - ✅ Plan 1 complete (docker-compose.yml matches production)
 - ✅ Monitoring scripts exist (runner-health-check.sh, runner-dashboard.sh)
 - ✅ Documentation exists (docs/04-MONITORING.md)
 
 **What's Needed:**
+
 - Deploy scripts to NAS
 - Configure DSM Task Scheduler
 - Set up email alerts (optional)
@@ -50,11 +58,13 @@ Deploy monitoring scripts and configure automated health checks with DSM Task Sc
 ---
 
 ### [plan-3-repository-workflows.md](plan-3-repository-workflows.md)
+
 **🟢 Complete - 2026-01-30**
 
 CI/CD workflows for this repository ensuring code quality, security, and reliability.
 
 **Completed Deliverables:**
+
 - ✅ `.github/workflows/quality.yml` - Shellcheck, Docker, Markdown, Spell check
 - ✅ `.github/workflows/security.yml` - Gitleaks, Trivy, Privacy validation
 - ✅ `.github/workflows/weekly-link-check.yml` - External link validation
@@ -70,11 +80,13 @@ CI/CD workflows for this repository ensuring code quality, security, and reliabi
 ---
 
 ### [plan-4-documentation-guides.md](plan-4-documentation-guides.md)
+
 **🟢 Complete - 2026-01-30**
 
 Comprehensive documentation and ready-to-use workflow examples for users.
 
 **Completed Deliverables:**
+
 - ✅ `docs/00-QUICK-START.md` - 5-minute TL;DR guide
 - ✅ `docs/01-PREREQUISITES.md` - Hardware/software requirements
 - ✅ `docs/02-INSTALLATION.md` - Step-by-step installation
@@ -97,23 +109,27 @@ Comprehensive documentation and ready-to-use workflow examples for users.
 ---
 
 ### [plan-6-multi-repo-runner.md](plan-6-multi-repo-runner.md)
+
 **🔴 Not Started**
 
 Investigate and document how to configure a single runner to serve multiple repositories under a personal GitHub account.
 
 **Goals:**
+
 - Research how GitHub runners work with multiple repos
 - Test both personal account and organization-level approaches
 - Document simplest working solution with step-by-step instructions
 - Provide migration guide from single-repo to multi-repo setup
 
 **Key Questions:**
+
 - Can repository-level runner serve multiple repos in personal account?
 - Should users create a GitHub Organization?
 - What are pros/cons of each approach?
 - How do concurrent jobs from different repos interact?
 
 **Deliverables:**
+
 - `docs/09-MULTI-REPO-SETUP.md` - Complete multi-repo guide
 - Updated configuration documentation
 - Tested migration path
@@ -125,6 +141,7 @@ Investigate and document how to configure a single runner to serve multiple repo
 ---
 
 ### [plan-5-restart-reliability.md](plan-5-restart-reliability.md)
+
 **🔴 Not Started - Critical Issue**
 
 Fix runner crash-loop after Synology NAS restarts. Currently requires manual intervention (delete container + rebuild).
@@ -133,11 +150,13 @@ Fix runner crash-loop after Synology NAS restarts. Currently requires manual int
 **Duration:** 2-3 hours
 
 **Problem:**
+
 - Runner enters crash-loop after NAS reboot
 - Container repeatedly restarts but doesn't recover
 - Requires manual deletion and rebuild of container
 
 **Proposed Solutions:**
+
 - Enhanced health checks with longer start period
 - Initialization script with pre-checks
 - Improved restart policy with delays
@@ -149,9 +168,12 @@ Fix runner crash-loop after Synology NAS restarts. Currently requires manual int
 
 ### [implementation-history.md](implementation-history.md)
 
-Complete implementation history from the original Planechaser project, documenting the journey from initial planning through completion of foundational phases.
+Complete implementation history from the original Planechaser project,
+documenting the journey from initial planning through completion of foundational
+phases.
 
 **Original Phases Completed:**
+
 - ✅ Phase 1: Preparation & Planning
 - ✅ Phase 2: Docker Setup
 - ✅ Phase 3: Runner Installation
@@ -168,6 +190,7 @@ This document is kept for historical reference and lessons learned.
 ### 2026-01-30: Claude Code Review Support
 
 **Added AI-Powered Code Review Capabilities:**
+
 - ✅ Created custom Dockerfile extending `myoung34/github-runner:latest`
 - ✅ Pre-installed Anthropic Python SDK (v0.72.0) for Claude Code Review
 - ✅ Updated docker-compose.yml to build custom image
@@ -178,12 +201,14 @@ This document is kept for historical reference and lessons learned.
 - ✅ Updated CHANGELOG for v1.1.0 release
 
 **Prerequisites Verified (in runner image):**
+
 - ✅ Python 3.8.10 (compatible with Anthropic SDK)
 - ✅ GitHub CLI 2.86.0 (for PR interactions)
 - ✅ pip 20.0.2 (for package management)
 - ✅ Anthropic SDK 0.72.0 (pre-installed)
 
 **Benefits:**
+
 - No runtime dependency installation needed
 - Faster workflow execution (dependencies ready)
 - Supports AI-powered code review out of the box
@@ -192,6 +217,7 @@ This document is kept for historical reference and lessons learned.
 ### 2026-01-29: Repository Cleanup & Alignment
 
 **Repository Cleanup:**
+
 - ✅ Squashed commit history (10 commits → 2 commits)
 - ✅ Fixed broken .gitignore (leading spaces prevented all patterns from working)
 - ✅ Cleaned up empty directories (removed config/, added .gitkeep files)
@@ -200,6 +226,7 @@ This document is kept for historical reference and lessons learned.
 - ✅ Created comprehensive installation guide (478 lines)
 
 **Configuration Improvements:**
+
 - ✅ Simplified docker-compose.yml (120 lines → 48 lines, now 53 with build)
 - ✅ Removed unnecessary features (networks, healthcheck, logging, read_only)
 - ✅ Added environment variable support for all configurable values
@@ -207,6 +234,7 @@ This document is kept for historical reference and lessons learned.
 - ✅ Documented Container Manager Project approach
 
 **Documentation Added:**
+
 - ✅ `docs/02-INSTALLATION.md` - Complete installation guide
   - Git-based repository cloning
   - Container Manager Project creation
@@ -243,9 +271,11 @@ The implementation plans serve multiple purposes:
 
 ### Keeping Plans Updated
 
-⚠️ **CRITICAL:** Always keep plans up to date as you work. See [CLAUDE.md](../CLAUDE.md) for detailed guidance on updating plans.
+⚠️ **CRITICAL:** Always keep plans up to date as you work. See
+[CLAUDE.md](../CLAUDE.md) for detailed guidance on updating plans.
 
 **When to Update:**
+
 - Starting a plan (🔴 → 🟡)
 - Completing tasks (check boxes)
 - Finishing a plan (🟡 → 🟢)
@@ -265,11 +295,13 @@ To reach version 1.0.0, complete these plans in order:
 7. 🔄 **Final Review** - Test everything, polish, prepare release
 
 **Priority order:**
+
 - **Must complete:** Plans 1, 2, 5 (core functionality + reliability)
 - **Strongly recommended:** Plan 3 (quality gates for contributions)
 - **Nice to have:** Plan 4 completion (comprehensive docs and examples)
 
 **Critical Path:**
+
 - Plan 1 (mostly done) → Plan 2 → Plan 5 (core infrastructure + monitoring + reliability)
 - Plan 3 can start anytime (needs working runner for CI/CD)
 - Plan 4 is ongoing (documentation work)
@@ -278,9 +310,12 @@ To reach version 1.0.0, complete these plans in order:
 
 ## From Planechaser Project
 
-This infrastructure was originally built to support the Planechaser project (a Kotlin Multiplatform app) and has been extracted into its own repository for reusability and community benefit.
+This infrastructure was originally built to support the Planechaser project (a
+Kotlin Multiplatform app) and has been extracted into its own repository for
+reusability and community benefit.
 
-The architecture and patterns developed here are applicable to any GitHub repository needing self-hosted runners on resource-constrained hardware.
+The architecture and patterns developed here are applicable to any GitHub
+repository needing self-hosted runners on resource-constrained hardware.
 
 ## Contributing to Plans
 

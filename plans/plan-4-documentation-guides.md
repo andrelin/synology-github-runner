@@ -9,7 +9,9 @@
 
 ## Overview
 
-Create comprehensive documentation, guides, and workflow examples. This includes both instructional documentation for setup/usage and practical workflow examples that users can copy and customize for their projects.
+Create comprehensive documentation, guides, and workflow examples. This includes
+both instructional documentation for setup/usage and practical workflow examples
+that users can copy and customize for their projects.
 
 ## Goals
 
@@ -62,6 +64,7 @@ Create comprehensive documentation, guides, and workflow examples. This includes
 ### 🔲 Future Enhancements (Not in Plan 4 Scope)
 
 **Advanced Examples (Future):**
+
 - `monorepo-ci.yml` - Monorepo with path filtering
 - `release.yml` - Automated releases
 - `performance.yml` - Performance testing
@@ -77,6 +80,7 @@ Create the core documentation that users need to get started.
 **File:** `docs/00-QUICK-START.md`
 
 **Sections:**
+
 - TL;DR (3 steps to get running)
 - Prerequisites checklist
 - Quick setup commands
@@ -84,6 +88,7 @@ Create the core documentation that users need to get started.
 - Next steps
 
 **Content Requirements:**
+
 - No more than 2 pages
 - Copy-paste commands
 - Assumes reader has basic Docker knowledge
@@ -94,6 +99,7 @@ Create the core documentation that users need to get started.
 **File:** `docs/01-PREREQUISITES.md`
 
 **Sections:**
+
 - Hardware requirements (with minimum/recommended specs)
 - Software requirements (DSM version, Docker, etc.)
 - Network requirements
@@ -101,6 +107,7 @@ Create the core documentation that users need to get started.
 - Checklist of prerequisites
 
 **Content Requirements:**
+
 - Clear minimum vs. recommended specs
 - Links to external resources
 - Troubleshooting common prerequisite issues
@@ -110,6 +117,7 @@ Create the core documentation that users need to get started.
 **File:** `docs/02-INSTALLATION.md`
 
 **Sections:**
+
 - Preparation (clone repo, create PAT)
 - Container Manager setup
 - Configuration file creation
@@ -118,6 +126,7 @@ Create the core documentation that users need to get started.
 - Post-installation checks
 
 **Content Requirements:**
+
 - Step-by-step with screenshots where helpful
 - Command-line and UI approaches
 - Verification after each major step
@@ -128,6 +137,7 @@ Create the core documentation that users need to get started.
 **File:** `docs/03-CONFIGURATION.md`
 
 **Sections:**
+
 - Environment variables reference
 - Resource limits tuning
 - Security options explained
@@ -137,6 +147,7 @@ Create the core documentation that users need to get started.
 - Configuration examples for different scenarios
 
 **Content Requirements:**
+
 - Detailed explanation of each .env variable
 - When to tune resource limits
 - Security hardening options
@@ -149,6 +160,7 @@ Create the core documentation that users need to get started.
 **File:** `docs/05-TROUBLESHOOTING.md`
 
 **Sections:**
+
 - Diagnostic commands
 - Common issues and solutions
 - Runner not appearing in GitHub
@@ -160,6 +172,7 @@ Create the core documentation that users need to get started.
 - When to ask for help
 
 **Content Requirements:**
+
 - Problem -> Diagnosis -> Solution format
 - Include actual error messages
 - Link to relevant documentation
@@ -170,6 +183,7 @@ Create the core documentation that users need to get started.
 **File:** `docs/06-MAINTENANCE.md`
 
 **Sections:**
+
 - Updating runner image
 - Updating docker-compose configuration
 - Log management
@@ -179,6 +193,7 @@ Create the core documentation that users need to get started.
 - Scheduled maintenance tasks
 
 **Content Requirements:**
+
 - Update procedures with zero downtime
 - Backup strategies
 - Cleanup scripts
@@ -189,6 +204,7 @@ Create the core documentation that users need to get started.
 **File:** `docs/07-SECURITY.md`
 
 **Sections:**
+
 - Security hardening checklist
 - PAT management best practices
 - Container security options
@@ -199,6 +215,7 @@ Create the core documentation that users need to get started.
 - Incident response
 
 **Content Requirements:**
+
 - Security best practices
 - Compliance considerations
 - Regular security review checklist
@@ -209,6 +226,7 @@ Create the core documentation that users need to get started.
 **File:** `docs/08-WORKFLOWS.md`
 
 **Sections:**
+
 - How to configure workflows for self-hosted runners
 - Runner labels and selection
 - Resource optimization patterns
@@ -219,6 +237,7 @@ Create the core documentation that users need to get started.
 - Performance tuning
 
 **Content Requirements:**
+
 - Workflow configuration examples
 - Resource optimization techniques
 - Integration with existing CI/CD
@@ -231,6 +250,7 @@ Create the core documentation that users need to get started.
 **File:** `docs/FAQ.md`
 
 **Sections:**
+
 - General questions (cost, benefits, etc.)
 - Installation questions
 - Configuration questions
@@ -239,6 +259,7 @@ Create the core documentation that users need to get started.
 - Security questions
 
 **Content Requirements:**
+
 - Answers to common questions from issues/discussions
 - Clear, concise answers
 - Links to relevant documentation
@@ -248,6 +269,7 @@ Create the core documentation that users need to get started.
 **File:** `CONTRIBUTING.md`
 
 **Sections:**
+
 - How to contribute
 - Code of conduct
 - Development setup
@@ -257,6 +279,7 @@ Create the core documentation that users need to get started.
 - Commit message conventions
 
 **Content Requirements:**
+
 - Clear contribution process
 - Reference to CLAUDE.md for development
 - Issue templates
@@ -269,6 +292,7 @@ Create the core documentation that users need to get started.
 **File:** `README.md` (enhancement)
 
 **Enhancements:**
+
 - Add badges (status, license, version)
 - Add table of contents
 - Add feature highlights with emojis
@@ -283,12 +307,14 @@ Create the core documentation that users need to get started.
 **File:** `CHANGELOG.md`
 
 **Structure:**
+
 - Follow Keep a Changelog format
 - Version history with dates
 - Added/Changed/Deprecated/Removed/Fixed/Security sections
 - Links to releases
 
 **Initial Content:**
+
 - Document v1.0.0 features
 - Track all future changes
 
@@ -299,6 +325,7 @@ Create comprehensive workflow examples that users can copy and customize.
 #### 6.1: Create Examples Directory (15 minutes)
 
 **Tasks:**
+
 1. [ ] Create `examples/workflows/` directory
 2. [ ] Create `examples/workflows/README.md` with overview
 3. [ ] Set up example templates structure
@@ -306,6 +333,7 @@ Create comprehensive workflow examples that users can copy and customize.
 #### 6.2: Essential Workflow Examples (2 hours)
 
 **Tasks:**
+
 1. [ ] Create `basic-ci.yml` - Simple CI workflow with comments
 2. [ ] Create `orchestrator.yml` - Sequential job pattern
 3. [ ] Create `docker-build.yml` - Docker build with caching
@@ -313,6 +341,7 @@ Create comprehensive workflow examples that users can copy and customize.
 5. [ ] Document customization points
 
 **Example Structure:**
+
 ```yaml
 # examples/workflows/basic-ci.yml
 name: Basic CI
@@ -343,6 +372,7 @@ jobs:
 #### 6.3: Language-Specific Examples (2 hours)
 
 **Tasks:**
+
 1. [ ] Create `nodejs-ci.yml` with npm/yarn caching
 2. [ ] Create `python-ci.yml` with venv setup
 3. [ ] Create `gradle-ci.yml` with memory optimization
@@ -350,6 +380,7 @@ jobs:
 5. [ ] Add README for each with usage guide
 
 **Focus:**
+
 - Dependency caching strategies
 - Memory optimization
 - Build time improvements
@@ -358,6 +389,7 @@ jobs:
 #### 6.4: Advanced Examples (1.5 hours)
 
 **Tasks:**
+
 1. [ ] Create `monorepo-ci.yml` with path filtering
 2. [ ] Create `release.yml` with semantic versioning
 3. [ ] Create `performance.yml` for benchmarking
@@ -366,12 +398,14 @@ jobs:
 #### 6.5: Examples Documentation (30 minutes)
 
 **Tasks:**
+
 1. [ ] Write comprehensive `examples/workflows/README.md`
 2. [ ] Create workflow comparison table
 3. [ ] Add troubleshooting section
 4. [ ] Document customization guide
 
 **Deliverables:**
+
 - 10+ working workflow examples
 - Clear documentation for each
 - Comparison table
@@ -380,6 +414,7 @@ jobs:
 ### Step 7: Documentation Polish (1-2 hours)
 
 **Tasks:**
+
 1. [ ] Review all documentation for consistency
 2. [ ] Ensure cross-references are correct
 3. [ ] Check for broken links
@@ -390,6 +425,7 @@ jobs:
 8. [ ] Get feedback from test users
 
 **Quality Checklist:**
+
 - Consistent formatting across all docs
 - No broken internal or external links
 - All code examples tested
@@ -415,18 +451,21 @@ jobs:
 ## Documentation Style Guide
 
 ### Structure
+
 - Use numbered lists for sequential steps
 - Use bullet points for non-sequential items
 - Include code blocks with syntax highlighting
 - Add verification steps after major sections
 
 ### Tone
+
 - Clear and direct
 - Assume beginner knowledge for main guides
 - Technical detail in advanced sections
 - Friendly but professional
 
 ### Formatting
+
 ```markdown
 ## Section Title
 
@@ -449,7 +488,8 @@ Brief introduction to what this section covers.
 > **💡 Tip:** Helpful additional information
 > **⚠️ Warning:** Important cautionary note
 > **✅ Success:** What success looks like
-```
+
+```text
 
 ### Code Examples
 - Always include comments

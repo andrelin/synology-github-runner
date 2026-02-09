@@ -1,13 +1,14 @@
 # Prerequisites
 
-Before installing the GitHub self-hosted runner on your Synology NAS, ensure you meet all requirements and have necessary access credentials.
+Before installing the GitHub self-hosted runner on your Synology NAS, ensure you meet all requirements and have
+necessary access credentials.
 
 ## Hardware Requirements
 
 ### Minimum Requirements
 
 | Component | Minimum | Notes |
-|-----------|---------|-------|
+| --------- | ------- | ----- |
 | **CPU** | 2 cores | Intel/AMD x86_64 architecture |
 | **RAM** | 8 GB | For basic workflows (linting, tests) |
 | **Storage** | 20 GB free | For runner workspace and Docker cache |
@@ -18,7 +19,7 @@ Before installing the GitHub self-hosted runner on your Synology NAS, ensure you
 ### Recommended Requirements
 
 | Component | Recommended | Notes |
-|-----------|-------------|-------|
+| --------- | ----------- | ----- |
 | **CPU** | 4+ cores | Better for parallel builds |
 | **RAM** | 16 GB | For Docker builds and heavy frameworks |
 | **Storage** | 50+ GB free | More cache space = faster builds |
@@ -31,7 +32,7 @@ Before installing the GitHub self-hosted runner on your Synology NAS, ensure you
 These Synology models have been tested and confirmed working:
 
 | Model | CPU | RAM | Status | Notes |
-|-------|-----|-----|--------|-------|
+| ----- | --- | --- | ------ | ----- |
 | **DS920+** | 4-core Intel Celeron J4125 | 8-16 GB | ✅ **Excellent** | Recommended for production |
 | **DS220+** | 2-core Intel Celeron J4025 | 6-8 GB | ✅ **Good** | Requires resource tuning |
 | **DS718+** | 2-core Intel Celeron J3455 | 6 GB | ⚠️ **Works** | Basic workflows only |
@@ -47,11 +48,13 @@ These Synology models have been tested and confirmed working:
 - **Architecture:** x86_64 (Intel/AMD processors only)
 
 **Check your DSM version:**
+
 1. Open DSM
 2. Control Panel → Info Center
 3. Look for "DSM Version"
 
 **To update DSM:**
+
 1. Control Panel → Update & Restore
 2. Check for updates and install
 
@@ -60,12 +63,14 @@ These Synology models have been tested and confirmed working:
 Container Manager (formerly Docker) must be installed:
 
 **Installation:**
+
 1. Open **Package Center** in DSM
 2. Search for "**Container Manager**"
 3. Click **Install**
 4. Wait for installation to complete
 
 **Verify installation:**
+
 1. Open Container Manager from main menu
 2. Should see "Container", "Registry", "Project" tabs
 
@@ -74,12 +79,14 @@ Container Manager (formerly Docker) must be installed:
 Git is required to clone the repository:
 
 **Installation:**
+
 1. Open **Package Center** in DSM
 2. Search for "**Git Server**"
 3. Click **Install**
 
 **Verify installation:**
 SSH into your NAS and run:
+
 ```bash
 which git
 # Should output: /usr/bin/git
@@ -90,12 +97,14 @@ which git
 SSH must be enabled to install and configure the runner:
 
 **Enable SSH:**
+
 1. Open **Control Panel** → **Terminal & SNMP**
 2. Enable **SSH service**
 3. Port: 22 (default) or custom port
 4. Apply
 
 **Test SSH access:**
+
 ```bash
 # From your computer
 ssh admin@<your-nas-ip>
@@ -108,11 +117,13 @@ If successful, you'll see a login prompt for your NAS.
 ### Internet Access
 
 The runner needs outbound internet access to:
+
 - ✅ GitHub API (api.github.com, github.com)
 - ✅ Docker Hub (for pulling images during builds)
 - ✅ NPM, PyPI, Maven, etc. (dependency downloads)
 
 **Ports required:**
+
 - **Outbound HTTPS (443):** GitHub API, Docker Hub, package registries
 - **Outbound HTTP (80):** Package registries (fallback)
 
@@ -121,6 +132,7 @@ The runner needs outbound internet access to:
 ### Firewall / Router
 
 If you have strict firewall rules:
+
 - ✅ Allow outbound HTTPS (port 443) to all destinations
 - ✅ Allow outbound HTTP (port 80) to all destinations
 - ❌ No inbound ports required
@@ -128,6 +140,7 @@ If you have strict firewall rules:
 ### DNS Resolution
 
 Ensure your NAS can resolve DNS:
+
 ```bash
 # SSH into NAS and test
 nslookup github.com
@@ -141,6 +154,7 @@ nslookup github.com
 You need a GitHub Personal Access Token with specific scopes:
 
 **Create a token:**
+
 1. Go to: https://github.com/settings/tokens
 2. Click **Generate new token** → **Generate new token (classic)**
 3. Give it a descriptive name: `Synology Runner - <Project Name>`
@@ -152,13 +166,15 @@ You need a GitHub Personal Access Token with specific scopes:
 7. **Copy the token immediately** - you won't see it again!
 
 **Token format:** Starts with `ghp_` followed by 36 characters
-```
+
+```text
 ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 **Store securely:** Use a password manager (1Password, Bitwarden, etc.)
 
 **Security best practices:**
+
 - ✅ Use minimum required scopes (only `repo` and `workflow`)
 - ✅ Set expiration date (90 days recommended)
 - ✅ Rotate tokens regularly
@@ -170,18 +186,21 @@ ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 You need **admin access** to the repository where you want to add the runner.
 
 **Verify access:**
+
 1. Go to your repository on GitHub
 2. Click **Settings** (if you don't see this tab, you don't have admin access)
 3. Click **Actions** → **Runners**
 4. You should see "Add runner" button
 
 **For organization repositories:**
+
 - You need organization owner or repository admin permissions
 - Organization may have runner policies that restrict self-hosted runners
 
 ### Repository Type
 
 This runner works with:
+
 - ✅ **Private repositories** (requires `repo` scope on PAT)
 - ✅ **Public repositories** (requires `repo` and `workflow` scopes)
 - ✅ **Organization repositories** (with proper permissions)
@@ -197,7 +216,7 @@ This runner works with:
 ### Ongoing Usage
 
 | Component | Space Needed | Notes |
-|-----------|--------------|-------|
+| --------- | ------------ | ----- |
 | **Workspace** | 5-10 GB | Builds, checkouts, artifacts |
 | **Docker cache** | 10-20 GB | Gradle, npm, pip caches |
 | **Docker images** | 5-10 GB | Build images (Node, Python, etc.) |
@@ -206,6 +225,7 @@ This runner works with:
 **Total recommended:** 50 GB free space for comfortable operation
 
 **Monitor disk usage:**
+
 ```bash
 # Check free space
 df -h /volume1
@@ -215,6 +235,7 @@ docker system df
 ```
 
 **Clean up space:**
+
 ```bash
 # Remove unused Docker images
 docker system prune -a
@@ -228,6 +249,7 @@ rm -rf /volume1/docker/synology-github-runner/workspace/*
 ### Required Knowledge
 
 You should be comfortable with:
+
 - ✅ Basic Linux/Unix commands (cd, ls, mkdir, nano/vi)
 - ✅ SSH and terminal usage
 - ✅ Basic Docker concepts (containers, images, volumes)
@@ -236,6 +258,7 @@ You should be comfortable with:
 ### Helpful But Not Required
 
 Nice to have:
+
 - GitHub Actions workflow syntax (YAML)
 - Docker Compose
 - Shell scripting
@@ -246,6 +269,7 @@ Nice to have:
 Before proceeding to installation, verify you have:
 
 ### Hardware & Software
+
 - [ ] Synology NAS with x86_64 CPU (Intel/AMD)
 - [ ] DSM 7.0 or later installed
 - [ ] At least 2 CPU cores and 8GB RAM
@@ -255,12 +279,14 @@ Before proceeding to installation, verify you have:
 - [ ] SSH access enabled and tested
 
 ### Network & Access
+
 - [ ] NAS has internet access
 - [ ] Can access GitHub.com from NAS
 - [ ] DNS resolution working
 - [ ] No firewall blocking outbound HTTPS
 
 ### GitHub Credentials
+
 - [ ] GitHub account with access to target repository
 - [ ] Admin access to the repository
 - [ ] Personal Access Token created with `repo` and `workflow` scopes
@@ -268,6 +294,7 @@ Before proceeding to installation, verify you have:
 - [ ] Repository URL handy (https://github.com/username/repo)
 
 ### Local Computer
+
 - [ ] SSH client installed (Terminal on Mac/Linux, PuTTY on Windows)
 - [ ] Can SSH into your NAS
 - [ ] Text editor for editing .env file (or comfortable with nano/vi)
@@ -286,6 +313,7 @@ Once all prerequisites are met:
 **Problem:** Container Manager not in Package Center
 
 **Solution:**
+
 - Ensure DSM is 7.0 or later
 - Update DSM to latest version
 - Look for "Docker" instead (older DSM versions)
@@ -296,6 +324,7 @@ Once all prerequisites are met:
 **Problem:** `which git` returns nothing
 
 **Solution:**
+
 - Install Git Server from Package Center
 - Restart SSH session after installation
 - Try: `/usr/local/git/bin/git` (alternative path)
@@ -305,6 +334,7 @@ Once all prerequisites are met:
 **Problem:** Can't SSH into NAS
 
 **Solution:**
+
 - Verify SSH is enabled: Control Panel → Terminal & SNMP
 - Check port (default 22): `ssh -p <port> admin@<nas-ip>`
 - Check firewall rules: Control Panel → Security → Firewall
@@ -315,6 +345,7 @@ Once all prerequisites are met:
 **Problem:** No internet access or DNS issues
 
 **Solution:**
+
 ```bash
 # Test connectivity
 ping -c 3 github.com
@@ -327,6 +358,7 @@ nslookup github.com
 ```
 
 If any fail, check:
+
 - NAS network settings: Control Panel → Network → Network Interface
 - DNS servers: Control Panel → Network → General → DNS Server
 - Router/firewall settings

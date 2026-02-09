@@ -7,7 +7,9 @@
 
 ## Overview
 
-Set up a self-hosted GitHub Actions runner on Synology NAS to eliminate GitHub Actions minute limitations and provide unlimited CI/CD capacity for the Planechaser project.
+Set up a self-hosted GitHub Actions runner on Synology NAS to eliminate GitHub
+Actions minute limitations and provide unlimited CI/CD capacity for the
+Planechaser project.
 
 ## Prerequisites
 
@@ -19,7 +21,8 @@ Set up a self-hosted GitHub Actions runner on Synology NAS to eliminate GitHub A
 ## Hardware Configuration
 
 **Example Synology NAS Specs:**
-```
+
+```text
 ✅ DSM Version: 7.0+
 ✅ Container Manager: Running Docker containers
 ✅ CPU: 2 cores minimum
@@ -32,6 +35,7 @@ Set up a self-hosted GitHub Actions runner on Synology NAS to eliminate GitHub A
 ```
 
 **Resource Allocation Plan:**
+
 ```yaml
 Optimized for 2-core/8GB NAS:
 ├─ GitHub Runner: 5GB RAM, 1536 CPU shares (higher priority)
@@ -40,6 +44,7 @@ Optimized for 2-core/8GB NAS:
 ```
 
 **Actual Configuration:**
+
 - Container Manager Project at `/volume1/docker/github-runner/`
 - Using myoung34/github-runner:latest image
 - Repository: your-username/your-repo
@@ -51,6 +56,7 @@ Optimized for 2-core/8GB NAS:
 ### Phase 1: Preparation & Planning (30 minutes)
 
 **Objectives:**
+
 - Verify system resources
 - Generate GitHub Personal Access Token
 - Plan runner configuration
@@ -65,6 +71,7 @@ Optimized for 2-core/8GB NAS:
    - Save token securely
 
 2. **Verify NAS Resources:**
+
    ```bash
    ssh admin@<nas-ip>
    docker ps
@@ -72,6 +79,7 @@ Optimized for 2-core/8GB NAS:
    ```
 
 **Deliverables:**
+
 - GitHub PAT generated and saved
 - Resource allocation plan verified
 - Storage directories planned
@@ -79,6 +87,7 @@ Optimized for 2-core/8GB NAS:
 ### Phase 2: Docker Setup (1 hour)
 
 **Objectives:**
+
 - Configure Docker storage
 - Create persistent directories
 - Pull GitHub runner Docker image
@@ -86,6 +95,7 @@ Optimized for 2-core/8GB NAS:
 **Steps:**
 
 1. **Create storage directories:**
+
    ```bash
    ssh admin@<nas-ip>
 
@@ -99,11 +109,13 @@ Optimized for 2-core/8GB NAS:
    ```
 
 2. **Pull runner image:**
+
    ```bash
    docker pull myoung34/github-runner:latest
    ```
 
 **Deliverables:**
+
 - Storage directories created
 - Docker image downloaded
 - Permissions configured
@@ -111,6 +123,7 @@ Optimized for 2-core/8GB NAS:
 ### Phase 3: Runner Installation (2 hours)
 
 **Objectives:**
+
 - Install and configure GitHub runner
 - Register runner with repository
 - Verify connection
@@ -118,6 +131,7 @@ Optimized for 2-core/8GB NAS:
 **Steps:**
 
 1. **Start runner container:**
+
    ```bash
    # Set your GitHub PAT
    export GITHUB_PAT="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
@@ -141,6 +155,7 @@ Optimized for 2-core/8GB NAS:
    ```
 
 2. **Verify runner:**
+
    ```bash
    # Check container status
    docker ps | grep github-runner
@@ -153,6 +168,7 @@ Optimized for 2-core/8GB NAS:
    ```
 
 **Deliverables:**
+
 - Runner container running
 - Runner registered with GitHub repository
 - Connection verified
@@ -160,6 +176,7 @@ Optimized for 2-core/8GB NAS:
 ### Phase 4: Workflow Migration (2 hours)
 
 **Objectives:**
+
 - Update workflows to use self-hosted runner
 - Configure concurrency controls
 - Test workflow execution
@@ -167,6 +184,7 @@ Optimized for 2-core/8GB NAS:
 **Steps:**
 
 1. **Update workflow files:**
+
    ```yaml
    # Example: .github/workflows/shared-tests.yml
    jobs:
@@ -175,6 +193,7 @@ Optimized for 2-core/8GB NAS:
    ```
 
 2. **Add concurrency controls:**
+
    ```yaml
    concurrency:
      group: ci-${{ github.ref }}
@@ -187,6 +206,7 @@ Optimized for 2-core/8GB NAS:
    - Verify runner picks up jobs
 
 **Deliverables:**
+
 - All workflows updated
 - Concurrency groups configured
 - Successful test run completed
@@ -194,6 +214,7 @@ Optimized for 2-core/8GB NAS:
 ### Phase 5: Security Hardening (1 hour)
 
 **Objectives:**
+
 - Implement least privilege
 - Enable network isolation
 - Configure auto-updates
@@ -209,6 +230,7 @@ Optimized for 2-core/8GB NAS:
    - [ ] Monitoring configured for suspicious activity (moved to Phase 6)
 
 2. **Update runner with security settings:**
+
    ```bash
    # Stop existing runner
    docker stop github-runner
@@ -232,6 +254,7 @@ Optimized for 2-core/8GB NAS:
    ```
 
 **Deliverables:**
+
 - Security hardening completed
 - Runner configured with minimal permissions
 - Security monitoring enabled
@@ -239,6 +262,7 @@ Optimized for 2-core/8GB NAS:
 ### Phase 6: Monitoring Setup (1 hour)
 
 **Objectives:**
+
 - Create health check script
 - Schedule automated monitoring
 - Configure alerting
@@ -246,6 +270,7 @@ Optimized for 2-core/8GB NAS:
 **Steps:**
 
 1. **Create health check script:**
+
    ```bash
    # Create monitoring directory
    mkdir -p /volume1/scripts
@@ -281,6 +306,7 @@ Optimized for 2-core/8GB NAS:
    - Command: `/volume1/scripts/runner-health-check.sh`
 
 **Deliverables:**
+
 - Health check script created
 - Monitoring scheduled
 - Alerts configured
@@ -290,17 +316,20 @@ Optimized for 2-core/8GB NAS:
 ### Completed Phases
 
 **✅ Phase 1: Preparation & Planning** (Completed)
+
 - GitHub PAT generated and saved in 1Password
 - NAS resources verified (adequate CPU, RAM, and disk space)
 - Storage directories planned
 
 **✅ Phase 2: Docker Setup** (Completed)
+
 - Created `/volume1/docker/github-runner/workspace`
 - Created `/volume1/docker/github-runner/cache`
 - Pulled myoung34/github-runner:latest image
 - Set up Container Manager Project (preferred over terminal)
 
 **✅ Phase 3: Runner Installation** (Completed)
+
 - Runner container deployed via Container Manager Project
 - Resource limits configured (5GB RAM, 1536 CPU shares)
 - Other services prioritized lower than runner
@@ -308,6 +337,7 @@ Optimized for 2-core/8GB NAS:
 - Status: ✅ Idle and ready
 
 **✅ Phase 4: Workflow Migration** (Completed)
+
 - Updated 8 Linux-compatible workflows to use self-hosted runner
 - Kept 2 iOS workflows on GitHub-hosted macOS runners (continue-on-error enabled, GitHub minutes depleted)
 - Established orchestrator pattern for CI/CD:
@@ -330,6 +360,7 @@ Optimized for 2-core/8GB NAS:
   - 03.2-test-ios-app.yml (reusable: called by orchestrator, continue-on-error: true)
 
 **✅ Phase 5: Security Hardening** (Completed)
+
 - ✅ GitHub PAT scopes reduced to minimal (`repo` + `workflow` only, removed `packages:write`)
 - ✅ Container security hardening applied:
   - `security_opt: no-new-privileges:true` - Prevents privilege escalation
@@ -348,6 +379,7 @@ Optimized for 2-core/8GB NAS:
 After Phase 5 completion, discovered resource constraints requiring workflow optimization:
 
 **Issues Identified:**
+
 1. ⚠️ **Memory constraints**: Initial workflow runs hit OOM errors
    - Synology: 2-core, 8GB RAM total, runner has 5GB container limit
    - Gradle configured for 8GB heap (too large for CI)
@@ -365,6 +397,7 @@ After Phase 5 completion, discovered resource constraints requiring workflow opt
    - Only top-level workflows should have concurrency control
 
 **Actions Taken:**
+
 - ✅ Restored local dev to 8GB heap, 8 workers for M1 Max performance (gradle.properties)
 - ✅ Added GRADLE_OPTS environment variables to all self-hosted workflows:
   - 02-test-shared.yml, 03.1-test-web-app.yml, 03.3-test-android-app.yml
@@ -379,6 +412,7 @@ After Phase 5 completion, discovered resource constraints requiring workflow opt
 
 **Current Concurrency Configuration:**
 The workflows currently use separate groups from last commit (24d0cb1):
+
 - `synology-ci-builds`: CI/CD workflows (01, 02, 03.1, 03.3, 04, qodana)
 - `synology-docker-ops`: Docker promotion (05)
 - `synology-claude-{issue-number}`: Claude AI (per-issue)
@@ -387,6 +421,7 @@ The workflows currently use separate groups from last commit (24d0cb1):
 **Problem:** Different groups allow parallel execution, defeating resource constraints.
 
 **Next Steps:**
+
 1. **CRITICAL**: Fix concurrency deadlock (discovered during testing)
    - Remove concurrency groups from reusable workflows: 02, 03.1, 03.3, 04
    - Keep concurrency only on top-level workflows:
@@ -400,6 +435,7 @@ The workflows currently use separate groups from last commit (24d0cb1):
 4. Proceed to Phase 6 only after successful validation
 
 **Commits Made (Phase 5.5):**
+
 1. `93d9432` - fix: reduce Gradle memory settings for self-hosted runner (initial attempt)
 2. `1c21400` - fix: optimize memory settings for local dev and CI (proper split)
 3. `1c23a04` - fix: make Android tests sequential after Web tests
@@ -407,6 +443,7 @@ The workflows currently use separate groups from last commit (24d0cb1):
 5. `0a01840` - docs: add Phase 5.5 for resource management and concurrency tuning
 
 **⏳ Phase 6: Monitoring Setup** (Pending)
+
 - Blocked until successful workflow run validates resource configuration
 
 ## Success Criteria
@@ -422,6 +459,7 @@ The workflows currently use separate groups from last commit (24d0cb1):
 ## Future Improvements
 
 ### Documentation Enhancements
+
 - [ ] Add GitHub Actions status badges to README.md
   - CI/CD workflow status (01-test-build-and-deploy.yml)
   - Code quality status (quality-qodana.yml)
@@ -430,11 +468,13 @@ The workflows currently use separate groups from last commit (24d0cb1):
   - Links to Actions pages and registries
 
 ### Performance Optimizations
+
 - [ ] Implement Gradle build cache sharing between workflows
 - [ ] Set up Docker layer caching for faster builds
 - [ ] Consider dedicated build cache volume
 
 ### Security Enhancements
+
 - [ ] Set up GitHub Advanced Security scanning
 - [ ] Configure Dependabot for dependency updates
 - [ ] Add SBOM generation to Docker builds
@@ -446,6 +486,7 @@ The workflows currently use separate groups from last commit (24d0cb1):
 **Symptoms:** Runner offline in GitHub
 
 **Solutions:**
+
 1. Check container status: `docker ps | grep github-runner`
 2. Check logs: `docker logs github-runner`
 3. Verify GitHub PAT: Check expiration date
@@ -461,11 +502,13 @@ The workflows currently use separate groups from last commit (24d0cb1):
    - Symptom: `OOMErrorException: Not enough memory to run compilation`
    - Cause: Gradle heap size exceeds container memory limit
    - Solution: Set GRADLE_OPTS in workflow environment:
+
      ```yaml
      env:
        GRADLE_OPTS: "-Xmx3g -XX:MaxMetaspaceSize=512m"
        ORG_GRADLE_PROJECT_org.gradle.workers.max: "2"
      ```
+
    - Note: Keep local gradle.properties at 8GB for dev machine
 
 2. **Parallel Builds Exhausting Resources**
@@ -488,6 +531,7 @@ The workflows currently use separate groups from last commit (24d0cb1):
 **Symptoms:** NAS slow, other containers affected
 
 **Solutions:**
+
 1. Check CPU usage: `docker stats`
 2. Reduce runner allocation: Lower --cpus limit
 3. Use concurrency groups to prevent parallel workflows
@@ -500,6 +544,7 @@ The workflows currently use separate groups from last commit (24d0cb1):
 **Cause:** Both parent (orchestrator) and child (reusable workflow) have same concurrency group
 
 **Solution:** Only top-level workflows should have concurrency groups
+
 - ✅ Orchestrator (01-test-build-and-deploy.yml): Has concurrency group
 - ❌ Reusable workflows (02, 03.x, 04): Should NOT have concurrency groups
 - ✅ Independent workflows (qodana, claude, docker-promote): Can have their own groups

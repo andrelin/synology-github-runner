@@ -9,6 +9,14 @@ services:
     container_name: github-runner
     restart: unless-stopped
 
+    # Health check with generous startup time for post-reboot recovery
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'Runner.Listener' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s  # Give runner 2 minutes to start after reboot
+
     # Resource limits (Synology-compatible)
     # Configure these in .env file
     mem_limit: ${RUNNER_MEMORY:-5g}
@@ -47,6 +55,10 @@ services:
       - RUNNER_WORKDIR=${RUNNER_WORKDIR:-/volume1/docker/github-runner/workspace}
       # RUNNER_SCOPE: 'repo' for single repository, 'org' for organization-wide
       - RUNNER_SCOPE=${RUNNER_SCOPE:-repo}
+
+      # Restart reliability: Delay startup to allow network/volumes to be ready
+      # Particularly important after NAS reboot
+      - STARTUP_DELAY_SECONDS=${STARTUP_DELAY_SECONDS:-30}
 
     volumes:
       # Mount workspace at the same path on host and container

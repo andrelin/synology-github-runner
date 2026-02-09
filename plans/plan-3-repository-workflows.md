@@ -8,7 +8,10 @@
 
 ## Overview
 
-Implement GitHub Actions workflows for this repository to ensure code quality, security, and reliability. These workflows will run on the Synology self-hosted runner with strict resource constraints (one job at a time), making them perfect real-world examples of the patterns this repository teaches.
+Implement GitHub Actions workflows for this repository to ensure code quality,
+security, and reliability. These workflows will run on the Synology self-hosted
+runner with strict resource constraints (one job at a time), making them perfect
+real-world examples of the patterns this repository teaches.
 
 ## Goals
 
@@ -22,6 +25,7 @@ Implement GitHub Actions workflows for this repository to ensure code quality, s
 ## Critical Constraints
 
 ⚠️ **RESOURCE LIMITATIONS:**
+
 - All workflows run on Synology self-hosted runner
 - Very limited resources (1.5 CPU cores, 5GB RAM)
 - **STRICT POLICY: Only one job at a time**
@@ -51,7 +55,9 @@ jobs:
 
 ### Combined Jobs Strategy
 
-Instead of separate workflows, **combine related checks into single jobs** to minimize total job count. This reduces overhead and makes better use of limited resources.
+Instead of separate workflows, **combine related checks into single jobs** to
+minimize total job count. This reduces overhead and makes better use of limited
+resources.
 
 ## Workflows to Implement
 
@@ -62,6 +68,7 @@ Instead of separate workflows, **combine related checks into single jobs** to mi
 **Purpose:** Combined quality checks (shell, docker, docs) in a single job
 
 **Checks in ONE job:**
+
 - Shellcheck validation
 - Docker compose validation
 - Documentation link checking
@@ -69,11 +76,13 @@ Instead of separate workflows, **combine related checks into single jobs** to mi
 - Spell checking
 
 **Triggers:**
+
 - Push to main
 - Pull requests
 - Manual dispatch
 
 **Configuration:**
+
 ```yaml
 name: Quality Checks
 
@@ -152,17 +161,20 @@ jobs:
 **Purpose:** Combined security scanning (secrets, dependencies, privacy) in a single job
 
 **Checks in ONE job:**
+
 - Secret scanning (gitleaks)
 - Dependency vulnerabilities (Trivy)
 - Privacy validation (no personal info)
 - .env file protection
 
 **Triggers:**
+
 - Push to main
 - Pull requests
 - Scheduled weekly (not daily - too resource intensive)
 
 **Configuration:**
+
 ```yaml
 name: Security Scanning
 
@@ -236,13 +248,16 @@ jobs:
 
 **Purpose:** Check external links weekly (separate from PR checks)
 
-**Why separate:** External link checking is slow and can fail due to external factors. Don't block PRs on external links, but check them regularly.
+**Why separate:** External link checking is slow and can fail due to external
+factors. Don't block PRs on external links, but check them regularly.
 
 **Triggers:**
+
 - Scheduled weekly
 - Manual dispatch
 
 **Configuration:**
+
 ```yaml
 name: Weekly Link Check
 
@@ -310,6 +325,7 @@ jobs:
 ### Step 1: Setup Configuration Files (15 minutes) ✅ COMPLETE
 
 **Tasks:**
+
 1. [x] Create `.github/workflows/` directory
 2. [x] Create `.github/markdown-link-check.json` config
 3. [x] Create `.github/markdownlint.json` config
@@ -318,6 +334,7 @@ jobs:
 **Configuration files needed:**
 
 `.github/markdown-link-check.json`:
+
 ```json
 {
   "ignorePatterns": [
@@ -330,6 +347,7 @@ jobs:
 ```
 
 `.github/markdownlint.json`:
+
 ```json
 {
   "default": true,
@@ -339,6 +357,7 @@ jobs:
 ```
 
 `.github/cspell.json`:
+
 ```json
 {
   "version": "0.2",
@@ -351,6 +370,7 @@ jobs:
 ### Step 2: Quality Workflow (1 hour) ✅ COMPLETE
 
 **Tasks:**
+
 1. [x] Create `quality.yml` with combined checks
 2. [x] Test shellcheck locally first
 3. [x] Fix any issues found in existing scripts
@@ -359,6 +379,7 @@ jobs:
 6. [ ] Push and verify workflow runs successfully (will verify after push)
 
 **Verification:**
+
 - Workflow runs in <5 minutes
 - All checks pass
 - Only one job executes
@@ -366,6 +387,7 @@ jobs:
 ### Step 3: Security Workflow (1 hour) ✅ COMPLETE
 
 **Tasks:**
+
 1. [x] Create `security.yml` with combined scanning
 2. [x] Test gitleaks locally
 3. [x] Test Trivy locally
@@ -374,6 +396,7 @@ jobs:
 6. [ ] Push and verify workflow runs (will verify after push)
 
 **Verification:**
+
 - No secrets detected
 - No vulnerabilities found
 - Privacy checks pass
@@ -382,6 +405,7 @@ jobs:
 ### Step 4: Weekly Link Check (30 minutes) ✅ COMPLETE
 
 **Tasks:**
+
 1. [x] Create `weekly-link-check.yml`
 2. [x] Configure to run weekly only
 3. [x] Test manually with workflow_dispatch (will test after push)
@@ -391,6 +415,7 @@ jobs:
 ### Step 5: Documentation & Polish (1 hour) ✅ COMPLETE
 
 **Tasks:**
+
 1. [x] Add workflow status badges to README
 2. [x] Document workflow triggers in CONTRIBUTING.md (created comprehensive guide)
 3. [x] Create workflow troubleshooting guide (included in CONTRIBUTING.md)
@@ -398,6 +423,7 @@ jobs:
 5. [ ] Verify workflows don't conflict (will verify after push)
 
 **Deliverables:**
+
 - README shows workflow status
 - Contributing guide updated
 - All workflows passing
@@ -422,11 +448,13 @@ jobs:
 These workflows demonstrate critical patterns for resource-constrained environments:
 
 1. **Smart Concurrency Control:**
+
    ```yaml
    concurrency:
      group: ${{ github.workflow }}-${{ github.ref }}
      cancel-in-progress: true
    ```
+
    - Per-workflow, per-branch concurrency groups
    - Cancels older runs of same workflow on same branch
    - Different workflows and branches remain in queue
@@ -475,12 +503,14 @@ These workflows demonstrate critical patterns for resource-constrained environme
 ## Notes
 
 **Resource Constraints are a Feature:**
+
 - These workflows demonstrate EXACTLY what users need to do
 - Strict concurrency control shows real-world patterns
 - Combined jobs show how to minimize overhead
 - Every workflow is a working example
 
 **Key Principles:**
+
 - Only 3 workflows (minimal job count)
 - Combined checks in single jobs (efficiency)
 - Strict concurrency control (one job at a time)
@@ -489,6 +519,7 @@ These workflows demonstrate critical patterns for resource-constrained environme
 - Scheduled jobs during low-traffic times (2-3 AM Sunday)
 
 **Why This Approach:**
+
 - Respects limited resources (1.5 CPU, 5GB RAM)
 - Minimizes queue wait times
 - Demonstrates best practices for users
@@ -498,6 +529,7 @@ These workflows demonstrate critical patterns for resource-constrained environme
 ## Future Enhancements
 
 After Plan 3 completion:
+
 - Automated dependency updates (Dependabot/Renovate)
 - Automated release workflow
 - Performance regression testing
