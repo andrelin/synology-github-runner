@@ -154,19 +154,19 @@ configure_env() {
     echo
     if [[ ! $REPLY =~ ^[Nn]$ ]]; then
         # Get repository URL
-        read -p "GitHub repository URL (https://github.com/owner/repo): " REPO_URL
+        read -r -p "GitHub repository URL (https://github.com/owner/repo): " REPO_URL
         sed -i.bak "s|REPO_URL=.*|REPO_URL=$REPO_URL|" "$INSTALL_DIR/.env"
 
         # Get GitHub PAT
         echo ""
         print_warning "You need a GitHub Personal Access Token with 'repo' and 'workflow' scopes"
         echo "Generate at: https://github.com/settings/tokens"
-        read -sp "GitHub PAT (will be hidden): " GITHUB_PAT
+        read -r -sp "GitHub PAT (will be hidden): " GITHUB_PAT
         echo ""
         sed -i.bak "s|GITHUB_PAT=.*|GITHUB_PAT=$GITHUB_PAT|" "$INSTALL_DIR/.env"
 
         # Get runner name
-        read -p "Runner name (default: synology-runner): " RUNNER_NAME
+        read -r -p "Runner name (default: synology-runner): " RUNNER_NAME
         RUNNER_NAME=${RUNNER_NAME:-synology-runner}
         sed -i.bak "s|RUNNER_NAME=.*|RUNNER_NAME=$RUNNER_NAME|" "$INSTALL_DIR/.env"
 

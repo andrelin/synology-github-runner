@@ -1,6 +1,24 @@
 {
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>statens-pensjonskasse/renovate-presets:daily-automerge-non-major",
-    "github>statens-pensjonskasse/renovate-presets:renovate-comments(\\.yaml$,(\\.yml$))"
+    "config:recommended",
+    "docker:enableMajor",
+    "helpers:pinGitHubActionDigests",
+    ":configMigration"
+  ],
+  "timezone": "Europe/Oslo",
+  "rangeStrategy": "bump",
+  "packageRules": [
+    {
+      "matchDatasources": ["npm", "maven"],
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-non-major",
+      "matchPackageNames": ["*"],
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    }
   ]
 }

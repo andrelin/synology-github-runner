@@ -9,6 +9,7 @@ All configuration is done through the `.env` file in the repository root.
 **Location:** `/volume1/docker/synology-github-runner/.env`
 
 **Create from template:**
+
 ```bash
 cd /volume1/docker/synology-github-runner
 cp .env.example .env
@@ -22,10 +23,12 @@ nano .env
 **Description:** The GitHub repository or organization URL where the runner will be registered.
 
 **Formats:**
+
 - **Repository-level:** `https://github.com/owner/repository` (runner serves one repo)
 - **Organization-level:** `https://github.com/owner` (runner serves all repos in org)
 
 **Examples:**
+
 ```bash
 # Repository-level (single repository)
 REPO_URL=https://github.com/andrelin/planechaser
@@ -35,16 +38,19 @@ REPO_URL=https://github.com/andrelin
 ```
 
 **Important:**
+
 - ✅ Must include `https://`
 - ✅ Must be exact URL (case-sensitive)
 - ❌ Do not add trailing slash
 - ❌ Do not use SSH format (git@github.com:...)
 
 **Which should I use?**
+
 - **Repository-level:** Use when runner is dedicated to one repository
 - **Organization-level:** Use when multiple repositories need to share the runner
 
-See [Organization-Level Runners](#organization-level-runners) section below for setup details.
+> **Note:** Organization-level runner setup requires organization admin permissions. See
+> [Prerequisites](01-PREREQUISITES.md) for details.
 
 ### GITHUB_PAT
 
@@ -55,20 +61,24 @@ See [Organization-Level Runners](#organization-level-runners) section below for 
 **Generate at:** https://github.com/settings/tokens
 
 **Required scopes (repository-level):**
+
 - ✅ `repo` (full control of private repositories)
 - ✅ `workflow` (update GitHub Action workflows)
 
 **Required scopes (organization-level):**
+
 - ✅ `repo` (full control of private repositories)
 - ✅ `workflow` (update GitHub Action workflows)
 - ✅ `admin:org` → `manage_runners:org` (manage organization runners)
 
 **Example:**
+
 ```bash
 GITHUB_PAT=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
 **Security best practices:**
+
 - ✅ Store in password manager (1Password, Bitwarden)
 - ✅ Set expiration date (90 days recommended)
 - ✅ Rotate regularly
@@ -77,6 +87,7 @@ GITHUB_PAT=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 - ❌ Never share publicly
 
 **Troubleshooting:**
+
 - If runner won't register, verify token hasn't expired
 - Check token has correct scopes
 - Generate new token if in doubt
@@ -90,6 +101,7 @@ GITHUB_PAT=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 **Default:** `synology-general-runner`
 
 **Examples:**
+
 ```bash
 # Descriptive names
 RUNNER_NAME=synology-ds920-prod
@@ -102,6 +114,7 @@ RUNNER_NAME=myapp-nas-runner
 ```
 
 **Best practices:**
+
 - Use descriptive names if you have multiple runners
 - Include hardware/location info for identification
 - Keep it concise (shows in GitHub UI)
@@ -115,6 +128,7 @@ RUNNER_NAME=myapp-nas-runner
 **Format:** Comma-separated, no spaces
 
 **Examples:**
+
 ```bash
 # Add custom labels for workflow targeting
 LABELS=self-hosted,linux,synology,kotlin,docker,gradle
@@ -127,6 +141,7 @@ LABELS=self-hosted,linux,planechaser,mobile-builds
 ```
 
 **Usage in workflows:**
+
 ```yaml
 jobs:
   build:
@@ -134,11 +149,13 @@ jobs:
 ```
 
 **Built-in labels (automatically added by GitHub):**
+
 - `self-hosted` - All self-hosted runners
 - `Linux` - Runner OS
 - `X64` - Architecture
 
 **When to add custom labels:**
+
 - ✅ Specialize runners for specific projects
 - ✅ Identify hardware capabilities (high-memory, gpu, fast-disk)
 - ✅ Organize multiple runners
@@ -155,6 +172,7 @@ jobs:
 **Format:** Number + unit (`g` for gigabytes, `m` for megabytes)
 
 **Examples:**
+
 ```bash
 # Minimal (tight on RAM)
 RUNNER_MEMORY=3g
@@ -172,7 +190,7 @@ RUNNER_MEMORY=12g
 **How to choose:**
 
 | Your NAS RAM | Recommended Setting | Notes |
-|--------------|---------------------|-------|
+| ------------ | ------------------- | ----- |
 | 8 GB | `RUNNER_MEMORY=5g` | Leave 3GB for DSM + other services |
 | 16 GB | `RUNNER_MEMORY=10g` | Leave 6GB for DSM + other services |
 | 32 GB | `RUNNER_MEMORY=20g` | Leave 12GB for DSM + other services |
@@ -180,11 +198,13 @@ RUNNER_MEMORY=12g
 **Formula:** Allocate ~60-70% of total RAM to runner, leaving rest for DSM and other services.
 
 **Symptoms of too low:**
+
 - Workflows fail with OOM (Out of Memory) errors
 - Build processes killed unexpectedly
 - Gradle/npm builds fail
 
 **Symptoms of too high:**
+
 - DSM becomes slow/unresponsive
 - Other Docker containers crash
 - NAS services fail
@@ -198,11 +218,13 @@ RUNNER_MEMORY=12g
 **Range:** `0` to `2048`
 
 **How it works:**
+
 - Higher number = higher priority when CPU is contended
 - Doesn't limit CPU usage, only sets priority
 - All containers share CPU proportionally based on their shares
 
 **Examples:**
+
 ```bash
 # Normal priority (same as other containers)
 RUNNER_CPU_SHARES=1024
@@ -218,6 +240,7 @@ RUNNER_CPU_SHARES=512
 ```
 
 **When to adjust:**
+
 - ✅ Set high (1536-2048) if builds are critical
 - ✅ Set low (512-1024) if runner is secondary to other services
 - ✅ Keep default (1536) for balanced performance
@@ -229,23 +252,27 @@ RUNNER_CPU_SHARES=512
 **Description:** Size of in-memory temporary storage for `/tmp` and `/run`.
 
 **Defaults:**
+
 ```bash
 TMPFS_TMP_SIZE=1g
 TMPFS_RUN_SIZE=512m
 ```
 
 **What is tmpfs:**
+
 - In-memory filesystem (very fast)
 - Used for temporary files during builds
 - Cleared on container restart
 - Doesn't persist to disk
 
 **When to increase:**
+
 - ✅ Workflows create many temporary files
 - ✅ Build processes need temp space
 - ✅ Seeing "No space left on device" for /tmp
 
 **Examples:**
+
 ```bash
 # Standard (default)
 TMPFS_TMP_SIZE=1g
@@ -271,6 +298,7 @@ TMPFS_RUN_SIZE=256m
 **Default:** `-Xmx3g -XX:+UseG1GC -XX:MaxGCPauseMillis=200`
 
 **Components:**
+
 - `-Xmx3g` - Maximum heap memory (3 gigabytes)
 - `-XX:+UseG1GC` - Use G1 garbage collector (better for large heaps)
 - `-XX:MaxGCPauseMillis=200` - Target max GC pause time (200ms)
@@ -278,7 +306,7 @@ TMPFS_RUN_SIZE=256m
 **How to tune `-Xmx` (heap memory):**
 
 | RUNNER_MEMORY | Recommended GRADLE_OPTS |
-|---------------|-------------------------|
+| ------------- | ----------------------- |
 | 3g | `-Xmx1.5g -XX:+UseG1GC -XX:MaxGCPauseMillis=200` |
 | 5g | `-Xmx3g -XX:+UseG1GC -XX:MaxGCPauseMillis=200` |
 | 8g | `-Xmx5g -XX:+UseG1GC -XX:MaxGCPauseMillis=200` |
@@ -287,6 +315,7 @@ TMPFS_RUN_SIZE=256m
 **Rule of thumb:** Set `-Xmx` to ~60% of `RUNNER_MEMORY`
 
 **Examples:**
+
 ```bash
 # Conservative (tight memory)
 GRADLE_OPTS=-Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
@@ -302,6 +331,7 @@ GRADLE_OPTS=-Xmx5g -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:MaxMetaspaceSize=51
 ```
 
 **When to adjust:**
+
 - ✅ Gradle builds failing with OOM
 - ✅ Very large Kotlin/Android projects
 - ✅ Multi-module builds
@@ -439,7 +469,8 @@ docker-compose logs -f
 
 ## Security Configuration
 
-The docker-compose.yml includes security hardening by default. These are **not** configurable via `.env` but you can edit `docker-compose.yml` if needed.
+The docker-compose.yml includes security hardening by default. These are **not** configurable via `.env` but you
+can edit `docker-compose.yml` if needed.
 
 ### Current Security Settings
 
@@ -462,6 +493,7 @@ tmpfs:  # In-memory temp storage (secure)
 ```
 
 **These settings provide:**
+
 - ✅ Minimal privilege principle
 - ✅ No privilege escalation
 - ✅ Reduced attack surface
@@ -476,6 +508,7 @@ tmpfs:  # In-memory temp storage (secure)
 **Problem:** Changed `.env`, now container shows "Exited"
 
 **Solution:**
+
 1. Check logs: `docker-compose logs`
 2. Common issues:
    - Invalid memory format (use `5g` not `5GB`)
@@ -489,12 +522,15 @@ tmpfs:  # In-memory temp storage (secure)
 **Problem:** Builds fail with "Out of memory" errors
 
 **Solution:**
+
 1. Increase `RUNNER_MEMORY`:
+
    ```bash
    RUNNER_MEMORY=8g  # Increase from 5g
    ```
 
 2. Increase `GRADLE_OPTS` if using Gradle:
+
    ```bash
    GRADLE_OPTS=-Xmx5g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
    ```
@@ -507,7 +543,9 @@ tmpfs:  # In-memory temp storage (secure)
 **Problem:** Builds take longer than expected
 
 **Solution:**
+
 1. Increase CPU priority:
+
    ```bash
    RUNNER_CPU_SHARES=2048
    ```
@@ -522,7 +560,9 @@ tmpfs:  # In-memory temp storage (secure)
 **Problem:** Can't target runner with custom labels in workflow
 
 **Solution:**
+
 1. Verify labels in .env:
+
    ```bash
    LABELS=self-hosted,linux,synology,your-label
    ```
@@ -530,6 +570,7 @@ tmpfs:  # In-memory temp storage (secure)
 2. Rebuild container to apply labels
 3. Check runner in GitHub: Settings → Actions → Runners
 4. Use labels in workflow:
+
    ```yaml
    runs-on: [self-hosted, your-label]
    ```

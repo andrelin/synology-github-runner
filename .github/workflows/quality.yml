@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   quality:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
@@ -57,7 +57,7 @@ jobs:
       - name: Validate docker-compose.yml
         run: |
           echo "Validating docker-compose.yml syntax..."
-          docker-compose config -q
+          docker compose config -q
           echo "✓ docker-compose.yml is valid"
 
       - name: Check for hardcoded secrets

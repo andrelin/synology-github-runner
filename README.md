@@ -1,6 +1,8 @@
 # 🚀 GitHub Self-Hosted Runner on Synology NAS
 
-> Run unlimited GitHub Actions workflows on your Synology NAS. No more minute limits, faster builds, and full control over your CI/CD pipeline.
+> **Eliminate GitHub Actions costs for private repositories** by running workflows on your Synology NAS.
+> Trade per-minute charges ($0.008/minute) for self-hosted infrastructure.
+> Performance depends on your hardware; maintenance is your responsibility.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Shell Script](https://img.shields.io/badge/Shell_Script-121011?logo=gnu-bash&logoColor=white)](scripts/)
@@ -11,44 +13,90 @@
 [![Security Scanning](https://github.com/andrelin/synology-github-runner/actions/workflows/security.yml/badge.svg)](https://github.com/andrelin/synology-github-runner/actions/workflows/security.yml)
 [![Weekly Link Check](https://github.com/andrelin/synology-github-runner/actions/workflows/weekly-link-check.yml/badge.svg)](https://github.com/andrelin/synology-github-runner/actions/workflows/weekly-link-check.yml)
 
-## ✨ Features
+## ✨ What This Provides
 
-- 🎯 **Quick Setup** - Get running in 30 minutes with automated installation
+- 💰 **Zero Per-Minute Costs** - Eliminate $0.008/minute charges for private hobby projects
+- 🎓 **Learning Platform** - Hands-on experience with self-hosted CI/CD infrastructure
+- 🎯 **Automated Setup** - Installation script handles most configuration
 - 🔒 **Security Hardened** - Read-only filesystem, minimal privileges, no-new-privileges flag
-- 📊 **Built-in Monitoring** - Health checks, real-time dashboard, automated alerts
-- 💪 **Resource Optimized** - Works great on 2-core/8GB systems, scales to larger hardware
-- 📦 **Docker-in-Docker** - Build and push Docker images directly from workflows
-- 🔄 **Auto-Restart** - Resilient to crashes with automatic recovery
-- 🤖 **AI Code Review Ready** - Pre-configured with Anthropic SDK for Claude Code Review
-- 📝 **Comprehensive Docs** - Step-by-step guides for every aspect
-- 🎨 **Example Workflows** - Production-ready workflow templates included
+- 📊 **Built-in Monitoring** - Health checks and dashboard to manage your infrastructure
+- 💪 **Resource Optimized** - Tuned for consumer NAS hardware (2-core/8GB minimum)
+- 📦 **Docker-in-Docker** - Build and push Docker images from your workflows
+- 🔄 **Auto-Restart** - Automatic recovery from crashes
+- 📝 **Honest Documentation** - Clear trade-off discussions so you know what you're getting into
+- 🎨 **Example Workflows** - Templates for common CI/CD patterns on self-hosted runners
 
-## 🎯 Why Self-Host?
+## 🤔 Should You Self-Host?
 
-| GitHub-Hosted | Self-Hosted on Synology |
-|--------------|------------------------|
-| ⏱️ 2,000 free minutes/month | ✅ **Unlimited** minutes |
-| 💰 $0.008/minute after limit | ✅ **Free** (use your NAS) |
-| 🐌 Shared resources | ✅ **Dedicated** resources |
-| 🔒 No private network access | ✅ **Full** network access |
-| 📦 No Docker layer caching | ✅ **Persistent** caching |
+### ✅ Only Do This If:
 
-**Real Savings:** If you use 10,000 minutes/month, you save **$64/month** ($768/year)!
+- **💰 Private repos costing real money** - You're exceeding free tier and paying $0.008/minute
+- **💵 Money matters more than everything else** - You're willing to accept worse performance, reliability, and
+  convenience to save costs
+
+### ❌ Don't Do This If:
+
+- **📂 Public repositories** - You already have **unlimited free minutes** on GitHub-hosted runners (which are also faster)
+- **⚡ Speed matters** - GitHub-hosted runners are faster
+- **🏃 Parallelism matters** - GitHub can run multiple jobs simultaneously; self-hosted = one at a time
+- **🔧 Convenience matters** - No maintenance, no monitoring, no troubleshooting with GitHub-hosted
+- **📊 Reliability matters** - GitHub's infrastructure is more reliable than consumer NAS
+- **💤 Within free tier** - If you're under 2,000-3,000 minutes/month, GitHub-hosted is free AND better
+
+### ⚖️ Honest Trade-Offs
+
+**What you gain:**
+
+- 💰 **Zero per-minute costs** for private repos (save $64/month if using 10,000 minutes)
+
+**What you sacrifice:**
+
+- 🔧 **Maintenance burden** - Updates, monitoring, troubleshooting, disk space management now your responsibility
+- ⏰ **Setup time** - 30-60 minutes initial setup plus ongoing maintenance
+- 🤯 **Complexity** - Docker, networking, security configuration vs "just works" on GitHub
+
+**Hardware-dependent factors:**
+
+- 📊 **Performance** - Speed depends entirely on your Synology hardware (CPU, RAM, storage type)
+- 🚦 **Parallelism** - This guide covers a single runner setup. You could run multiple runners if you have
+  sufficient CPU/RAM, but most consumer NAS devices aren't specced for that
+- 💾 **Resource constraints** - Lower-end devices (2-4 cores, 8GB RAM) typically run one runner; high-end
+  devices could support multiple
+
+**Your mileage WILL vary.** The only universal benefit is cost savings for private repositories.
+
+### 💰 Cost Savings Calculator (Private Repos Only)
+
+**Is it worth the trade-offs for your hobby project?**
+
+| Monthly Minutes | GitHub Cost | Self-Hosted Cost | Annual Savings | Worth It? |
+| --------------- | ----------- | ---------------- | -------------- | --------- |
+| 3,000 (free tier) | $0 | $0 | **$0** | ❌ No cost savings |
+| 10,000 | $64/mo | $0 | **$768/year** | 🎨 Maybe for hobby projects |
+| 25,000 | $184/mo | $0 | **$2,208/year** | 🎨 Good for large hobby projects |
+| 50,000 | $392/mo | $0 | **$4,704/year** | 🏢 At this scale, consider managed solutions |
+
+> **Bottom line:** This is for hobby projects and learning, not businesses. If you're a business spending
+> $200+/month on Actions, just pay for it—your team's time is worth more than the savings. This is for
+> hobbyists who enjoy tinkering and want to avoid costs on personal projects.
 
 ## 📋 Requirements
 
 ### Hardware
+
 - **Synology NAS** with DSM 7.0 or later
 - **2+ CPU cores** (4+ recommended)
 - **8+ GB RAM** (16+ recommended)
 - **20+ GB free disk space** (for workspace and cache)
 
 ### Software
+
 - **Container Manager** installed from DSM Package Center
 - **SSH access** enabled (for installation)
 - **GitHub Personal Access Token** with `repo` and `workflow` scopes
 
 ### Tested Hardware
+
 ✅ Synology DS920+ (4-core, 8GB) - **Excellent**
 ✅ Synology DS220+ (2-core, 8GB) - **Good** (resource tuning recommended)
 ✅ Synology DS718+ (2-core, 6GB) - **Works** (basic workflows only)
@@ -72,6 +120,7 @@ sudo ./install.sh
 ```
 
 The installer will:
+
 - ✅ Check prerequisites
 - ✅ Create directory structure
 - ✅ Set up configuration
@@ -86,28 +135,32 @@ See [Installation Guide](docs/02-INSTALLATION.md) for step-by-step instructions.
 ## 📖 Documentation
 
 ### Getting Started
+
 - [Prerequisites](docs/01-PREREQUISITES.md) - Hardware, software, and account setup
 - [Installation](docs/02-INSTALLATION.md) - Step-by-step installation guide
 - [Quick Start](docs/00-QUICK-START.md) - TL;DR for experienced users
 
 ### Configuration
+
 - [Configuration Guide](docs/03-CONFIGURATION.md) - Customize your runner
 - [Security Hardening](docs/07-SECURITY.md) - Best practices for production
 - [Workflow Examples](docs/08-WORKFLOWS.md) - Real-world workflow patterns
 
 ### Operations
+
 - [Monitoring](docs/04-MONITORING.md) - Health checks and dashboards
 - [Maintenance](docs/06-MAINTENANCE.md) - Updates, backups, cleanup
 - [Troubleshooting](docs/05-TROUBLESHOOTING.md) - Common issues and solutions
 
 ### Reference
+
 - [FAQ](docs/FAQ.md) - Frequently asked questions
 - [Contributing](CONTRIBUTING.md) - How to contribute
 - [Changelog](CHANGELOG.md) - Version history
 
 ## 🏗️ Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────┐
 │ GitHub (github.com)                             │
 │ ├─ Repository                                   │
@@ -178,18 +231,58 @@ jobs:
 
 See [examples/workflows/](examples/workflows/) for more patterns.
 
-## 📊 Real-World Performance
+## 💰 Primary Benefit: Eliminate Per-Minute Costs
 
-Tested with a Kotlin Multiplatform project (Android, iOS, Web):
+**For private repositories that exceed the free tier (2,000-3,000 minutes/month), this eliminates per-minute costs.**
 
-| Metric | GitHub-Hosted | Self-Hosted (2-core/8GB) | Improvement |
-|--------|--------------|--------------------------|-------------|
-| Shared Tests | 3m 45s | 2m 30s | **33% faster** |
-| Android Build | 8m 20s | 5m 10s | **38% faster** |
-| Web Build | 4m 30s | 2m 50s | **37% faster** |
-| Docker Build | 6m 40s | 3m 20s | **50% faster** |
+### ⚖️ The Trade-Offs
 
-**With Caching:** 2-3x faster on subsequent runs.
+Compared to GitHub-hosted runners, self-hosting on Synology means:
+
+| Dimension | GitHub-Hosted | Self-Hosted (Synology) |
+| --------- | ------------- | ---------------------- |
+| **Speed** | Fast (cloud infrastructure) | **Hardware-dependent** - Varies by device |
+| **Parallelism** | Multiple jobs simultaneously | **Hardware-dependent** - Single runner typical; multiple possible with sufficient resources |
+| **Reliability** | Enterprise SLA, managed infrastructure | Your hardware and maintenance |
+| **Maintenance** | ✅ Zero (managed by GitHub) | ❌ Your responsibility |
+| **Setup** | ✅ Just works | ❌ 30-60 min setup + ongoing |
+| **Cost (private)** | ❌ $0.008/min after free tier | ✅ $0 per-minute |
+| **Cost (public)** | ✅ Free unlimited | ✅ Free unlimited |
+
+### 🎯 Who This Is For
+
+**✅ Good fit:**
+
+- 🎨 **Hobby projects** with heavy CI usage (personal projects, side projects, open-source work)
+- 🎓 **Learning** about self-hosted CI/CD infrastructure
+- 💰 **Hobbyists** with private repos exceeding free tier who want to tinker and save money
+- 🔬 **Experimentation** with CI/CD setups and optimization
+
+**❌ NOT for:**
+
+- 🏢 **Businesses or organizations** - Just pay for GitHub Actions or use enterprise CI/CD
+- 💼 **Production-critical infrastructure** - Needs reliability, SLAs, and professional support
+- 👔 **Professional development teams** - Your time is worth more than the cost savings
+- ⚖️ **Mission-critical workflows** - Use managed infrastructure with proper support
+
+### 🎯 When This Makes Sense Technically
+
+Self-host if:
+
+1. ✅ **Private repositories** exceeding free tier (actually costing you money)
+2. ✅ **Hobby/learning context** (not business-critical)
+3. ✅ **Comfortable managing infrastructure** (Docker, networking, monitoring)
+4. ✅ **Enjoy tinkering** with self-hosted solutions
+
+Don't self-host if:
+
+1. ❌ **Public repositories** (already free on GitHub)
+2. ❌ **Within free tier** (under 2,000-3,000 min/month = no cost savings)
+3. ❌ **Business/organization use** (just pay for proper infrastructure)
+4. ❌ **Want zero maintenance** (GitHub-hosted "just works")
+
+**Performance depends entirely on your Synology hardware.** This is about hobby cost optimization and learning,
+not enterprise infrastructure.
 
 ## 🔧 Customization
 
@@ -242,7 +335,7 @@ Run the included dashboard script:
 /volume1/scripts/runner-dashboard.sh
 ```
 
-```
+```text
 ╔════════════════════════════════════════════════════════════════╗
 ║  GitHub Self-Hosted Runner - Status Dashboard                 ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -284,7 +377,8 @@ Free to use, modify, and distribute. Attribution appreciated but not required.
 
 Built with and inspired by:
 
-- [myoung34/docker-github-actions-runner](https://github.com/myoung34/docker-github-actions-runner) - Docker image for GitHub runners
+- [myoung34/docker-github-actions-runner](https://github.com/myoung34/docker-github-actions-runner) -
+  Docker image for GitHub runners
 - [GitHub Self-Hosted Runners](https://docs.github.com/en/actions/hosting-your-own-runners) - Official documentation
 - Synology Community - Tips and best practices
 

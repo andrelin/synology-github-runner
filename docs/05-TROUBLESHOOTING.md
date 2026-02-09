@@ -45,22 +45,26 @@ Runner doesn't show up in GitHub repository settings (Settings → Actions → R
 ### Diagnosis
 
 **1. Check container logs:**
+
 ```bash
 docker-compose logs -f | grep -i error
 ```
 
 Look for:
+
 - Authentication errors
 - Registration failures
 - Network errors
 
 **2. Check container is actually running:**
+
 ```bash
 docker ps | grep github-runner
 # Should show: Up X minutes
 ```
 
 **3. Verify GitHub token:**
+
 ```bash
 # Check token is set in .env
 grep GITHUB_PAT .env
@@ -74,14 +78,18 @@ grep GITHUB_PAT .env
 **Problem:** GitHub PAT is expired or has wrong scopes
 
 **Fix:**
+
 1. Generate new token: https://github.com/settings/tokens
 2. Ensure scopes: `repo` + `workflow`
 3. Update `.env`:
+
    ```bash
    nano .env
    # Update GITHUB_PAT=ghp_newtoken...
    ```
+
 4. Restart container:
+
    ```bash
    docker-compose down
    docker-compose up -d
@@ -92,16 +100,21 @@ grep GITHUB_PAT .env
 **Problem:** REPO_URL doesn't match actual repository
 
 **Fix:**
+
 1. Check current setting:
+
    ```bash
    grep REPO_URL .env
    ```
+
 2. Verify format: `https://github.com/owner/repository`
 3. Update if wrong:
+
    ```bash
    nano .env
    # Fix REPO_URL=https://github.com/correct/repo
    ```
+
 4. Restart container
 
 **Runner Already Registered**
@@ -109,9 +122,11 @@ grep GITHUB_PAT .env
 **Problem:** Runner with same name already exists
 
 **Fix:**
+
 1. Check GitHub: Settings → Actions → Runners
 2. Remove old/offline runner from GitHub UI
 3. Restart container:
+
    ```bash
    docker-compose down
    docker-compose up -d
@@ -122,11 +137,14 @@ grep GITHUB_PAT .env
 **Problem:** Cannot reach GitHub API
 
 **Fix:**
+
 1. Test connectivity:
+
    ```bash
    ping -c 3 github.com
    curl -I https://api.github.com
    ```
+
 2. Check firewall: Control Panel → Security → Firewall
 3. Check DNS: Control Panel → Network → General → DNS
 4. Verify no proxy issues
@@ -146,6 +164,7 @@ Container shows status "Exited" immediately after starting.
 ### Diagnosis
 
 **Check exit code and logs:**
+
 ```bash
 # View container status with exit code
 docker ps -a | grep github-runner
@@ -164,6 +183,7 @@ docker-compose logs 2>&1 | grep -i "error\|failed\|fatal"
 **Problem:** `.env` file doesn't exist or is empty
 
 **Fix:**
+
 ```bash
 # Check if .env exists
 ls -la .env
@@ -182,6 +202,7 @@ docker-compose up -d
 **Problem:** Malformed variables in `.env`
 
 **Fix:**
+
 ```bash
 # Validate .env syntax
 docker-compose config
@@ -202,6 +223,7 @@ docker-compose up -d
 **Problem:** Container can't access Docker socket or volumes
 
 **Fix:**
+
 ```bash
 # Check permissions on workspace/cache
 ls -la workspace cache
@@ -222,6 +244,7 @@ docker-compose up -d
 **Problem:** Required port already in use (rare, runner doesn't expose ports)
 
 **Fix:**
+
 ```bash
 # Check if something is using runner's resources
 docker ps
@@ -246,6 +269,7 @@ Workflows fail with "Out of memory" or "Killed" errors.
 ### Diagnosis
 
 **1. Check memory usage:**
+
 ```bash
 # Current usage
 docker stats github-runner --no-stream
@@ -258,9 +282,11 @@ top
 ```
 
 **2. Check workflow logs:**
+
 - Look for: "Out of memory", "Killed", "java.lang.OutOfMemoryError"
 
 **3. Check container memory limit:**
+
 ```bash
 docker inspect github-runner | grep -i memory
 ```
@@ -270,6 +296,7 @@ docker inspect github-runner | grep -i memory
 **Increase Container Memory**
 
 **Fix:**
+
 ```bash
 # Edit .env
 nano .env
@@ -288,6 +315,7 @@ docker-compose up -d
 **Optimize Workflow**
 
 **Fix in workflow file:**
+
 ```yaml
 jobs:
   build:
@@ -304,6 +332,7 @@ jobs:
 **Use Sequential Jobs (Orchestrator Pattern)**
 
 Instead of parallel jobs competing for memory:
+
 ```yaml
 jobs:
   test:
@@ -339,6 +368,7 @@ docker system prune -f
 ### Diagnosis
 
 **Check disk usage:**
+
 ```bash
 # Overall disk usage
 df -h /volume1
@@ -400,6 +430,7 @@ Builds take much longer than expected or timeout.
 ### Diagnosis
 
 **Monitor resources during build:**
+
 ```bash
 # Watch in real-time
 docker stats github-runner
@@ -409,6 +440,7 @@ docker stats github-runner
 ```
 
 **Check build logs for bottlenecks:**
+
 - Long dependency downloads
 - Slow compilation
 - Test timeouts
@@ -432,6 +464,7 @@ docker-compose up -d
 **Enable Dependency Caching**
 
 In your workflow:
+
 ```yaml
 - uses: actions/setup-node@v6
   with:
@@ -454,6 +487,7 @@ GRADLE_OPTS=-Xmx5g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
 ```
 
 In workflow:
+
 ```yaml
 env:
   ORG_GRADLE_PROJECT_org.gradle.caching: "true"
@@ -484,6 +518,7 @@ Cannot connect to GitHub, Docker Hub, or package registries.
 ### Diagnosis
 
 **Test connectivity from container:**
+
 ```bash
 # Test GitHub
 docker exec github-runner curl -I https://github.com
@@ -499,6 +534,7 @@ docker exec github-runner nslookup github.com
 ```
 
 **Test from NAS:**
+
 ```bash
 ping -c 3 github.com
 curl -I https://api.github.com
@@ -509,6 +545,7 @@ curl -I https://api.github.com
 **DNS Issues**
 
 **Fix:**
+
 ```bash
 # Check DNS settings
 # DSM → Control Panel → Network → General → DNS Server
@@ -520,6 +557,7 @@ curl -I https://api.github.com
 **Firewall Blocking**
 
 **Fix:**
+
 ```bash
 # Check firewall rules
 # DSM → Control Panel → Security → Firewall
@@ -531,6 +569,7 @@ curl -I https://api.github.com
 **Proxy Configuration**
 
 If you use a proxy:
+
 ```bash
 # Edit docker-compose.yml
 nano docker-compose.yml
@@ -561,6 +600,7 @@ Push commits but workflow doesn't start.
 ### Diagnosis
 
 **1. Check workflow file location:**
+
 ```bash
 # Must be in .github/workflows/
 ls -la .github/workflows/
@@ -570,10 +610,12 @@ cat .github/workflows/your-workflow.yml
 ```
 
 **2. Validate YAML syntax:**
+
 - Use online YAML validator
 - Check GitHub Actions tab for syntax errors
 
 **3. Check workflow triggers:**
+
 ```yaml
 on:
   push:
@@ -588,6 +630,7 @@ on:
 Workflow configured for `main` but you're pushing to `master` or `develop`:
 
 **Fix in workflow:**
+
 ```yaml
 on:
   push:
@@ -597,6 +640,7 @@ on:
 **Workflow Disabled**
 
 **Fix:**
+
 1. Go to repository → Actions tab
 2. Find your workflow in the sidebar
 3. Click "Enable workflow" if disabled
@@ -615,6 +659,7 @@ on:
 **Syntax Errors in YAML**
 
 **Fix:**
+
 1. Check Actions tab for syntax error message
 2. Use YAML validator
 3. Common issues:
@@ -630,21 +675,26 @@ Workflows that use Docker (Qodana, Trivy, container builds) fail with bind mount
 
 ### Symptoms
 
-```
+```text
 Error response from daemon: invalid mount config for type "bind":
 bind source path does not exist: /workspace/_temp/qodana/caches
 ```
 
 Or similar errors mentioning:
+
 - `/workspace/_temp/...`
 - `/home/runner/work/...`
 - `bind source path does not exist`
 
 ### Root Cause
 
-When you run Docker inside the runner container (Docker-in-Docker), the inner Docker command talks to the **host Docker daemon** via `/var/run/docker.sock`. When the inner Docker tries to bind mount a path like `/workspace/_temp/qodana/caches`, the host Docker daemon looks for that path on the **host filesystem**, not inside the runner container.
+When you run Docker inside the runner container (Docker-in-Docker), the inner Docker command talks to the **host
+Docker daemon** via `/var/run/docker.sock`. When the inner Docker tries to bind mount a path like
+`/workspace/_temp/qodana/caches`, the host Docker daemon looks for that path on the **host filesystem**, not inside
+the runner container.
 
 **Example:**
+
 - Runner container workspace: `/workspace` → maps to host: `/volume1/docker/github-runner/workspace`
 - Qodana runs: `docker run -v /workspace/_temp/qodana/caches:/data/cache`
 - Host Docker daemon looks for `/workspace/_temp/qodana/caches` on host → **doesn't exist!**
@@ -654,24 +704,28 @@ When you run Docker inside the runner container (Docker-in-Docker), the inner Do
 Configure the runner to use the same workspace path on both host and container.
 
 **1. Update your `.env` file:**
+
 ```bash
 # Add or update this line
 RUNNER_WORKDIR=/volume1/docker/github-runner/workspace
 ```
 
 **2. Restart the runner:**
+
 ```bash
 docker-compose down
 docker-compose up -d
 ```
 
 **3. Verify the configuration:**
+
 ```bash
 docker exec github-runner env | grep RUNNER_WORKDIR
 # Should show: RUNNER_WORKDIR=/volume1/docker/github-runner/workspace
 ```
 
 **How this works:**
+
 - Host path: `/volume1/docker/github-runner/workspace`
 - Container path: `/volume1/docker/github-runner/workspace` (same!)
 - When inner Docker runs `docker run -v /volume1/docker/github-runner/workspace/_temp/...`, the host can find it
@@ -731,6 +785,7 @@ Then trigger your Qodana workflow and verify it completes without bind mount err
 ### Common Tools Affected
 
 These tools commonly run Docker-in-Docker and may need this fix:
+
 - **Qodana** - JetBrains code quality
 - **Trivy** - Container security scanning
 - **Docker buildx** - Multi-platform builds
@@ -740,11 +795,13 @@ These tools commonly run Docker-in-Docker and may need this fix:
 ### Additional Notes
 
 **Why not just use `/workspace`?**
+
 - Synology's volume paths start with `/volume1/`
 - Using a non-standard path helps avoid conflicts with other software
 - It makes the configuration more explicit and Synology-specific
 
 **Already updated docker-compose.yml?**
+
 - The latest version (as of 2026-01-30) includes this fix by default
 - Pull the latest changes: `git pull origin main`
 - Update your `.env` file with `RUNNER_WORKDIR`
@@ -802,6 +859,7 @@ ls -la /var/run/docker.sock
 **Read-Only Filesystem**
 
 If using custom security settings:
+
 ```yaml
 # In docker-compose.yml - remove read_only if needed
 # But this reduces security
@@ -812,6 +870,7 @@ If using custom security settings:
 ### Finding Useful Logs
 
 **Container logs:**
+
 ```bash
 # Last 100 lines
 docker-compose logs --tail=100
@@ -827,9 +886,11 @@ docker-compose logs > runner-logs.txt
 ```
 
 **DSM System Logs:**
+
 - DSM → Log Center → Container
 
 **GitHub Actions Logs:**
+
 - Repository → Actions → Click on workflow run → View job logs
 
 ### Common Log Messages
@@ -856,6 +917,7 @@ If you've tried the solutions above and still have issues:
 ### Before Asking
 
 1. **Collect diagnostic information:**
+
    ```bash
    # System info
    uname -a
@@ -885,6 +947,7 @@ If you've tried the solutions above and still have issues:
 ### How to Ask
 
 **Open an issue** with:
+
 - Clear description of the problem
 - Steps to reproduce
 - Expected vs actual behavior
@@ -892,6 +955,7 @@ If you've tried the solutions above and still have issues:
 - What you've already tried
 
 **Example:**
+
 ```markdown
 **Problem:** Runner not appearing in GitHub
 
@@ -918,7 +982,7 @@ If you've tried the solutions above and still have issues:
 ## Quick Reference
 
 | Problem | Quick Fix |
-|---------|-----------|
+| ------- | --------- |
 | Runner not in GitHub | Check token & REPO_URL, restart container |
 | Container exited | Check logs, verify .env file |
 | Out of memory | Increase RUNNER_MEMORY in .env |

@@ -6,11 +6,14 @@
 
 ## Overview
 
-The repository's docker-compose.yml now matches the production Synology configuration. The only remaining step is to add a `.env` file to separate secrets from the configuration.
+The repository's docker-compose.yml now matches the production Synology
+configuration. The only remaining step is to add a `.env` file to separate
+secrets from the configuration.
 
 ## What Changed
 
 The repository docker-compose.yml was updated (commit e1d53b5) to match the battle-tested production configuration:
+
 - ✅ Synology-compatible syntax (mem_limit, memswap_limit, cpu_shares)
 - ✅ Absolute volume paths (/volume1/docker/github-runner/)
 - ✅ Security hardening (no-new-privileges, minimal capabilities, tmpfs)
@@ -79,6 +82,7 @@ docker-compose logs -f
 ```
 
 Or via Container Manager UI:
+
 1. Open DSM → Container Manager
 2. Find the `github-runner` project
 3. Click "Build" to rebuild with new docker-compose.yml
@@ -87,6 +91,7 @@ Or via Container Manager UI:
 ### Step 4: Verify
 
 1. **Check runner status:**
+
    ```bash
    docker ps | grep github-runner
    docker logs github-runner --tail 50
@@ -119,5 +124,6 @@ Or via Container Manager UI:
 ## Next Steps
 
 Once this plan is complete:
+
 - ✅ Proceed to **Plan 2: Monitoring Setup**
 - The docker-compose.yml and .env structure is now ready for monitoring integration

@@ -92,6 +92,7 @@ jobs:
 ```
 
 **Benefits:**
+
 - Single runner handles everything sequentially
 - No resource contention
 - Predictable execution order
@@ -244,6 +245,7 @@ jobs:
 ```
 
 **Prerequisites:**
+
 - ✅ Anthropic SDK (pre-installed in runner)
 - ✅ GitHub CLI (pre-installed in runner)
 - Add `ANTHROPIC_API_KEY` to repository secrets
@@ -308,6 +310,7 @@ if __name__ == "__main__":
 ```
 
 Make it executable:
+
 ```bash
 chmod +x scripts/claude-review.py
 ```
@@ -535,6 +538,7 @@ env:
 **Problem:** Workflow fails with OOM errors
 
 **Solution:**
+
 ```yaml
 env:
   GRADLE_OPTS: "-Xmx2g"  # Reduce from 3g
@@ -546,6 +550,7 @@ env:
 **Problem:** "No space left on device"
 
 **Solution:**
+
 ```yaml
 - name: Free disk space
   run: |
@@ -558,6 +563,7 @@ env:
 **Problem:** Gradle daemon locks
 
 **Solution:**
+
 ```yaml
 - name: Stop Gradle daemon
   if: always()
@@ -579,6 +585,7 @@ env:
 ---
 
 **Tips:**
+
 - Start simple, add complexity as needed
 - Monitor resource usage with dashboard
 - Test workflows on feature branches first

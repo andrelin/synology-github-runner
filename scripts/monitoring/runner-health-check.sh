@@ -27,7 +27,7 @@ alert() {
 
 # Trim log files if they get too large
 trim_logs() {
-    if [ -f "$LOG_FILE" ] && [ $(wc -l < "$LOG_FILE") -gt $MAX_LOG_LINES ]; then
+    if [ -f "$LOG_FILE" ] && [ "$(wc -l < "$LOG_FILE")" -gt "$MAX_LOG_LINES" ]; then
         tail -n $MAX_LOG_LINES "$LOG_FILE" > "$LOG_FILE.tmp"
         mv "$LOG_FILE.tmp" "$LOG_FILE"
     fi
@@ -123,12 +123,6 @@ check_github_connectivity() {
 
 # Check 8: Workflow activity (optional - check if runner is idle for too long)
 check_runner_activity() {
-    # Get container uptime
-    STARTED=$(docker inspect --format='{{.State.StartedAt}}' "$CONTAINER_NAME")
-    STARTED_EPOCH=$(date -d "$STARTED" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%S" "$STARTED" +%s 2>/dev/null || echo "0")
-    CURRENT_EPOCH=$(date +%s)
-    UPTIME_HOURS=$(( (CURRENT_EPOCH - STARTED_EPOCH) / 3600 ))
-
     # Check recent logs for "Listening for Jobs" (indicates runner is connected)
     RECENT_LOGS=$(docker logs --tail 50 "$CONTAINER_NAME" 2>&1)
     if ! echo "$RECENT_LOGS" | grep -q "Listening for Jobs"; then

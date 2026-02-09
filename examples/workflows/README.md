@@ -16,6 +16,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Use for:** Simple continuous integration with build and test
 
 **What it does:**
+
 - ✅ Runs on every push and pull request
 - ✅ Lints code
 - ✅ Runs tests
@@ -23,6 +24,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 - ✅ Uploads build artifacts
 
 **Best for:**
+
 - Getting started with self-hosted runners
 - Small to medium projects
 - Single-job workflows
@@ -30,12 +32,14 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Resource usage:** Low (runs one job at a time)
 
 **Example tech stacks:**
+
 - Node.js/npm
 - Python/pip
 - Java/Gradle
 - Rust/Cargo
 
 **Customize:**
+
 - Change tech stack (Node.js → Python, etc.)
 - Add/remove steps (coverage, security scans)
 - Modify triggers (schedule, paths)
@@ -47,12 +51,14 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Use for:** Complex CI/CD pipelines with multiple sequential jobs
 
 **What it does:**
+
 - ✅ Runs jobs **sequentially** (one after another)
 - ✅ Lint → Unit Tests → Integration Tests → Build → Docker → Deploy
 - ✅ Fails fast (stops if early job fails)
 - ✅ Optimized for single runner with limited resources
 
 **Best for:**
+
 - Resource-constrained runners (1-2 CPU cores, limited RAM)
 - Projects with heavy build steps (Docker, Gradle, large test suites)
 - Multi-phase CI/CD pipelines
@@ -60,6 +66,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Resource usage:** Medium-High (but sequential = no overload)
 
 **Pipeline stages:**
+
 1. **Lint** (5 min) - Fast code quality checks
 2. **Unit Tests** (15 min) - Core functionality tests
 3. **Integration Tests** (25 min) - Full system tests
@@ -68,6 +75,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 6. **Deploy** (5 min) - Production deployment [main branch only]
 
 **Customize:**
+
 - Add/remove pipeline stages
 - Adjust job dependencies (`needs:`)
 - Add parallel jobs where safe
@@ -80,6 +88,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Use for:** Building and pushing Docker images with layer caching
 
 **What it does:**
+
 - ✅ Builds Docker images efficiently
 - ✅ Uses Docker layer caching (faster rebuilds)
 - ✅ Multi-stage build support
@@ -88,6 +97,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 - ✅ Image testing before deployment
 
 **Best for:**
+
 - Containerized applications
 - Microservices
 - Projects deployed via Docker
@@ -95,10 +105,12 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Resource usage:** High (Docker builds are memory/CPU intensive)
 
 **Performance:**
+
 - First build: 20-30 minutes
 - Subsequent builds: 3-5 minutes (with cache)
 
 **Customize:**
+
 - Enable push to registry (Docker Hub, GHCR)
 - Add multi-platform builds (amd64, arm64)
 - Customize image tags
@@ -111,6 +123,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Use for:** Node.js, TypeScript, React, Next.js, Vue, or any npm-based project
 
 **What it does:**
+
 - ✅ Dependency caching (npm/yarn/pnpm)
 - ✅ Linting with ESLint
 - ✅ Testing with coverage
@@ -119,6 +132,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 - ✅ Memory optimization
 
 **Best for:**
+
 - JavaScript/TypeScript applications
 - Frontend projects (React, Vue, Angular)
 - Backend Node.js services
@@ -127,12 +141,14 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Resource usage:** Low-Medium (configurable with NODE_OPTIONS)
 
 **Features:**
+
 - Auto-detects package manager (npm, yarn, pnpm)
 - Incremental builds with caching
 - Turbo/Nx monorepo support examples
 - Memory limit configuration (~2GB default)
 
 **Customize:**
+
 - Switch between npm/yarn/pnpm
 - Add E2E tests (Playwright, Cypress)
 - Enable source maps or disable for faster builds
@@ -145,6 +161,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Use for:** Python applications, Django, FastAPI, Flask, data science projects
 
 **What it does:**
+
 - ✅ Dependency caching (pip/poetry/pipenv)
 - ✅ Code linting (flake8)
 - ✅ Formatting checks (black)
@@ -153,6 +170,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 - ✅ Package building
 
 **Best for:**
+
 - Python web applications
 - API services (Django, FastAPI, Flask)
 - Data science / Jupyter notebooks
@@ -161,12 +179,14 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Resource usage:** Low-Medium
 
 **Features:**
+
 - Supports pip, poetry, and pipenv
 - Includes security scanning (bandit, safety)
 - Coverage reporting with codecov integration
 - Virtual environment management
 
 **Customize:**
+
 - Add Django migrations and database setup
 - Include notebook testing (Jupyter)
 - Add FastAPI/Flask server smoke tests
@@ -179,6 +199,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Use for:** Java, Kotlin, Android, or any Gradle-based project
 
 **What it does:**
+
 - ✅ Gradle dependency caching
 - ✅ JVM memory optimization
 - ✅ Testing with JUnit
@@ -187,6 +208,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 - ✅ Artifact management
 
 **Best for:**
+
 - Java/Kotlin backend services
 - Spring Boot applications
 - Android applications
@@ -195,6 +217,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Resource usage:** Medium-High (JVM memory configurable)
 
 **Features:**
+
 - Gradle daemon management
 - Build cache support
 - Multi-module project support
@@ -202,6 +225,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 - JaCoCo code coverage
 
 **Customize:**
+
 - Adjust JVM heap size (GRADLE_OPTS)
 - Add Spring Boot Docker builds
 - Include Detekt/ktlint for Kotlin
@@ -214,6 +238,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Use for:** Rust projects with Cargo
 
 **What it does:**
+
 - ✅ Cargo dependency caching
 - ✅ Incremental compilation
 - ✅ Clippy linting (strict mode)
@@ -222,6 +247,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 - ✅ Release builds with optimization
 
 **Best for:**
+
 - Rust applications and libraries
 - CLI tools
 - System programming projects
@@ -230,6 +256,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **Resource usage:** Medium-High (compilation is CPU/memory intensive)
 
 **Features:**
+
 - Faster linker configuration (lld)
 - Incremental compilation enabled
 - Clippy with warnings-as-errors
@@ -237,6 +264,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 - Cross-compilation examples
 
 **Customize:**
+
 - Add cargo-tarpaulin for coverage
 - Include benchmarking (criterion)
 - Add WASM builds (wasm-pack)
@@ -247,7 +275,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 ## Comparison Table
 
 | Workflow | Complexity | Resource Usage | Build Time | Best Use Case |
-|----------|------------|----------------|------------|---------------|
+| -------- | ---------- | -------------- | ---------- | ------------- |
 | **basic-ci** | ⭐ Simple | 🟢 Low | ~5-10 min | Quick CI for small projects |
 | **orchestrator** | ⭐⭐⭐ Complex | 🟡 Medium | ~30-90 min | Full CI/CD pipeline |
 | **docker-build** | ⭐⭐ Moderate | 🔴 High | ~20-30 min | Docker image building |
@@ -263,6 +291,7 @@ Ready-to-use GitHub Actions workflows optimized for resource-constrained self-ho
 **1. Use Concurrency Control**
 
 All examples include smart concurrency control:
+
 ```yaml
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -281,6 +310,7 @@ This cancels older runs of the same workflow on the same branch, saving resource
 ```
 
 Supported cache types:
+
 - `npm` for Node.js
 - `pip` for Python
 - `gradle` for Java/Kotlin
@@ -308,6 +338,7 @@ Prevents stuck jobs from consuming resources indefinitely.
 **Use Sequential Jobs (Orchestrator Pattern)**
 
 Instead of parallel jobs that compete for resources:
+
 ```yaml
 jobs:
   test:
@@ -317,6 +348,7 @@ jobs:
 **Tune Runner Memory**
 
 In your runner's `.env` file:
+
 ```bash
 RUNNER_MEMORY=5g  # Adjust based on NAS RAM
 GRADLE_OPTS=-Xmx3g  # JVM heap (~60% of RUNNER_MEMORY)
@@ -325,6 +357,7 @@ GRADLE_OPTS=-Xmx3g  # JVM heap (~60% of RUNNER_MEMORY)
 **Optimize Gradle Builds**
 
 For Java/Kotlin projects, add to workflow:
+
 ```yaml
 env:
   GRADLE_OPTS: "-Xmx3g -XX:+UseG1GC"
@@ -391,13 +424,15 @@ Use for: Nightly builds, dependency updates, backups
 
 ## Tech Stack Examples
 
-> **💡 Tip:** We now have **complete, production-ready workflow files** for popular tech stacks. See workflows #4-7 above for full examples with caching, optimization, and customization options.
+> **💡 Tip:** We now have **complete, production-ready workflow files** for popular tech stacks. See workflows #4-7
+> above for full examples with caching, optimization, and customization options.
 
 ### Node.js/TypeScript
 
 **📄 See:** [`nodejs-ci.yml`](nodejs-ci.yml) - Complete Node.js CI workflow
 
 Quick snippet:
+
 ```yaml
 - uses: actions/setup-node@v6
   with:
@@ -415,6 +450,7 @@ Quick snippet:
 **📄 See:** [`python-ci.yml`](python-ci.yml) - Complete Python CI workflow
 
 Quick snippet:
+
 ```yaml
 - uses: actions/setup-python@v6
   with:
@@ -431,6 +467,7 @@ Quick snippet:
 **📄 See:** [`gradle-ci.yml`](gradle-ci.yml) - Complete Gradle CI workflow
 
 Quick snippet:
+
 ```yaml
 - uses: actions/setup-java@v6
   with:
@@ -450,6 +487,7 @@ Quick snippet:
 **📄 See:** [`rust-ci.yml`](rust-ci.yml) - Complete Rust CI workflow
 
 Quick snippet:
+
 ```yaml
 - uses: dtolnay/rust-toolchain@stable
   with:
@@ -481,10 +519,13 @@ Quick snippet:
 **Problem:** Workflow killed due to memory exhaustion
 
 **Solution:**
+
 1. Increase runner memory in `.env`:
+
    ```bash
    RUNNER_MEMORY=8g  # Increase from 5g
    ```
+
 2. Optimize workflow (reduce parallel jobs)
 3. Use orchestrator pattern (sequential jobs)
 4. Check other processes on NAS
@@ -494,12 +535,15 @@ Quick snippet:
 **Problem:** Builds take much longer than expected
 
 **Solution:**
+
 1. Enable dependency caching
 2. Use Docker layer caching
 3. Increase CPU priority in `.env`:
+
    ```bash
    RUNNER_CPU_SHARES=2048
    ```
+
 4. Run builds during off-peak hours
 5. Optimize build process (remove unnecessary steps)
 
@@ -508,6 +552,7 @@ Quick snippet:
 **Problem:** Workflow queued but doesn't run
 
 **Solution:**
+
 1. Check runner status in GitHub: Settings → Actions → Runners
 2. Verify runner is "Idle" (green)
 3. Check runner labels match workflow `runs-on:`
@@ -519,6 +564,7 @@ Quick snippet:
 **Problem:** Docker build step fails or times out
 
 **Solution:**
+
 1. Increase timeout: `timeout-minutes: 45`
 2. Check Dockerfile for issues
 3. Review Docker logs
@@ -545,6 +591,7 @@ Quick snippet:
 ### Contribute
 
 Have a great workflow example to share?
+
 - Open a pull request at: https://github.com/andrelin/synology-github-runner
 - Share in Discussions: https://github.com/andrelin/synology-github-runner/discussions
 

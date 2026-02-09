@@ -61,7 +61,6 @@ show_resource_usage() {
 
     if [ -n "$STATS" ]; then
         echo "$STATS" | grep -v "NAME" | while read -r line; do
-            NAME=$(echo "$line" | awk '{print $1}')
             CPU=$(echo "$line" | awk '{print $2}')
             MEM_USAGE=$(echo "$line" | awk '{print $3, $4, $5}')
             MEM_PERCENT=$(echo "$line" | awk '{print $6}')
@@ -69,7 +68,7 @@ show_resource_usage() {
             BLOCK_IO=$(echo "$line" | awk '{print $10, $11, $12}')
 
             # Color-code based on usage
-            CPU_NUM=$(echo "$CPU" | sed 's/%//')
+            CPU_NUM=${CPU//%/}
             if (( $(echo "$CPU_NUM < 100" | bc -l) )); then
                 CPU_COLOR=$GREEN
             elif (( $(echo "$CPU_NUM < 150" | bc -l) )); then
@@ -78,7 +77,7 @@ show_resource_usage() {
                 CPU_COLOR=$RED
             fi
 
-            MEM_NUM=$(echo "$MEM_PERCENT" | sed 's/%//')
+            MEM_NUM=${MEM_PERCENT//%/}
             if (( $(echo "$MEM_NUM < 70" | bc -l) )); then
                 MEM_COLOR=$GREEN
             elif (( $(echo "$MEM_NUM < 90" | bc -l) )); then

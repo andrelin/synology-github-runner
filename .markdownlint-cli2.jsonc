@@ -1,0 +1,45 @@
+// Markdownlint configuration for synology-github-runner
+// See: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md
+{
+  "config": {
+    // Line length - Allow longer lines for docs with URLs and code
+    "MD013": {
+      "line_length": 120,
+      "code_blocks": false,
+      "tables": false
+    },
+    // Allow bare URLs in documentation - easier to read
+    "MD034": false,
+    // Allow emphasis as heading for subsections
+    "MD036": false,
+    // Allow trailing punctuation in headings (common in Q&A docs)
+    "MD026": false,
+    // Relax duplicate heading rule - common in troubleshooting sections
+    "MD024": false,
+    // Allow ordered list prefixes to use any number
+    "MD029": false,
+    // Enforce proper blank lines and table spacing (enabled - these will be fixed)
+    // MD032: Blanks around lists - ENABLED (will fix)
+    // MD031: Blanks around fenced code blocks - ENABLED (will fix)
+    // MD022: Blanks around headings - ENABLED (will fix)
+    // Allow multiple trailing newlines
+    "MD012": false,
+    // Allow trailing spaces (useful for markdown line breaks)
+    "MD009": {
+      "br_spaces": 2,
+      "list_item_empty_lines": false,
+      "strict": false
+    },
+    // Allow single-trailing-newline or no trailing newline
+    "MD047": false
+  },
+  "globs": [
+    "**/*.md"
+  ],
+  "ignores": [
+    "node_modules",
+    "workspace",
+    "cache",
+    ".git"
+  ]
+}
