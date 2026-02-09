@@ -179,7 +179,7 @@ scp file.sh admin@mynas.homedomain.local:/volume1/scripts/
 - Additional containers
 
 # ❌ BAD - Personal services
-- blog.myhomedomain.com
+- blog.personal-domain.com
 - MyCustomWebApp container
 - PersonalDevTools service
 ```

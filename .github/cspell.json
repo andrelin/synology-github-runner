@@ -44,7 +44,6 @@
     "nslookup",
     "Bitwarden",
     "Millis",
-    "myapp",
     "TMPFS",
     "tmpfs",
     "synogroup",
@@ -63,22 +62,20 @@
     "clippy",
     "dists",
     "elif",
-    "Dorg",
     "healthcheck",
     "pgrep",
     "pipenv",
     "mypy",
     "pytest",
-    "Swatinem",
     "temurin",
-    "dtolnay",
     "venv",
     "journalctl",
     "specced",
     "memswap",
-    "executability",
-    "myhomedomain",
-    "newtoken"
+    "executability"
+  ],
+  "ignoreRegExpList": [
+    "/uses:\\s+[a-zA-Z0-9_-]+\\/[a-zA-Z0-9_-]+@/g"
   ],
   "ignorePaths": [
     "node_modules/**",

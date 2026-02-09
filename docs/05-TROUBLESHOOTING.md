@@ -85,7 +85,7 @@ grep GITHUB_PAT .env
 
    ```bash
    nano .env
-   # Update GITHUB_PAT=ghp_newtoken...
+   # Update GITHUB_PAT=ghp_your_new_token_here...
    ```
 
 4. Restart container:
