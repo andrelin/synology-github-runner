@@ -204,7 +204,7 @@ Rebuild in Container Manager: Project → `github-runner` → Build
 
 ## Getting Help
 
-- 📖 [Full Documentation](README.md)
+- 📖 [Full Documentation](../README.md)
 - 🔧 [Troubleshooting Guide](05-TROUBLESHOOTING.md)
 - 🐛 [Report Issues](https://github.com/andrelin/synology-github-runner/issues)
 
