@@ -72,10 +72,13 @@
     "journalctl",
     "specced",
     "memswap",
-    "executability"
+    "executability",
+    "myapp",
+    "Swatinem",
+    "dtolnay"
   ],
   "ignoreRegExpList": [
-    "/uses:\\s+[a-zA-Z0-9_-]+\\/[a-zA-Z0-9_-]+@/g"
+    "\\-Dorg\\.\\w+"
   ],
   "ignorePaths": [
     "node_modules/**",
