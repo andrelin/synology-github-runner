@@ -506,5 +506,5 @@ keeps no state, and has been removed.
   launch `Runner.Listener` (fails on the old image, passes on the fixed one)
 - [ ] Deploy to the NAS with GitHub App credentials
 - [ ] Verify recovery after a NAS reboot
-- [ ] Verify recovery after a network outage (unplug, wait, replug)
+- [ ] Verify recovery after a network outage (unplug the network, wait, plug it back in)
 
