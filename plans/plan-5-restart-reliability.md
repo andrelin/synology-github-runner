@@ -1,6 +1,6 @@
 # Plan 5: Fix Runner Restart Reliability
 
-**Status:** 🟡 IN PROGRESS (reopened 2026-10-22)
+**Status:** 🟢 COMPLETE (reopened and fixed 2026-10-22)
 **Priority:** High
 **Estimated Duration:** 2-3 hours
 **Actual Duration:** 1.5 hours (first attempt, 2026-02-09)
@@ -504,7 +504,20 @@ keeps no state, and has been removed.
   `APP_PRIVATE_KEY`), which does not expire
 - ✅ CI builds the image and checks, via the entrypoint's `DEBUG_ONLY` mode, that it would
   launch `Runner.Listener` (fails on the old image, passes on the fixed one)
-- [ ] Deploy to the NAS with GitHub App credentials
-- [ ] Verify recovery after a NAS reboot
-- [ ] Verify recovery after a network outage (unplug the network, wait, plug it back in)
+- ✅ Deployed to the NAS as a Container Manager project (the existing non-expiring classic PAT kept,
+  so GitHub App credentials weren't needed there)
+- ✅ Network outage at startup (container detached from its network, then restarted): the old
+  upstream-only setup crash-looped (9 restarts in 45 s) but came back once the network returned;
+  the new image waited with 0 restarts and re-registered with `--replace` once reconnected
+- ✅ Two real NAS reboots (one manual, one for a DSM security update): Container Manager started
+  the container 1-4 minutes after boot, and the runner was listening for jobs about a minute later
+  with 0 restarts
+
+### Notes
+
+- DSM's Container Manager stops containers itself on shutdown and starts them again after boot,
+  so recovery depends on it rather than on Docker's `restart:` policy alone.
+- The original reboot failure of the upstream-only setup was not reproduced: its logs had rotated
+  out, and a plain restart and a startup without network both recovered. The fixes above remove
+  every failure path found, and the reboot tests pass on the new image.
 

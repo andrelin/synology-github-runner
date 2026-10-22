@@ -142,7 +142,7 @@ Investigate and document how to configure a single runner to serve multiple repo
 
 ### [plan-5-restart-reliability.md](plan-5-restart-reliability.md)
 
-**🟡 In Progress - first fix (2026-02-09) did not work; second attempt underway**
+**🟢 Complete - first fix (2026-02-09) did not work; fixed and reboot-tested 2026-10-22**
 
 Fix runner crash-loop after Synology NAS restarts. Currently requires manual intervention (delete container + rebuild).
 
@@ -289,7 +289,7 @@ To reach version 1.0.0, complete these plans in order:
 1. ✅ **Foundation** - Repository created, scripts written, core docs done
 2. 🟢 **Plan 1** - Repository integration (MOSTLY COMPLETE - just create .env)
 3. 🟡 **Plan 2** - Monitoring setup (READY TO START)
-4. 🔴 **Plan 5** - Fix restart reliability (CRITICAL - blocks production use)
+4. ✅ **Plan 5** - Fix restart reliability (COMPLETE - reboot-tested 2026-10-22)
 5. 🔴 **Plan 3** - CI/CD workflows (recommended before v1.0.0)
 6. 🟡 **Plan 4** - Documentation & examples (in progress, ~60% complete)
 7. 🔄 **Final Review** - Test everything, polish, prepare release
