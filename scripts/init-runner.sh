@@ -1,6 +1,9 @@
 #!/bin/bash
 # init-runner.sh - Initialize runner with proper pre-checks
-# This script runs before the GitHub runner starts to ensure system readiness
+# This script runs before the GitHub runner starts to ensure system readiness.
+#
+# It waits for volumes and network instead of exiting: an exit only restarts the
+# container into the same wait, and Docker's restart backoff grows each time.
 
 set -e
 
@@ -17,44 +20,30 @@ fi
 # 1. Verify workspace directory is accessible
 echo "Checking workspace access..."
 WORKSPACE_DIR="${RUNNER_WORKDIR:-/volume1/docker/github-runner/workspace}"
-if [ ! -d "$WORKSPACE_DIR" ]; then
-  echo "ERROR: Workspace directory not accessible: $WORKSPACE_DIR"
-  echo "This likely means volumes are not mounted yet. Waiting..."
-  RETRIES=0
-  while [ ! -d "$WORKSPACE_DIR" ] && [ $RETRIES -lt 12 ]; do
-    sleep 5
-    RETRIES=$((RETRIES + 1))
-    echo "Retry $RETRIES/12: Checking $WORKSPACE_DIR..."
-  done
-  if [ ! -d "$WORKSPACE_DIR" ]; then
-    echo "FATAL: Workspace directory never became available"
-    exit 1
-  fi
-fi
+RETRIES=0
+while [ ! -d "$WORKSPACE_DIR" ]; do
+  RETRIES=$((RETRIES + 1))
+  echo "Retry $RETRIES: Workspace directory not accessible yet: $WORKSPACE_DIR"
+  sleep 5
+done
 echo "✓ Workspace directory accessible"
 
 # 2. Check network connectivity to GitHub
 echo "Checking network connectivity to GitHub..."
 RETRIES=0
 while ! curl -sf --max-time 10 https://api.github.com/zen &> /dev/null; do
-  if [ $RETRIES -ge 12 ]; then
-    echo "ERROR: GitHub API not reachable after 12 attempts"
-    echo "This may be a network configuration issue"
-    exit 1
-  fi
   RETRIES=$((RETRIES + 1))
-  echo "Retry $RETRIES/12: Waiting for GitHub connectivity..."
-  sleep 5
+  echo "Retry $RETRIES: Waiting for GitHub connectivity..."
+  # Back off to one check a minute so a long outage doesn't flood the log
+  if [ $RETRIES -lt 12 ]; then
+    sleep 5
+  else
+    sleep 60
+  fi
 done
 echo "✓ GitHub API reachable"
 
-# 3. Clean up stale lock files that might prevent runner startup
-echo "Cleaning stale lock files..."
-find /home/runner -name "*.lock" -type f -delete 2>/dev/null || true
-find /home/runner -name ".runner.lock" -type f -delete 2>/dev/null || true
-echo "✓ Lock files cleaned"
-
-# 4. Verify Docker socket is accessible (for Docker-in-Docker workflows)
+# 3. Verify Docker socket is accessible (for Docker-in-Docker workflows)
 echo "Checking Docker socket access..."
 if [ -S /var/run/docker.sock ]; then
   if docker ps &> /dev/null; then
@@ -68,21 +57,16 @@ else
   echo "Docker-in-Docker workflows will not work"
 fi
 
-# 5. Check if this is a re-registration scenario
-if [ -f "/home/runner/.runner" ]; then
-  echo "✓ Runner already registered (found .runner file)"
-else
-  echo "⚠ Runner not yet registered - this is expected on first start"
-fi
-
-# 6. Verify required environment variables
+# 4. Verify required environment variables
+# Registration state is not checked: the base entrypoint deletes it and registers
+# afresh with --replace on every start, which is what makes restarts safe.
 echo "Checking required environment variables..."
 if [ -z "$REPO_URL" ]; then
   echo "ERROR: REPO_URL environment variable is not set"
   exit 1
 fi
-if [ -z "$ACCESS_TOKEN" ]; then
-  echo "ERROR: ACCESS_TOKEN environment variable is not set"
+if [ -z "$ACCESS_TOKEN" ] && [ -z "$APP_PRIVATE_KEY" ]; then
+  echo "ERROR: Set either GITHUB_PAT or the GitHub App credentials (APP_ID, APP_PRIVATE_KEY)"
   exit 1
 fi
 echo "✓ Required environment variables present"

@@ -41,7 +41,12 @@ services:
       # GitHub Configuration (from .env file)
       - RUNNER_NAME=${RUNNER_NAME:-synology-general-runner}
       - REPO_URL=${REPO_URL}
-      - ACCESS_TOKEN=${GITHUB_PAT}
+      - ACCESS_TOKEN=${GITHUB_PAT:-}
+
+      # Alternative to GITHUB_PAT: GitHub App credentials never expire,
+      # so the runner keeps re-registering after any outage (see .env.example)
+      - APP_ID=${APP_ID:-}
+      - APP_PRIVATE_KEY=${APP_PRIVATE_KEY:-}
 
       # Labels for flexible workflow selection
       - LABELS=${LABELS:-self-hosted,linux,synology,general}

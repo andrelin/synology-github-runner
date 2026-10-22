@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-22)
+
+- **Runner crash-loop on every start:** the custom image's `ENTRYPOINT` cleared the base
+  image's `CMD`, and `USER runner` made the base entrypoint exit (`RUN_AS_ROOT` defaults to
+  `true`). Rebuild the image to pick this up.
+- **Restart after an outage:** the init script now waits for the workspace and GitHub
+  indefinitely instead of exiting after a minute.
+
+### Added (2026-10-22)
+
+- **GitHub App authentication** (`APP_ID`, `APP_PRIVATE_KEY`) as a non-expiring
+  alternative to `GITHUB_PAT`
+- **CI check** that the built image launches `Runner.Listener`
+
 ### Added (2026-01-30)
 
 - **AI Code Review:** Pre-installed Anthropic Python SDK (v0.72.0)

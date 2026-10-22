@@ -1,10 +1,13 @@
 # Plan 5: Fix Runner Restart Reliability
 
-**Status:** 🟢 COMPLETE
+**Status:** 🟡 IN PROGRESS (reopened 2026-10-22)
 **Priority:** High
 **Estimated Duration:** 2-3 hours
-**Actual Duration:** 1.5 hours
-**Completed:** 2026-02-09
+**Actual Duration:** 1.5 hours (first attempt, 2026-02-09)
+
+> **Reopened:** the 2026-02-09 fix below did not work. The custom image it introduced
+> could not start the runner at all, and its test results were not reproduced on the
+> NAS. See [Second Attempt](#second-attempt-2026-10-22) for the real causes.
 
 ## Problem Statement
 
@@ -469,3 +472,39 @@ After fixing the immediate issue:
 - [ ] Implement proper logging of startup sequence (DONE - init script logs everything)
 - [ ] Add metrics for restart success rate
 - [ ] Consider systemd service for more control
+
+## Second Attempt (2026-10-22)
+
+The runner on the NAS still crash-looped after any disconnect and was left stopped for
+months. Reading the image against the upstream
+[entrypoint](https://github.com/myoung34/docker-github-actions-runner/blob/master/entrypoint.sh)
+showed the first attempt's custom image could never run the runner:
+
+1. **`ENTRYPOINT` cleared `CMD`.** Docker resets an inherited `CMD` when a derived image
+   sets `ENTRYPOINT`. The upstream entrypoint registered the runner, had no command to
+   run, exited, deregistered, and the restart policy started the loop again.
+2. **`USER runner` conflicted with `RUN_AS_ROOT=true`** (the upstream default). The
+   entrypoint exits with an error before launching anything when it is not root.
+3. **Expiring credentials.** The upstream entrypoint wipes the registration and registers
+   afresh on every start (`--replace`), which is what makes restarts safe, but it needs a
+   valid token each time. The docs recommended a 90-day PAT, so any restart after
+   expiry fails for good.
+4. **The init script gave up** after a minute without network and exited, feeding
+   Docker's growing restart backoff instead of waiting.
+
+The lock-file cleanup in the first attempt looked in `/home/runner`, where the runner
+keeps no state, and has been removed.
+
+### Fixes
+
+- ✅ `Dockerfile`: restate `CMD`, drop `USER runner`
+- ✅ `scripts/init-runner.sh`: wait for workspace and network indefinitely; accept GitHub
+  App credentials
+- ✅ `docker-compose.yml` / `.env.example`: GitHub App authentication (`APP_ID`,
+  `APP_PRIVATE_KEY`), which does not expire
+- ✅ CI builds the image and checks, via the entrypoint's `DEBUG_ONLY` mode, that it would
+  launch `Runner.Listener` (fails on the old image, passes on the fixed one)
+- [ ] Deploy to the NAS with GitHub App credentials
+- [ ] Verify recovery after a NAS reboot
+- [ ] Verify recovery after a network outage (unplug, wait, replug)
+

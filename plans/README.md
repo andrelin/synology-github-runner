@@ -142,7 +142,7 @@ Investigate and document how to configure a single runner to serve multiple repo
 
 ### [plan-5-restart-reliability.md](plan-5-restart-reliability.md)
 
-**🔴 Not Started - Critical Issue**
+**🟡 In Progress - first fix (2026-02-09) did not work; second attempt underway**
 
 Fix runner crash-loop after Synology NAS restarts. Currently requires manual intervention (delete container + rebuild).
 
