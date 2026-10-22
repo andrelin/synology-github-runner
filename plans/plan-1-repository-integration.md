@@ -1,6 +1,6 @@
 # Plan 1: Repository Integration
 
-**Status:** 🟢 Complete (Simplified)
+**Status:** 🟢 Complete (Simplified) - `.env` deployed 2026-10-22
 **Priority:** Critical
 **Estimated Duration:** 5 minutes
 
@@ -116,10 +116,10 @@ Or via Container Manager UI:
 ## Success Criteria
 
 - [x] docker-compose.yaml matches production configuration
-- [ ] .env file created with correct values
-- [ ] Container recreated with .env support
-- [ ] Runner shows "Idle" in GitHub
-- [ ] Test workflow runs successfully
+- [x] .env file created with correct values (2026-10-22, alongside the Plan 5 image)
+- [x] Container recreated with .env support
+- [x] Runner shows "Idle" in GitHub
+- [ ] Test workflow runs successfully (pending the next self-hosted job; earlier jobs passed on the old container)
 
 ## Next Steps
 
