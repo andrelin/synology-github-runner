@@ -60,6 +60,25 @@ jobs:
           docker compose config -q
           echo "✓ docker-compose.yml is valid"
 
+      # DEBUG_ONLY makes the base entrypoint print the command it would run instead
+      # of registering, so this catches an image that would exit on every start
+      - name: Verify runner image starts the runner
+        run: |
+          docker build -t runner-under-test .
+          output=$(docker run --rm \
+            -e DEBUG_ONLY=true \
+            -e STARTUP_DELAY_SECONDS=0 \
+            -e RUNNER_WORKDIR=/tmp \
+            -e REPO_URL=https://github.com/your-username/your-repo \
+            -e ACCESS_TOKEN=unused \
+            runner-under-test 2>&1) || { echo "$output"; exit 1; }
+          echo "$output"
+          if ! echo "$output" | grep -q "Running ./bin/Runner.Listener run"; then
+            echo "❌ Container would not launch Runner.Listener"
+            exit 1
+          fi
+          echo "✓ Container launches Runner.Listener"
+
       - name: Check for hardcoded secrets
         run: |
           echo "Scanning for hardcoded secrets in docker-compose.yml..."
