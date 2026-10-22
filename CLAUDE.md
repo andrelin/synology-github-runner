@@ -9,6 +9,12 @@ improving scripts, or adding features.
 
 This repository is **PUBLIC** and used by the community. You MUST follow these rules:
 
+**Keep everything generic.** This is a guide for anyone's NAS, not a record of the maintainer's.
+Nothing tracked may describe the maintainer's own deployment: what their runner serves, when they deployed or
+rebooted, what credential type they use, test logs from their NAS, or what else runs on it.
+That applies to `plans/` as much as to `docs/`: plans record design decisions and generic test results only.
+The maintainer's own setup (NAS address, login, deploy notes) belongs in the gitignored `CLAUDE.local.md`.
+
 ### ✅ ALLOWED Content
 
 - ✅ Generic examples and placeholders (e.g., `your-username/your-repo`)
@@ -21,7 +27,7 @@ This repository is **PUBLIC** and used by the community. You MUST follow these r
 ### ❌ NEVER Include
 
 - ❌ Specific hardware serial numbers or unique identifiers
-- ❌ Personal domain names or URLs (except GitHub repo URLs)
+- ❌ Personal domain names or URLs (the only GitHub repo URL allowed is this repository's)
 - ❌ Container names for personal services
 - ❌ IP addresses or network details
 - ❌ Specific file paths unique to user's setup

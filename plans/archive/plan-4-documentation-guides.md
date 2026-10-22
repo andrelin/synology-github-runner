@@ -529,7 +529,7 @@ Brief introduction to what this section covers.
 - `examples/workflows/` - Workflow examples to be created
 - `CLAUDE.md` - Development guide
 - `plans/implementation-history.md` - Historical context
-- `plans/plan-3-repository-workflows.md` - CI/CD for this repo
+- `plans/archive/plan-3-repository-workflows.md` - CI/CD for this repo
 - `.github/workflows/` - Actual workflows (Plan 3)
 - All existing `docs/*.md` files
 

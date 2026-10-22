@@ -7,9 +7,6 @@
       "pattern": "https://github.com/andrelin/synology-github-runner/discussions"
     },
     {
-      "pattern": "https://github.com/andrelin/planechaser"
-    },
-    {
       "pattern": "https://github.com/username/repo"
     }
   ],

@@ -960,9 +960,9 @@ If you've tried the solutions above and still have issues:
 **Problem:** Runner not appearing in GitHub
 
 **Environment:**
-- Synology: DS920+ with 8GB RAM
-- DSM: 7.2
-- Docker: 20.10.23
+- Synology: <model> with <RAM>
+- DSM: <DSM version>
+- Docker: <docker version>
 
 **Steps to reproduce:**
 1. Followed installation guide

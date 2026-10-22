@@ -26,8 +26,8 @@ real-world examples of the patterns this repository teaches.
 
 ⚠️ **RESOURCE LIMITATIONS:**
 
-- All workflows run on Synology self-hosted runner
-- Very limited resources (1.5 CPU cores, 5GB RAM)
+- Originally designed to run on a self-hosted Synology runner with constrained resources
+- Since moved to GitHub-hosted runners (`ubuntu-latest`), which are free for public repositories
 - **STRICT POLICY: Only one job at a time**
 - Must use orchestrator pattern for multiple jobs
 - Queue jobs instead of running parallel
@@ -514,13 +514,13 @@ These workflows demonstrate critical patterns for resource-constrained environme
 - Only 3 workflows (minimal job count)
 - Combined checks in single jobs (efficiency)
 - Strict concurrency control (one job at a time)
-- All workflows run on self-hosted Synology runner
+- Designed to fit a single constrained self-hosted runner
 - Fast feedback prioritized (quality.yml < 5 min)
 - Scheduled jobs during low-traffic times (2-3 AM Sunday)
 
 **Why This Approach:**
 
-- Respects limited resources (1.5 CPU, 5GB RAM)
+- Respects limited runner resources
 - Minimizes queue wait times
 - Demonstrates best practices for users
 - Works reliably in constrained environments

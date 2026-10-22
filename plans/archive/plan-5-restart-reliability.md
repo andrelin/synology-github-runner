@@ -6,8 +6,8 @@
 **Actual Duration:** 1.5 hours (first attempt, 2026-02-09)
 
 > **Reopened:** the 2026-02-09 fix below did not work. The custom image it introduced
-> could not start the runner at all, and its test results were not reproduced on the
-> NAS. See [Second Attempt](#second-attempt-2026-10-22) for the real causes.
+> could not start the runner at all. See [Second Attempt](#second-attempt-2026-10-22)
+> for the real causes.
 
 ## Problem Statement
 
@@ -475,8 +475,8 @@ After fixing the immediate issue:
 
 ## Second Attempt (2026-10-22)
 
-The runner on the NAS still crash-looped after any disconnect and was left stopped for
-months. Reading the image against the upstream
+The first fix did not hold: the runner still crash-looped after a restart. Reading the
+image against the upstream
 [entrypoint](https://github.com/myoung34/docker-github-actions-runner/blob/master/entrypoint.sh)
 showed the first attempt's custom image could never run the runner:
 
@@ -504,20 +504,15 @@ keeps no state, and has been removed.
   `APP_PRIVATE_KEY`), which does not expire
 - ✅ CI builds the image and checks, via the entrypoint's `DEBUG_ONLY` mode, that it would
   launch `Runner.Listener` (fails on the old image, passes on the fixed one)
-- ✅ Deployed to the NAS as a Container Manager project (the existing non-expiring classic PAT kept,
-  so GitHub App credentials weren't needed there)
-- ✅ Network outage at startup (container detached from its network, then restarted): the old
-  upstream-only setup crash-looped (9 restarts in 45 s) but came back once the network returned;
-  the new image waited with 0 restarts and re-registered with `--replace` once reconnected
-- ✅ Two real NAS reboots (one manual, one for a DSM security update): Container Manager started
-  the container 1-4 minutes after boot, and the runner was listening for jobs about a minute later
-  with 0 restarts
+- ✅ Network outage at startup (container detached from its network, then restarted): the
+  init script waits with no container restarts and the runner re-registers with `--replace`
+  once the network returns
+- ✅ NAS reboot: the runner comes back by itself with no container restarts and picks up jobs
 
 ### Notes
 
 - DSM's Container Manager stops containers itself on shutdown and starts them again after boot,
   so recovery depends on it rather than on Docker's `restart:` policy alone.
-- The original reboot failure of the upstream-only setup was not reproduced: its logs had rotated
-  out, and a plain restart and a startup without network both recovered. The fixes above remove
-  every failure path found, and the reboot tests pass on the new image.
+- A setup using the upstream image directly recovered from a plain restart. Started without
+  network, it crash-looped until the network came back, then recovered.
 

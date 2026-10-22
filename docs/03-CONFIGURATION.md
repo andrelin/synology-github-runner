@@ -31,10 +31,10 @@ nano .env
 
 ```bash
 # Repository-level (single repository)
-REPO_URL=https://github.com/andrelin/planechaser
+REPO_URL=https://github.com/your-username/your-repo
 
 # Organization-level (all repositories in organization)
-REPO_URL=https://github.com/andrelin
+REPO_URL=https://github.com/your-org
 ```
 
 **Important:**
@@ -109,7 +109,7 @@ RUNNER_NAME=nas-build-server-01
 RUNNER_NAME=home-runner
 
 # Project-specific
-RUNNER_NAME=planechaser-synology
+RUNNER_NAME=myapp-synology
 RUNNER_NAME=myapp-nas-runner
 ```
 
@@ -137,7 +137,7 @@ LABELS=self-hosted,linux,synology,kotlin,docker,gradle
 LABELS=self-hosted,linux,high-memory,gpu
 
 # Project-specific
-LABELS=self-hosted,linux,planechaser,mobile-builds
+LABELS=self-hosted,linux,myapp,mobile-builds
 ```
 
 **Usage in workflows:**
@@ -403,11 +403,11 @@ GRADLE_OPTS=-Xmx6g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
 
 ```bash
 # Required
-REPO_URL=https://github.com/your-username/planechaser
+REPO_URL=https://github.com/your-username/your-kmp-app
 GITHUB_PAT=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # Optional (Kotlin-optimized)
-RUNNER_NAME=planechaser-synology
+RUNNER_NAME=myapp-synology
 LABELS=self-hosted,linux,synology,kotlin,multiplatform,android,gradle
 RUNNER_MEMORY=8g
 RUNNER_CPU_SHARES=1536
