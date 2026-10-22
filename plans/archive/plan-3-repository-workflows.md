@@ -417,8 +417,8 @@ jobs:
 **Tasks:**
 
 1. [x] Add workflow status badges to README
-2. [x] Document workflow triggers in CONTRIBUTING.md (created comprehensive guide)
-3. [x] Create workflow troubleshooting guide (included in CONTRIBUTING.md)
+2. [x] Document workflow triggers in contributing.md (created comprehensive guide)
+3. [x] Create workflow troubleshooting guide (included in contributing.md)
 4. [ ] Test all workflows together (will test after push)
 5. [ ] Verify workflows don't conflict (will verify after push)
 
@@ -498,7 +498,7 @@ These workflows demonstrate critical patterns for resource-constrained environme
 - `docker-compose.yaml` - Configuration to validate
 - `docs/**/*.md` - Documentation to check
 - `.gitignore` - Ensures .env exclusion
-- `CONTRIBUTING.md` - Will document workflow expectations
+- `contributing.md` - Will document workflow expectations
 
 ## Notes
 

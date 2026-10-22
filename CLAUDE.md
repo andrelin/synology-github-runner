@@ -112,20 +112,20 @@ claims are:
 ```text
 synology-github-runner/
 ├── README.md                          # Main landing page
-├── CHANGELOG.md                       # Version history
+├── changelog.md                       # Version history
 ├── docker-compose.yaml                # Runner container configuration
 ├── .env.example                       # Configuration template
 │
 ├── docs/                              # Documentation guides
-│   ├── 00-QUICK-START.md
-│   ├── 01-PREREQUISITES.md
-│   ├── 02-INSTALLATION.md
-│   ├── 03-CONFIGURATION.md
-│   ├── 04-MONITORING.md
-│   ├── 05-TROUBLESHOOTING.md
-│   ├── 06-MAINTENANCE.md
-│   ├── 07-SECURITY.md
-│   └── 08-WORKFLOWS.md
+│   ├── 00-quick-start.md
+│   ├── 01-prerequisites.md
+│   ├── 02-installation.md
+│   ├── 03-configuration.md
+│   ├── 04-monitoring.md
+│   ├── 05-troubleshooting.md
+│   ├── 06-maintenance.md
+│   ├── 07-security.md
+│   └── 08-workflows.md
 │
 ├── scripts/
 │   ├── setup/                        # Installation scripts
@@ -287,16 +287,16 @@ docker ps | grep github-runner  # Check if runner is running
 
 **4. Cross-References:**
 
-- Link to related docs: `See [Monitoring Guide](04-MONITORING.md)`
+- Link to related docs: `See [Monitoring Guide](04-monitoring.md)`
 - Link to external resources with context
 - Keep links up-to-date
 
 ### Documentation File Naming
 
-- `00-QUICK-START.md` - TL;DR guide (number indicates reading order)
-- `01-PREREQUISITES.md` - Numbered guides read sequentially
-- `FAQ.md` - Special case, no number (alphabetical in listings)
-- Use UPPERCASE for main docs, kebab-case for specific topics
+- `00-quick-start.md` - TL;DR guide (number indicates reading order)
+- `01-prerequisites.md` - Numbered guides read sequentially
+- `faq.md` - Special case, no number (alphabetical in listings)
+- Filenames are lowercase kebab-case; only `README.md`, `CLAUDE.md` and `LICENSE` stay uppercase
 
 ## Container Manager Project Approach
 
@@ -512,7 +512,7 @@ chore(deps): update runner image to latest version
 - [ ] Scripts pass `shellcheck`
 - [ ] Docker Compose config validates
 - [ ] Documentation is updated
-- [ ] CHANGELOG.md is updated
+- [ ] changelog.md is updated
 - [ ] Tested on Synology (if possible)
 - [ ] Commit messages follow convention
 - [ ] No secrets or `.env` files committed
@@ -678,7 +678,7 @@ Follow [Semantic Versioning](https://semver.org/):
 
 ### Creating a Release
 
-1. Update `CHANGELOG.md`
+1. Update `changelog.md`
 2. Update version references in docs
 3. Create git tag: `git tag -a v1.1.0 -m "Release v1.1.0"`
 4. Push tag: `git push origin v1.1.0`
@@ -739,7 +739,7 @@ Before submitting work:
 ### Git
 
 - [ ] Conventional commit messages
-- [ ] CHANGELOG.md updated
+- [ ] changelog.md updated
 - [ ] .env.example updated (if config changed)
 - [ ] Co-authored-by attribution (if applicable)
 - [ ] **Final privacy check before push**

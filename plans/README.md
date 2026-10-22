@@ -37,7 +37,7 @@ Investigate and document how to configure a single runner to serve multiple repo
 
 **Deliverables:**
 
-- `docs/09-MULTI-REPO-SETUP.md` - Complete multi-repo guide
+- `docs/09-multi-repo-setup.md` - Complete multi-repo guide
 - Updated configuration documentation
 - Tested migration path
 - Clear recommendation: personal vs organization approach
@@ -81,7 +81,7 @@ memory sizing, sequential jobs, concurrency groups and hardening limits.
 - ✅ Pre-installed Anthropic Python SDK (v0.72.0) for Claude Code Review
 - ✅ Updated docker-compose.yaml to build custom image
 - ✅ Image tagged as `synology-github-runner:latest`
-- ✅ Created comprehensive workflow guide (docs/08-WORKFLOWS.md)
+- ✅ Created comprehensive workflow guide (docs/08-workflows.md)
 - ✅ Added Claude Code Review example with Python script
 - ✅ Updated README with AI Code Review feature
 - ✅ Updated CHANGELOG for v1.1.0 release
@@ -121,7 +121,7 @@ memory sizing, sequential jobs, concurrency groups and hardening limits.
 
 **Documentation Added:**
 
-- ✅ `docs/02-INSTALLATION.md` - Complete installation guide
+- ✅ `docs/02-installation.md` - Complete installation guide
   - Git-based repository cloning
   - Container Manager Project creation
   - Step-by-step verification
@@ -198,4 +198,4 @@ If you're working on implementing these plans:
 3. Add lessons learned in notes sections
 4. Update this README if plan structure changes
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) (when created) for full contribution guidelines.
+See [contributing.md](../contributing.md) (when created) for full contribution guidelines.

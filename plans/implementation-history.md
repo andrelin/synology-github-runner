@@ -22,7 +22,7 @@ Rule of thumb: give the JVM about 60% of the container's memory limit.
 ### Run memory-heavy jobs one after another
 
 Two Gradle jobs in parallel need more memory than a typical NAS container limit allows.
-Chain them with `needs:` so they run sequentially; see [Workflows Guide](../docs/08-WORKFLOWS.md).
+Chain them with `needs:` so they run sequentially; see [Workflows Guide](../docs/08-workflows.md).
 
 ### Only top-level workflows get concurrency groups
 
@@ -35,7 +35,7 @@ Put `concurrency:` on top-level workflows only, never on `workflow_call` workflo
 
 `no-new-privileges`, `cap_drop: ALL` with selective `cap_add`, and `tmpfs` mounts all work.
 Restricting network access to the GitHub API does not: the runner needs the Docker socket and dependency downloads.
-See [Security Guide](../docs/07-SECURITY.md).
+See [Security Guide](../docs/07-security.md).
 
 ### Recreating the container strands in-progress jobs
 

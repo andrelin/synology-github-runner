@@ -940,9 +940,9 @@ If you've tried the solutions above and still have issues:
    - Search: https://github.com/andrelin/synology-github-runner/issues
 
 3. **Review documentation:**
-   - [FAQ](FAQ.md)
-   - [Configuration Guide](03-CONFIGURATION.md)
-   - [Installation Guide](02-INSTALLATION.md)
+   - [FAQ](faq.md)
+   - [Configuration Guide](03-configuration.md)
+   - [Installation Guide](02-installation.md)
 
 ### How to Ask
 

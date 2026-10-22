@@ -31,14 +31,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Custom Docker Image:** Dockerfile extending myoung34/github-runner:latest
 - **Build Process:** Integrated into docker-compose.yaml with automatic image building
 - **Documentation:**
-  - Comprehensive workflow examples guide (docs/08-WORKFLOWS.md, 470 lines)
-  - Quick start guide (docs/00-QUICK-START.md)
-  - Prerequisites guide (docs/01-PREREQUISITES.md)
-  - Configuration reference (docs/03-CONFIGURATION.md)
-  - Troubleshooting guide (docs/05-TROUBLESHOOTING.md)
-  - Maintenance guide (docs/06-MAINTENANCE.md)
-  - Security best practices (docs/07-SECURITY.md)
-  - FAQ (docs/FAQ.md)
+  - Comprehensive workflow examples guide (docs/08-workflows.md, 470 lines)
+  - Quick start guide (docs/00-quick-start.md)
+  - Prerequisites guide (docs/01-prerequisites.md)
+  - Configuration reference (docs/03-configuration.md)
+  - Troubleshooting guide (docs/05-troubleshooting.md)
+  - Maintenance guide (docs/06-maintenance.md)
+  - Security best practices (docs/07-security.md)
+  - FAQ (docs/faq.md)
 - **Utility Script:** Claude Code Review dependency installer
 
 ### Added (2026-01-29)
@@ -54,10 +54,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Monitoring & Operations:**
   - Health check script with 8 automated checks (`scripts/monitoring/runner-health-check.sh`)
   - Real-time dashboard script (`scripts/monitoring/runner-dashboard.sh`)
-  - Monitoring documentation (docs/04-MONITORING.md)
+  - Monitoring documentation (docs/04-monitoring.md)
 - **Documentation:**
   - Comprehensive README with feature overview
-  - Installation guide (docs/02-INSTALLATION.md)
+  - Installation guide (docs/02-installation.md)
   - Guide for Claude Code (CLAUDE.md)
   - Implementation plans and history
 - **CI/CD Workflows:**

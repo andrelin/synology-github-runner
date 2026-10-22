@@ -572,9 +572,9 @@ env:
 
 ## Next Steps
 
-- [Configuration Guide](03-CONFIGURATION.md) - Tune resource limits
-- [Monitoring Guide](04-MONITORING.md) - Watch workflow performance
-- [Troubleshooting Guide](05-TROUBLESHOOTING.md) - Debug issues
+- [Configuration Guide](03-configuration.md) - Tune resource limits
+- [Monitoring Guide](04-monitoring.md) - Watch workflow performance
+- [Troubleshooting Guide](05-troubleshooting.md) - Debug issues
 
 ## Resources
 

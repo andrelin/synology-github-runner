@@ -26,7 +26,7 @@ Complete the monitoring and alerting setup for the self-hosted GitHub runner on 
 
 ### ✅ Documentation Written
 
-- `docs/04-MONITORING.md` - Complete setup guide
+- `docs/04-monitoring.md` - Complete setup guide
   - Installation instructions
   - DSM Task Scheduler configuration
   - Email notification setup
@@ -232,7 +232,7 @@ tail -100 /volume1/docker/github-runner/health-check.log | grep -E "(ALERT|WARNI
 ## Next Actions
 
 1. SSH into Synology NAS
-2. Follow `docs/04-MONITORING.md` step-by-step
+2. Follow `docs/04-monitoring.md` step-by-step
 3. Complete phases 6.1-6.4 today
 4. Let health checks run for 24-48 hours
 5. Review and tune (phase 6.5)
@@ -242,5 +242,5 @@ tail -100 /volume1/docker/github-runner/health-check.log | grep -E "(ALERT|WARNI
 
 - `scripts/monitoring/runner-health-check.sh` - Health monitoring script
 - `scripts/monitoring/runner-dashboard.sh` - Status dashboard script
-- `docs/04-MONITORING.md` - Complete setup guide
+- `docs/04-monitoring.md` - Complete setup guide
 - `plans/implementation-history.md` - Original Plan 2 planning

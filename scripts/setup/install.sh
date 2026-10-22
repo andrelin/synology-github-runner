@@ -241,7 +241,7 @@ setup_monitoring_schedule() {
     echo "4. Schedule: Every 5 minutes"
     echo "5. Script: $SCRIPTS_DIR/runner-health-check.sh"
     echo ""
-    echo "See docs/04-MONITORING.md for detailed instructions"
+    echo "See docs/04-monitoring.md for detailed instructions"
     echo ""
 }
 
@@ -263,7 +263,7 @@ print_summary() {
     echo ""
     echo "📚 Documentation: See README.md and docs/"
     echo ""
-    echo "🐛 Issues? Check docs/05-TROUBLESHOOTING.md"
+    echo "🐛 Issues? Check docs/05-troubleshooting.md"
     echo ""
 }
 

@@ -474,7 +474,7 @@ After installation:
 
 4. **Monitor runner activity** in GitHub Actions logs
 
-5. **Set up monitoring alerts** - See [Monitoring Guide](04-MONITORING.md)
+5. **Set up monitoring alerts** - See [Monitoring Guide](04-monitoring.md)
 
 6. **Review logs regularly** in Container Manager
 
@@ -482,11 +482,11 @@ After installation:
 
 After successful installation:
 
-1. ✅ **Set up monitoring** - See [Monitoring Guide](04-MONITORING.md)
+1. ✅ **Set up monitoring** - See [Monitoring Guide](04-monitoring.md)
 2. ✅ **Update your workflows** - Change `runs-on: ubuntu-latest` to `runs-on: [self-hosted, linux]`
 3. ✅ **Test with real workflows** - Run your actual CI/CD pipelines
 4. ✅ **Monitor resource usage** - Check Container Manager stats
-5. ✅ **Review security** - See [Security Guide](07-SECURITY.md)
+5. ✅ **Review security** - See [Security Guide](07-security.md)
 
 ## Benefits of This Approach
 
@@ -501,7 +501,7 @@ After successful installation:
 
 If you encounter issues:
 
-1. Check [Troubleshooting Guide](05-TROUBLESHOOTING.md)
+1. Check [Troubleshooting Guide](05-troubleshooting.md)
 2. View Container Manager logs
 3. Check GitHub Issues: https://github.com/andrelin/synology-github-runner/issues
 4. Read Docker runner docs: https://github.com/myoung34/docker-github-actions-runner

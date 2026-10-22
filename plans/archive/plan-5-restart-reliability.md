@@ -305,7 +305,7 @@ RestartSec=30s
 
 1. [ ] Document the fix in implementation history
 2. [ ] Update docker-compose.yaml with new configuration
-3. [ ] Update docs/06-MAINTENANCE.md with restart behavior
+3. [ ] Update docs/06-maintenance.md with restart behavior
 4. [ ] Add troubleshooting section for restart issues
 5. [ ] Document recovery procedures if auto-restart fails
 
@@ -428,7 +428,7 @@ docker-compose up -d
 5. **`.env.example`** - New configuration option
    - Added `STARTUP_DELAY_SECONDS` documentation
 
-6. **`docs/RESTART-RELIABILITY-FIX.md`** - Complete documentation
+6. **`docs/restart-reliability-fix.md`** - Complete documentation
    - Problem statement
    - Solution details
    - Testing procedures

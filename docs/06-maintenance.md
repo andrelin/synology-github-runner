@@ -480,7 +480,7 @@ docker stats github-runner
 /volume1/scripts/runner-dashboard.sh
 ```
 
-See [Monitoring Guide](04-MONITORING.md) for setup.
+See [Monitoring Guide](04-monitoring.md) for setup.
 
 **Create monitoring cron job:**
 
@@ -791,8 +791,8 @@ chmod +x /volume1/scripts/runner-maintenance.sh
 
 If you encounter issues during maintenance:
 
-- [Troubleshooting Guide](05-TROUBLESHOOTING.md)
-- [FAQ](FAQ.md)
+- [Troubleshooting Guide](05-troubleshooting.md)
+- [FAQ](faq.md)
 - [GitHub Issues](https://github.com/andrelin/synology-github-runner/issues)
 
 ---

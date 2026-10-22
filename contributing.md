@@ -280,13 +280,13 @@ When adding or updating documentation:
 ### Documentation Structure
 
 - `docs/00-*.md` - Numbered guides (read sequentially)
-- `docs/FAQ.md` - Questions and answers
+- `docs/faq.md` - Questions and answers
 - `examples/` - Working example files
 - `scripts/` - Executable utilities with inline docs
 
 ## Questions?
 
-- Check the [FAQ](docs/FAQ.md)
+- Check the [FAQ](docs/faq.md)
 - Review existing [Issues](https://github.com/andrelin/synology-github-runner/issues)
 - Start a [Discussion](https://github.com/andrelin/synology-github-runner/discussions)
 

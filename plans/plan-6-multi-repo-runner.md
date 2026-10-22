@@ -190,7 +190,7 @@ Based on research, evaluate each option:
 
 #### Task 6: Create Multi-Repo Setup Guide
 
-- [ ] Create new documentation: `docs/09-MULTI-REPO-SETUP.md`
+- [ ] Create new documentation: `docs/09-multi-repo-setup.md`
 
 **Sections:**
 
@@ -203,8 +203,8 @@ Based on research, evaluate each option:
 
 #### Task 7: Update Existing Documentation
 
-- [ ] Update `docs/03-CONFIGURATION.md` with multi-repo info
-- [ ] Update `docs/00-QUICK-START.md` if needed
+- [ ] Update `docs/03-configuration.md` with multi-repo info
+- [ ] Update `docs/00-quick-start.md` if needed
 - [ ] Update `README.md` features section
 - [ ] Add FAQ entries for multi-repo questions
 
@@ -242,14 +242,14 @@ Based on research, evaluate each option:
 
 ### Documentation
 
-- [ ] `docs/09-MULTI-REPO-SETUP.md` - Complete multi-repo guide
+- [ ] `docs/09-multi-repo-setup.md` - Complete multi-repo guide
   - Personal account multi-repo setup
   - Organization-level setup (if investigated and viable)
   - Comparison table: Personal vs Organization approach
   - When to use each approach
-- [ ] Updated `docs/03-CONFIGURATION.md` - Multi-repo configuration
-- [ ] Updated `docs/05-TROUBLESHOOTING.md` - Multi-repo issues
-- [ ] Updated `docs/FAQ.md` - Multi-repo questions
+- [ ] Updated `docs/03-configuration.md` - Multi-repo configuration
+- [ ] Updated `docs/05-troubleshooting.md` - Multi-repo issues
+- [ ] Updated `docs/faq.md` - Multi-repo questions
   - "Should I create a GitHub Organization?"
   - "Personal account vs Organization for runners?"
 
@@ -299,8 +299,8 @@ Based on research, evaluate each option:
 
 ## Related Files
 
-- `docs/03-CONFIGURATION.md` - Configuration guide
-- `docs/00-QUICK-START.md` - Quick start
+- `docs/03-configuration.md` - Configuration guide
+- `docs/00-quick-start.md` - Quick start
 - `.env.example` - Configuration template
 - `docker-compose.yaml` - Runner configuration
 

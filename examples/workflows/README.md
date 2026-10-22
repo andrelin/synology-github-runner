@@ -575,10 +575,10 @@ Quick snippet:
 
 ### Learn More
 
-- [Configuration Guide](../../docs/03-CONFIGURATION.md) - Tune runner resources
-- [Monitoring Guide](../../docs/04-MONITORING.md) - Track performance
-- [Workflows Guide](../../docs/08-WORKFLOWS.md) - Advanced patterns
-- [Troubleshooting Guide](../../docs/05-TROUBLESHOOTING.md) - Fix issues
+- [Configuration Guide](../../docs/03-configuration.md) - Tune runner resources
+- [Monitoring Guide](../../docs/04-monitoring.md) - Track performance
+- [Workflows Guide](../../docs/08-workflows.md) - Advanced patterns
+- [Troubleshooting Guide](../../docs/05-troubleshooting.md) - Fix issues
 
 ### Customize for Your Project
 
@@ -597,4 +597,4 @@ Have a great workflow example to share?
 
 ---
 
-**Questions?** Check the [FAQ](../../docs/FAQ.md) or [open an issue](https://github.com/andrelin/synology-github-runner/issues)
+**Questions?** Check the [FAQ](../../docs/faq.md) or [open an issue](https://github.com/andrelin/synology-github-runner/issues)

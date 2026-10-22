@@ -50,7 +50,7 @@ REPO_URL=https://github.com/your-org
 - **Organization-level:** Use when multiple repositories need to share the runner
 
 > **Note:** Organization-level runner setup requires organization admin permissions. See
-> [Prerequisites](01-PREREQUISITES.md) for details.
+> [Prerequisites](01-prerequisites.md) for details.
 
 ### GITHUB_PAT
 
@@ -499,7 +499,7 @@ tmpfs:  # In-memory temp storage (secure)
 - ✅ Reduced attack surface
 - ✅ Secure temporary storage
 
-**Do not modify unless you know what you're doing.** See [Security Guide](07-SECURITY.md) for more details.
+**Do not modify unless you know what you're doing.** See [Security Guide](07-security.md) for more details.
 
 ## Troubleshooting Configuration
 
@@ -603,11 +603,11 @@ tmpfs:  # In-memory temp storage (secure)
 
 ## Next Steps
 
-- [Monitoring Guide](04-MONITORING.md) - Monitor resource usage and health
-- [Workflows Guide](08-WORKFLOWS.md) - Optimize workflows for your setup
-- [Security Guide](07-SECURITY.md) - Additional security hardening
-- [Troubleshooting Guide](05-TROUBLESHOOTING.md) - Fix common issues
+- [Monitoring Guide](04-monitoring.md) - Monitor resource usage and health
+- [Workflows Guide](08-workflows.md) - Optimize workflows for your setup
+- [Security Guide](07-security.md) - Additional security hardening
+- [Troubleshooting Guide](05-troubleshooting.md) - Fix common issues
 
 ---
 
-**Need help?** See [Troubleshooting Guide](05-TROUBLESHOOTING.md) or [open an issue](https://github.com/andrelin/synology-github-runner/issues)
+**Need help?** See [Troubleshooting Guide](05-troubleshooting.md) or [open an issue](https://github.com/andrelin/synology-github-runner/issues)

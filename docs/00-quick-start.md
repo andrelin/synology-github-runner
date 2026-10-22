@@ -2,7 +2,7 @@
 
 > Get your GitHub self-hosted runner running on Synology NAS in **5 minutes**.
 
-This is the TL;DR guide. For detailed explanations, see the [full installation guide](02-INSTALLATION.md).
+This is the TL;DR guide. For detailed explanations, see the [full installation guide](02-installation.md).
 
 ## Prerequisites Checklist
 
@@ -138,7 +138,7 @@ jobs:
 
 ### Tune Your Setup
 
-See [Configuration Guide](03-CONFIGURATION.md) to:
+See [Configuration Guide](03-configuration.md) to:
 
 - Optimize resource limits for your hardware
 - Add custom runner labels
@@ -156,7 +156,7 @@ jobs:
 
 ### Set Up Monitoring
 
-See [Monitoring Guide](04-MONITORING.md) to:
+See [Monitoring Guide](04-monitoring.md) to:
 
 - Configure health checks
 - Set up automated alerts
@@ -205,7 +205,7 @@ Rebuild in Container Manager: Project → `github-runner` → Build
 ## Getting Help
 
 - 📖 [Full Documentation](../README.md)
-- 🔧 [Troubleshooting Guide](05-TROUBLESHOOTING.md)
+- 🔧 [Troubleshooting Guide](05-troubleshooting.md)
 - 🐛 [Report Issues](https://github.com/andrelin/synology-github-runner/issues)
 
 ## Congratulations! 🎉
@@ -233,7 +233,7 @@ Your self-hosted GitHub Actions runner is now active on your Synology NAS!
 
 **Next steps:**
 
-- [Prerequisites Guide](01-PREREQUISITES.md) - Detailed requirements
-- [Installation Guide](02-INSTALLATION.md) - Step-by-step with explanations
-- [Configuration Guide](03-CONFIGURATION.md) - Customize your setup
-- [Workflow Examples](08-WORKFLOWS.md) - Ready-to-use workflow patterns
+- [Prerequisites Guide](01-prerequisites.md) - Detailed requirements
+- [Installation Guide](02-installation.md) - Step-by-step with explanations
+- [Configuration Guide](03-configuration.md) - Customize your setup
+- [Workflow Examples](08-workflows.md) - Ready-to-use workflow patterns

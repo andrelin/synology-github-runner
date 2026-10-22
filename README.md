@@ -130,33 +130,33 @@ The installer will:
 
 ### Option 2: Manual Installation
 
-See [Installation Guide](docs/02-INSTALLATION.md) for step-by-step instructions.
+See [Installation Guide](docs/02-installation.md) for step-by-step instructions.
 
 ## 📖 Documentation
 
 ### Getting Started
 
-- [Prerequisites](docs/01-PREREQUISITES.md) - Hardware, software, and account setup
-- [Installation](docs/02-INSTALLATION.md) - Step-by-step installation guide
-- [Quick Start](docs/00-QUICK-START.md) - TL;DR for experienced users
+- [Prerequisites](docs/01-prerequisites.md) - Hardware, software, and account setup
+- [Installation](docs/02-installation.md) - Step-by-step installation guide
+- [Quick Start](docs/00-quick-start.md) - TL;DR for experienced users
 
 ### Configuration
 
-- [Configuration Guide](docs/03-CONFIGURATION.md) - Customize your runner
-- [Security Hardening](docs/07-SECURITY.md) - Best practices for production
-- [Workflow Examples](docs/08-WORKFLOWS.md) - Real-world workflow patterns
+- [Configuration Guide](docs/03-configuration.md) - Customize your runner
+- [Security Hardening](docs/07-security.md) - Best practices for production
+- [Workflow Examples](docs/08-workflows.md) - Real-world workflow patterns
 
 ### Operations
 
-- [Monitoring](docs/04-MONITORING.md) - Health checks and dashboards
-- [Maintenance](docs/06-MAINTENANCE.md) - Updates, backups, cleanup
-- [Troubleshooting](docs/05-TROUBLESHOOTING.md) - Common issues and solutions
+- [Monitoring](docs/04-monitoring.md) - Health checks and dashboards
+- [Maintenance](docs/06-maintenance.md) - Updates, backups, cleanup
+- [Troubleshooting](docs/05-troubleshooting.md) - Common issues and solutions
 
 ### Reference
 
-- [FAQ](docs/FAQ.md) - Frequently asked questions
-- [Contributing](CONTRIBUTING.md) - How to contribute
-- [Changelog](CHANGELOG.md) - Version history
+- [FAQ](docs/faq.md) - Frequently asked questions
+- [Contributing](contributing.md) - How to contribute
+- [Changelog](changelog.md) - Version history
 
 ## 🏗️ Architecture
 
@@ -325,7 +325,7 @@ runs-on: [self-hosted, kotlin]
 ✅ **Regular updates** - Keep runner image up to date
 ✅ **Monitor logs** - Watch for suspicious activity
 
-See [Security Guide](docs/07-SECURITY.md) for complete hardening checklist.
+See [Security Guide](docs/07-security.md) for complete hardening checklist.
 
 ## 📈 Monitoring Dashboard
 
@@ -365,7 +365,7 @@ Contributions welcome! Whether it's:
 - 🎨 Workflow examples
 - 💡 Ideas and suggestions
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+See [contributing.md](contributing.md) for guidelines.
 
 ## 📄 License
 

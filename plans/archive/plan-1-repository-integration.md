@@ -13,4 +13,4 @@ cloned and used as a Container Manager Project as-is.
 - Secrets and per-installation values moved to `.env` (gitignored), with `.env.example` as the template
 - Resource limits configurable through `.env`
 
-Setup steps live in the [Installation Guide](../../docs/02-INSTALLATION.md).
+Setup steps live in the [Installation Guide](../../docs/02-installation.md).

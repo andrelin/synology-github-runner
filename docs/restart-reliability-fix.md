@@ -277,6 +277,6 @@ This fix is **automatic** and requires no manual intervention. The initializatio
 
 ## Related Documentation
 
-- [Maintenance Guide](06-MAINTENANCE.md) - Regular maintenance tasks
-- [Troubleshooting Guide](05-TROUBLESHOOTING.md) - General troubleshooting
-- [Configuration Guide](03-CONFIGURATION.md) - Environment variable configuration
+- [Maintenance Guide](06-maintenance.md) - Regular maintenance tasks
+- [Troubleshooting Guide](05-troubleshooting.md) - General troubleshooting
+- [Configuration Guide](03-configuration.md) - Environment variable configuration
