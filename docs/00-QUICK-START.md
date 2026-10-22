@@ -73,7 +73,7 @@ mkdir -p workspace cache
 3. Configure:
    - **Project Name:** `github-runner`
    - **Path:** `/volume1/docker/synology-github-runner`
-   - **Source:** `Create docker-compose.yml`
+   - **Source:** `Create docker-compose.yaml`
 4. Click **Next** → **Next** → **Done**
 
 Container Manager will:

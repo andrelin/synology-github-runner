@@ -97,7 +97,7 @@ claims are:
 
 **Deployment Method:**
 
-- **Synology Container Manager** with docker-compose.yml
+- **Synology Container Manager** with docker-compose.yaml
 - **NOT** covering manual `docker run` commands
 - Focus on Project-based Container Manager setup
 
@@ -107,7 +107,7 @@ claims are:
 synology-github-runner/
 ├── README.md                          # Main landing page
 ├── CHANGELOG.md                       # Version history
-├── docker-compose.yml                 # Runner container configuration
+├── docker-compose.yaml                # Runner container configuration
 ├── .env.example                       # Configuration template
 │
 ├── docs/                              # Documentation guides
@@ -294,13 +294,13 @@ docker ps | grep github-runner  # Check if runner is running
 
 ## Container Manager Project Approach
 
-**IMPORTANT:** This repository focuses exclusively on **Synology Container Manager Projects** using docker-compose.yml.
+**IMPORTANT:** This repository focuses exclusively on **Synology Container Manager Projects** using docker-compose.yaml.
 
 ### Why Container Manager Projects
 
 - ✅ Native Synology UI integration
 - ✅ Easy management (Start/Stop/Build in UI)
-- ✅ Version control friendly (docker-compose.yml in repo)
+- ✅ Version control friendly (docker-compose.yaml in repo)
 - ✅ Automatic restart on NAS reboot
 - ✅ Built-in logging and monitoring
 
@@ -579,7 +579,7 @@ Update plan files in `plans/` directory:
 
 ### Completed
 - ✅ Exported Container Manager settings
-- ✅ Backed up docker-compose.yml
+- ✅ Backed up docker-compose.yaml
 - ✅ Verified runner working
 
 ### Notes
@@ -648,7 +648,7 @@ fi
 
 **❌ Don't:**
 
-- Put secrets in docker-compose.yml
+- Put secrets in docker-compose.yaml
 - Skip resource limits
 - Ignore security options
 - Forget health checks

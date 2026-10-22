@@ -31,7 +31,7 @@ that users can copy and customize for their projects.
 - `CLAUDE.md` - Guide for Claude Code (AI assistant)
 - `README.md` - Enhanced with badges and workflow status
 - `.env.example` - Configuration template
-- `docker-compose.yml` - Well-commented configuration
+- `docker-compose.yaml` - Well-commented configuration
 - `CONTRIBUTING.md` - Comprehensive contributor guide (Plan 3)
 - `CHANGELOG.md` - Version history
 

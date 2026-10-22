@@ -125,7 +125,7 @@ jobs:
 
       - name: Check for hardcoded secrets
         run: |
-          if grep -E '(password|token|secret|key).*=.*[^$]' docker-compose.yml; then
+          if grep -E '(password|token|secret|key).*=.*[^$]' docker-compose.yaml; then
             echo "Found potentially hardcoded secrets!"
             exit 1
           fi
@@ -434,7 +434,7 @@ jobs:
 - [ ] All workflows use strict concurrency controls
 - [ ] Each workflow completes in reasonable time (<10 minutes)
 - [ ] All shell scripts pass shellcheck
-- [ ] docker-compose.yml validates successfully
+- [ ] docker-compose.yaml validates successfully
 - [ ] Documentation has no broken links or spelling errors (internal)
 - [ ] No security vulnerabilities detected
 - [ ] Privacy validation passes (no personal info in repo)
@@ -495,7 +495,7 @@ These workflows demonstrate critical patterns for resource-constrained environme
 ## Related Files
 
 - `scripts/**/*.sh` - Scripts to be validated
-- `docker-compose.yml` - Configuration to validate
+- `docker-compose.yaml` - Configuration to validate
 - `docs/**/*.md` - Documentation to check
 - `.gitignore` - Ensures .env exclusion
 - `CONTRIBUTING.md` - Will document workflow expectations

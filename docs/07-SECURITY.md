@@ -23,7 +23,7 @@ Proper security is critical.
 - [ ] GitHub PAT has minimum scopes (`repo` + `workflow` only)
 - [ ] `.env` file has restrictive permissions (`chmod 600`)
 - [ ] GitHub PAT expires in 90 days or less
-- [ ] Container security hardening enabled (already in docker-compose.yml)
+- [ ] Container security hardening enabled (already in docker-compose.yaml)
 - [ ] Only run workflows from trusted repositories
 - [ ] Review workflow code before running
 - [ ] Regular security updates (monthly)
@@ -146,7 +146,7 @@ Add to calendar: "Rotate GitHub Runner Token" every 90 days.
 
 ### Security Hardening (Built-in)
 
-The docker-compose.yml includes security hardening by default:
+The docker-compose.yaml includes security hardening by default:
 
 ```yaml
 security_opt:
@@ -184,7 +184,7 @@ docker inspect github-runner | grep -A 20 CapDrop
 
 For maximum security, enable read-only root filesystem:
 
-**Add to docker-compose.yml:**
+**Add to docker-compose.yaml:**
 
 ```yaml
 services:
@@ -239,7 +239,7 @@ docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
 **No inbound ports needed:**
 
 - ✅ Runner connects **outbound** to GitHub
-- ✅ No ports exposed in docker-compose.yml
+- ✅ No ports exposed in docker-compose.yaml
 - ✅ No need to open firewall inbound rules
 
 **Required outbound access:**
@@ -278,7 +278,7 @@ DENY inbound ALL (no inbound ports needed)
    - Create custom network
    - Assign runner to isolated network
 
-**Example docker-compose.yml:**
+**Example docker-compose.yaml:**
 
 ```yaml
 services:
@@ -517,7 +517,7 @@ docker stats github-runner
 
 **Enable container logging:**
 
-In docker-compose.yml:
+In docker-compose.yaml:
 
 ```yaml
 services:

@@ -54,11 +54,11 @@ jobs:
       # ============================================================
       # Docker Configuration Validation
       # ============================================================
-      - name: Validate docker-compose.yml
+      - name: Validate docker-compose.yaml
         run: |
-          echo "Validating docker-compose.yml syntax..."
+          echo "Validating docker-compose.yaml syntax..."
           docker compose config -q
-          echo "✓ docker-compose.yml is valid"
+          echo "✓ docker-compose.yaml is valid"
 
       # DEBUG_ONLY makes the base entrypoint print the command it would run instead
       # of registering, so this catches an image that would exit on every start
@@ -81,8 +81,8 @@ jobs:
 
       - name: Check for hardcoded secrets
         run: |
-          echo "Scanning for hardcoded secrets in docker-compose.yml..."
-          if grep -E '(password|token|secret|key).*=.*[^$]' docker-compose.yml | grep -v '${'; then
+          echo "Scanning for hardcoded secrets in docker-compose.yaml..."
+          if grep -E '(password|token|secret|key).*=.*[^$]' docker-compose.yaml | grep -v '${'; then
             echo "❌ Found potentially hardcoded secrets!"
             exit 1
           fi

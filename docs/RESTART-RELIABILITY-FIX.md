@@ -55,7 +55,7 @@ Runs before the GitHub runner starts and validates:
 - Runs initialization script first
 - Exits only on missing configuration (`REPO_URL`, credentials), which a restart can't fix
 
-#### 3. Enhanced Health Check (docker-compose.yml)
+#### 3. Enhanced Health Check (docker-compose.yaml)
 
 ```yaml
 healthcheck:
@@ -180,7 +180,7 @@ Retry 12: Workspace directory not accessible yet: /volume1/docker/github-runner/
 - Volume mount is failing
 - Increase `STARTUP_DELAY_SECONDS=60`
 - Check volume path exists: `ls -la /volume1/docker/github-runner/`
-- Verify docker-compose.yml volume mounts are correct
+- Verify docker-compose.yaml volume mounts are correct
 
 #### Issue: "GitHub API not reachable"
 

@@ -61,7 +61,7 @@ ls -la
 
 You should see:
 
-- `docker-compose.yml` - Runner configuration
+- `docker-compose.yaml` - Runner configuration
 - `.env.example` - Configuration template
 - `scripts/` - Monitoring and setup scripts
 - `docs/` - Documentation
@@ -158,13 +158,13 @@ Now use the Synology Container Manager UI:
    **General Settings:**
    - **Project Name:** `github-runner`
    - **Path:** `/volume1/docker/synology-github-runner`
-   - **Source:** `Create docker-compose.yml`
+   - **Source:** `Create docker-compose.yaml`
 
    Click **Next**
 
 4. **Compose File:**
 
-   The wizard should automatically detect the `docker-compose.yml` file in the directory.
+   The wizard should automatically detect the `docker-compose.yaml` file in the directory.
 
    - Verify the compose file is loaded (you should see the github-runner service)
    - **Do NOT edit** the compose file in the UI
@@ -184,7 +184,7 @@ Now use the Synology Container Manager UI:
 
 The Container Manager will:
 
-- Read the `docker-compose.yml` file
+- Read the `docker-compose.yaml` file
 - Read the `.env` file for secrets
 - Create the container
 - Start the runner
@@ -340,7 +340,7 @@ After installation:
 ├── .git/                                # Git metadata
 ├── .env                                 # Your secrets (gitignored)
 ├── .env.example                         # Template
-├── docker-compose.yml                   # Runner configuration
+├── docker-compose.yaml                   # Runner configuration
 ├── workspace/                           # Runner workspace (gitignored)
 │   └── _work/                          # Job execution directories
 ├── cache/                               # Build cache (gitignored)
@@ -364,7 +364,7 @@ After installation:
 
 **❌ DON'T:**
 
-- Don't edit docker-compose.yml in Container Manager UI
+- Don't edit docker-compose.yaml in Container Manager UI
 - Don't manually create containers for compose projects
 - Don't delete workspace/ or cache/ directories
 - Don't commit .env file to git
@@ -438,7 +438,7 @@ After installation:
 
 **Solution:**
 
-1. Check docker-compose.yml syntax:
+1. Check docker-compose.yaml syntax:
 
    ```bash
    ssh admin@<your-nas-ip>

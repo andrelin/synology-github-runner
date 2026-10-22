@@ -6,7 +6,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Shell Script](https://img.shields.io/badge/Shell_Script-121011?logo=gnu-bash&logoColor=white)](scripts/)
-[![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)](docker-compose.yaml)
 [![Synology](https://img.shields.io/badge/Synology-B5B5B6?logo=synology&logoColor=white)](https://www.synology.com)
 
 [![Quality Checks](https://github.com/andrelin/synology-github-runner/actions/workflows/quality.yml/badge.svg)](https://github.com/andrelin/synology-github-runner/actions/workflows/quality.yml)
@@ -319,7 +319,7 @@ runs-on: [self-hosted, kotlin]
 ## 🛡️ Security Best Practices
 
 ✅ **Use minimal GitHub PAT scopes** - Only `repo` and `workflow`
-✅ **Enable read-only filesystem** - Included in docker-compose.yml
+✅ **Enable read-only filesystem** - Included in docker-compose.yaml
 ✅ **Drop all capabilities** - Only add what's needed
 ✅ **Use tmpfs for sensitive data** - Ephemeral storage for tokens
 ✅ **Regular updates** - Keep runner image up to date

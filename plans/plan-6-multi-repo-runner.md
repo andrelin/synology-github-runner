@@ -211,7 +211,7 @@ Based on research, evaluate each option:
 #### Task 8: Update Configuration Files
 
 - [ ] Ensure `.env.example` has clear multi-repo examples
-- [ ] Update `docker-compose.yml` comments if needed
+- [ ] Update `docker-compose.yaml` comments if needed
 - [ ] Add configuration example for multi-repo setup
 
 #### Task 9: Create Migration Guide
@@ -302,7 +302,7 @@ Based on research, evaluate each option:
 - `docs/03-CONFIGURATION.md` - Configuration guide
 - `docs/00-QUICK-START.md` - Quick start
 - `.env.example` - Configuration template
-- `docker-compose.yml` - Runner configuration
+- `docker-compose.yaml` - Runner configuration
 
 ## References
 

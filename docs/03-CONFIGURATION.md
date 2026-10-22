@@ -469,8 +469,8 @@ docker-compose logs -f
 
 ## Security Configuration
 
-The docker-compose.yml includes security hardening by default. These are **not** configurable via `.env` but you
-can edit `docker-compose.yml` if needed.
+The docker-compose.yaml includes security hardening by default. These are **not** configurable via `.env` but you
+can edit `docker-compose.yaml` if needed.
 
 ### Current Security Settings
 

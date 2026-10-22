@@ -304,7 +304,7 @@ RestartSec=30s
 **Tasks:**
 
 1. [ ] Document the fix in implementation history
-2. [ ] Update docker-compose.yml with new configuration
+2. [ ] Update docker-compose.yaml with new configuration
 3. [ ] Update docs/06-MAINTENANCE.md with restart behavior
 4. [ ] Add troubleshooting section for restart issues
 5. [ ] Document recovery procedures if auto-restart fails
@@ -421,7 +421,7 @@ docker-compose up -d
    - Copies init script and entrypoint wrapper
    - Sets custom entrypoint
 
-4. **`docker-compose.yml`** - Enhanced health check and config
+4. **`docker-compose.yaml`** - Enhanced health check and config
    - Added health check with 120s start period
    - Added `STARTUP_DELAY_SECONDS` environment variable
 
@@ -500,7 +500,7 @@ keeps no state, and has been removed.
 - ✅ `Dockerfile`: restate `CMD`, drop `USER runner`
 - ✅ `scripts/init-runner.sh`: wait for workspace and network indefinitely; accept GitHub
   App credentials
-- ✅ `docker-compose.yml` / `.env.example`: GitHub App authentication (`APP_ID`,
+- ✅ `docker-compose.yaml` / `.env.example`: GitHub App authentication (`APP_ID`,
   `APP_PRIVATE_KEY`), which does not expire
 - ✅ CI builds the image and checks, via the entrypoint's `DEBUG_ONLY` mode, that it would
   launch `Runner.Listener` (fails on the old image, passes on the fixed one)

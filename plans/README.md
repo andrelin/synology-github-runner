@@ -10,13 +10,13 @@ Plans are organized by priority and dependencies. Complete them in order for the
 
 **🟢 Complete (Simplified) - 2026-01-29**
 
-Repository docker-compose.yml now matches production Synology configuration.
+Repository docker-compose.yaml now matches production Synology configuration.
 Only remaining task is creating `.env` file on Synology to separate secrets from
 configuration.
 
 **What Was Completed:**
 
-- ✅ Updated docker-compose.yml to match production Synology setup
+- ✅ Updated docker-compose.yaml to match production Synology setup
 - ✅ Simplified from 120 lines to 48 lines (Synology-compatible syntax)
 - ✅ Made all resource limits configurable via .env file
 - ✅ Created comprehensive installation guide (docs/02-INSTALLATION.md)
@@ -41,7 +41,7 @@ Deploy monitoring scripts and configure automated health checks with DSM Task Sc
 
 **Prerequisites:**
 
-- ✅ Plan 1 complete (docker-compose.yml matches production)
+- ✅ Plan 1 complete (docker-compose.yaml matches production)
 - ✅ Monitoring scripts exist (runner-health-check.sh, runner-dashboard.sh)
 - ✅ Documentation exists (docs/04-MONITORING.md)
 
@@ -193,7 +193,7 @@ This document is kept for historical reference and lessons learned.
 
 - ✅ Created custom Dockerfile extending `myoung34/github-runner:latest`
 - ✅ Pre-installed Anthropic Python SDK (v0.72.0) for Claude Code Review
-- ✅ Updated docker-compose.yml to build custom image
+- ✅ Updated docker-compose.yaml to build custom image
 - ✅ Image tagged as `synology-github-runner:latest`
 - ✅ Created comprehensive workflow guide (docs/08-WORKFLOWS.md)
 - ✅ Added Claude Code Review example with Python script
@@ -221,13 +221,13 @@ This document is kept for historical reference and lessons learned.
 - ✅ Squashed commit history (10 commits → 2 commits)
 - ✅ Fixed broken .gitignore (leading spaces prevented all patterns from working)
 - ✅ Cleaned up empty directories (removed config/, added .gitkeep files)
-- ✅ Aligned docker-compose.yml with production Synology configuration
+- ✅ Aligned docker-compose.yaml with production Synology configuration
 - ✅ Made all resource limits configurable via .env file
 - ✅ Created comprehensive installation guide (478 lines)
 
 **Configuration Improvements:**
 
-- ✅ Simplified docker-compose.yml (120 lines → 48 lines, now 53 with build)
+- ✅ Simplified docker-compose.yaml (120 lines → 48 lines, now 53 with build)
 - ✅ Removed unnecessary features (networks, healthcheck, logging, read_only)
 - ✅ Added environment variable support for all configurable values
 - ✅ Included resource tuning guide for different NAS configurations

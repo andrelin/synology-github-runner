@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Restart after an outage:** the init script now waits for the workspace and GitHub
   indefinitely instead of exiting after a minute.
 
+### Changed (2026-10-22)
+
+- **Renamed `docker-compose.yml` to `docker-compose.yaml`**
+
 ### Added (2026-10-22)
 
 - **GitHub App authentication** (`APP_ID`, `APP_PRIVATE_KEY`) as a non-expiring
@@ -25,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **AI Code Review:** Pre-installed Anthropic Python SDK (v0.72.0)
 - **Custom Docker Image:** Dockerfile extending myoung34/github-runner:latest
-- **Build Process:** Integrated into docker-compose.yml with automatic image building
+- **Build Process:** Integrated into docker-compose.yaml with automatic image building
 - **Documentation:**
   - Comprehensive workflow examples guide (docs/08-WORKFLOWS.md, 470 lines)
   - Quick start guide (docs/00-QUICK-START.md)
@@ -67,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Docker Compose:** Now builds custom image instead of using base image directly
 - **Image Tagging:** Tagged as `synology-github-runner:latest` for easy identification
 - **CI Optimization:** Quality and security workflows skip execution for docs-only changes
-- **Configuration:** Simplified docker-compose.yml from 120 to 53 lines (Synology-compatible)
+- **Configuration:** Simplified docker-compose.yaml from 120 to 53 lines (Synology-compatible)
 
 ### Features
 

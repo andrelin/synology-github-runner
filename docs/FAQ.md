@@ -381,7 +381,7 @@ docker pull myoung34/github-runner:latest
 **Critical to backup:**
 
 - ✅ `.env` file (contains secrets) - Store securely
-- ✅ `docker-compose.yml` (if customized)
+- ✅ `docker-compose.yaml` (if customized)
 - ✅ Custom scripts or configurations
 
 **No need to backup:**
