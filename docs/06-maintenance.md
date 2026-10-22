@@ -28,7 +28,7 @@ Keep your GitHub self-hosted runner healthy, updated, and running efficiently.
 
 ### As Needed
 
-- [ ] Update docker-compose.yml (when new features released)
+- [ ] Update docker-compose.yaml (when new features released)
 - [ ] Increase disk space (when <20% free)
 - [ ] Tune performance (if builds are slow)
 
@@ -105,7 +105,7 @@ git pull origin main
 # Review what changed
 git diff HEAD~1
 
-# If docker-compose.yml changed, restart container
+# If docker-compose.yaml changed, restart container
 docker-compose down
 docker-compose up -d
 
@@ -116,7 +116,7 @@ docker-compose up -d
 
 - `.env` file is gitignored (your secrets are safe)
 - `workspace/` and `cache/` are gitignored (preserved)
-- Custom modifications to `docker-compose.yml` may be overwritten
+- Custom modifications to `docker-compose.yaml` may be overwritten
 
 ### Update DSM and Container Manager
 
@@ -178,7 +178,7 @@ docker-compose logs > runner-logs-$(date +%Y%m%d).txt
 
 Docker handles log rotation automatically, but you can configure limits:
 
-**Edit docker-compose.yml:**
+**Edit docker-compose.yaml:**
 
 ```yaml
 services:
@@ -314,14 +314,14 @@ If consistently running out of space:
   cp -r /volume1/docker/synology-github-runner /volume2/docker/
 
   # Update path in Container Manager
-  # Or update docker-compose.yml paths
+  # Or update docker-compose.yaml paths
   ```
 
 **Option 3: External storage**
 
 - Mount external drive
 - Move `cache/` to external storage
-- Update docker-compose.yml volume paths
+- Update docker-compose.yaml volume paths
 
 ## Backup and Restore
 
@@ -330,7 +330,7 @@ If consistently running out of space:
 **Critical (backup regularly):**
 
 - ✅ `.env` file (contains secrets)
-- ✅ `docker-compose.yml` (if customized)
+- ✅ `docker-compose.yaml` (if customized)
 - ✅ Custom scripts or configurations
 
 **Optional (nice to have):**
@@ -361,10 +361,10 @@ chmod 600 ~/backup/.env.github-runner.*
 gpg -c .env  # Creates .env.gpg
 ```
 
-**Backup docker-compose.yml:**
+**Backup docker-compose.yaml:**
 
 ```bash
-cp docker-compose.yml ~/backup/docker-compose.yml.$(date +%Y%m%d)
+cp docker-compose.yaml ~/backup/docker-compose.yaml.$(date +%Y%m%d)
 ```
 
 **Backup entire configuration:**
@@ -375,7 +375,7 @@ tar -czf ~/backup/runner-config-$(date +%Y%m%d).tar.gz \
   --exclude='workspace' \
   --exclude='cache' \
   --exclude='.git' \
-  .env docker-compose.yml scripts/
+  .env docker-compose.yaml scripts/
 ```
 
 ### Restore Procedure
@@ -390,8 +390,8 @@ cd /volume1/docker/synology-github-runner
 cp ~/backup/.env.github-runner.YYYYMMDD .env
 chmod 600 .env
 
-# Restore docker-compose.yml
-cp ~/backup/docker-compose.yml.YYYYMMDD docker-compose.yml
+# Restore docker-compose.yaml
+cp ~/backup/docker-compose.yaml.YYYYMMDD docker-compose.yaml
 
 # Restart container
 docker-compose down
@@ -480,7 +480,7 @@ docker stats github-runner
 /volume1/scripts/runner-dashboard.sh
 ```
 
-See [Monitoring Guide](04-MONITORING.md) for setup.
+See [Monitoring Guide](04-monitoring.md) for setup.
 
 **Create monitoring cron job:**
 
@@ -660,7 +660,7 @@ See [Workflow Examples](../examples/workflows/) for optimization patterns.
 docker pull myoung34/github-runner:<previous-version>
 
 # Or restore from backup
-cp ~/backup/docker-compose.yml.YYYYMMDD docker-compose.yml
+cp ~/backup/docker-compose.yaml.YYYYMMDD docker-compose.yaml
 
 # Restart
 docker-compose down
@@ -791,8 +791,8 @@ chmod +x /volume1/scripts/runner-maintenance.sh
 
 If you encounter issues during maintenance:
 
-- [Troubleshooting Guide](05-TROUBLESHOOTING.md)
-- [FAQ](FAQ.md)
+- [Troubleshooting Guide](05-troubleshooting.md)
+- [FAQ](faq.md)
 - [GitHub Issues](https://github.com/andrelin/synology-github-runner/issues)
 
 ---

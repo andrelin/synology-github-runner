@@ -98,12 +98,12 @@ create_directories() {
 setup_configuration() {
     print_step "Setting up configuration..."
 
-    # Copy docker-compose.yml
-    if [ -f "docker-compose.yml" ]; then
-        cp docker-compose.yml "$INSTALL_DIR/"
-        print_success "Copied docker-compose.yml"
+    # Copy docker-compose.yaml
+    if [ -f "docker-compose.yaml" ]; then
+        cp docker-compose.yaml "$INSTALL_DIR/"
+        print_success "Copied docker-compose.yaml"
     else
-        print_error "docker-compose.yml not found in current directory"
+        print_error "docker-compose.yaml not found in current directory"
         exit 1
     fi
 
@@ -241,7 +241,7 @@ setup_monitoring_schedule() {
     echo "4. Schedule: Every 5 minutes"
     echo "5. Script: $SCRIPTS_DIR/runner-health-check.sh"
     echo ""
-    echo "See docs/04-MONITORING.md for detailed instructions"
+    echo "See docs/04-monitoring.md for detailed instructions"
     echo ""
 }
 
@@ -263,7 +263,7 @@ print_summary() {
     echo ""
     echo "📚 Documentation: See README.md and docs/"
     echo ""
-    echo "🐛 Issues? Check docs/05-TROUBLESHOOTING.md"
+    echo "🐛 Issues? Check docs/05-troubleshooting.md"
     echo ""
 }
 
@@ -272,7 +272,7 @@ main() {
     print_header
 
     # Check if already installed
-    if [ -d "$INSTALL_DIR" ] && [ -f "$INSTALL_DIR/docker-compose.yml" ]; then
+    if [ -d "$INSTALL_DIR" ] && [ -f "$INSTALL_DIR/docker-compose.yaml" ]; then
         print_warning "Runner appears to be already installed at $INSTALL_DIR"
         read -p "Reinstall? This will preserve your .env file (y/N) " -n 1 -r
         echo

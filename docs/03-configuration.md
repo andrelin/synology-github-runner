@@ -31,10 +31,10 @@ nano .env
 
 ```bash
 # Repository-level (single repository)
-REPO_URL=https://github.com/andrelin/planechaser
+REPO_URL=https://github.com/your-username/your-repo
 
 # Organization-level (all repositories in organization)
-REPO_URL=https://github.com/andrelin
+REPO_URL=https://github.com/your-org
 ```
 
 **Important:**
@@ -50,7 +50,7 @@ REPO_URL=https://github.com/andrelin
 - **Organization-level:** Use when multiple repositories need to share the runner
 
 > **Note:** Organization-level runner setup requires organization admin permissions. See
-> [Prerequisites](01-PREREQUISITES.md) for details.
+> [Prerequisites](01-prerequisites.md) for details.
 
 ### GITHUB_PAT
 
@@ -109,7 +109,7 @@ RUNNER_NAME=nas-build-server-01
 RUNNER_NAME=home-runner
 
 # Project-specific
-RUNNER_NAME=planechaser-synology
+RUNNER_NAME=myapp-synology
 RUNNER_NAME=myapp-nas-runner
 ```
 
@@ -137,7 +137,7 @@ LABELS=self-hosted,linux,synology,kotlin,docker,gradle
 LABELS=self-hosted,linux,high-memory,gpu
 
 # Project-specific
-LABELS=self-hosted,linux,planechaser,mobile-builds
+LABELS=self-hosted,linux,myapp,mobile-builds
 ```
 
 **Usage in workflows:**
@@ -403,11 +403,11 @@ GRADLE_OPTS=-Xmx6g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
 
 ```bash
 # Required
-REPO_URL=https://github.com/your-username/planechaser
+REPO_URL=https://github.com/your-username/your-kmp-app
 GITHUB_PAT=ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # Optional (Kotlin-optimized)
-RUNNER_NAME=planechaser-synology
+RUNNER_NAME=myapp-synology
 LABELS=self-hosted,linux,synology,kotlin,multiplatform,android,gradle
 RUNNER_MEMORY=8g
 RUNNER_CPU_SHARES=1536
@@ -469,8 +469,8 @@ docker-compose logs -f
 
 ## Security Configuration
 
-The docker-compose.yml includes security hardening by default. These are **not** configurable via `.env` but you
-can edit `docker-compose.yml` if needed.
+The docker-compose.yaml includes security hardening by default. These are **not** configurable via `.env` but you
+can edit `docker-compose.yaml` if needed.
 
 ### Current Security Settings
 
@@ -499,7 +499,7 @@ tmpfs:  # In-memory temp storage (secure)
 - ✅ Reduced attack surface
 - ✅ Secure temporary storage
 
-**Do not modify unless you know what you're doing.** See [Security Guide](07-SECURITY.md) for more details.
+**Do not modify unless you know what you're doing.** See [Security Guide](07-security.md) for more details.
 
 ## Troubleshooting Configuration
 
@@ -603,11 +603,11 @@ tmpfs:  # In-memory temp storage (secure)
 
 ## Next Steps
 
-- [Monitoring Guide](04-MONITORING.md) - Monitor resource usage and health
-- [Workflows Guide](08-WORKFLOWS.md) - Optimize workflows for your setup
-- [Security Guide](07-SECURITY.md) - Additional security hardening
-- [Troubleshooting Guide](05-TROUBLESHOOTING.md) - Fix common issues
+- [Monitoring Guide](04-monitoring.md) - Monitor resource usage and health
+- [Workflows Guide](08-workflows.md) - Optimize workflows for your setup
+- [Security Guide](07-security.md) - Additional security hardening
+- [Troubleshooting Guide](05-troubleshooting.md) - Fix common issues
 
 ---
 
-**Need help?** See [Troubleshooting Guide](05-TROUBLESHOOTING.md) or [open an issue](https://github.com/andrelin/synology-github-runner/issues)
+**Need help?** See [Troubleshooting Guide](05-troubleshooting.md) or [open an issue](https://github.com/andrelin/synology-github-runner/issues)

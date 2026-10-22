@@ -1,10 +1,13 @@
 # Plan 5: Fix Runner Restart Reliability
 
-**Status:** 🟢 COMPLETE
+**Status:** 🟢 COMPLETE (reopened and fixed 2026-10-22)
 **Priority:** High
 **Estimated Duration:** 2-3 hours
-**Actual Duration:** 1.5 hours
-**Completed:** 2026-02-09
+**Actual Duration:** 1.5 hours (first attempt, 2026-02-09)
+
+> **Reopened:** the 2026-02-09 fix below did not work. The custom image it introduced
+> could not start the runner at all. See [Second Attempt](#second-attempt-2026-10-22)
+> for the real causes.
 
 ## Problem Statement
 
@@ -301,8 +304,8 @@ RestartSec=30s
 **Tasks:**
 
 1. [ ] Document the fix in implementation history
-2. [ ] Update docker-compose.yml with new configuration
-3. [ ] Update docs/06-MAINTENANCE.md with restart behavior
+2. [ ] Update docker-compose.yaml with new configuration
+3. [ ] Update docs/06-maintenance.md with restart behavior
 4. [ ] Add troubleshooting section for restart issues
 5. [ ] Document recovery procedures if auto-restart fails
 
@@ -418,14 +421,14 @@ docker-compose up -d
    - Copies init script and entrypoint wrapper
    - Sets custom entrypoint
 
-4. **`docker-compose.yml`** - Enhanced health check and config
+4. **`docker-compose.yaml`** - Enhanced health check and config
    - Added health check with 120s start period
    - Added `STARTUP_DELAY_SECONDS` environment variable
 
 5. **`.env.example`** - New configuration option
    - Added `STARTUP_DELAY_SECONDS` documentation
 
-6. **`docs/RESTART-RELIABILITY-FIX.md`** - Complete documentation
+6. **`docs/restart-reliability-fix.md`** - Complete documentation
    - Problem statement
    - Solution details
    - Testing procedures
@@ -469,3 +472,47 @@ After fixing the immediate issue:
 - [ ] Implement proper logging of startup sequence (DONE - init script logs everything)
 - [ ] Add metrics for restart success rate
 - [ ] Consider systemd service for more control
+
+## Second Attempt (2026-10-22)
+
+The first fix did not hold: the runner still crash-looped after a restart. Reading the
+image against the upstream
+[entrypoint](https://github.com/myoung34/docker-github-actions-runner/blob/master/entrypoint.sh)
+showed the first attempt's custom image could never run the runner:
+
+1. **`ENTRYPOINT` cleared `CMD`.** Docker resets an inherited `CMD` when a derived image
+   sets `ENTRYPOINT`. The upstream entrypoint registered the runner, had no command to
+   run, exited, deregistered, and the restart policy started the loop again.
+2. **`USER runner` conflicted with `RUN_AS_ROOT=true`** (the upstream default). The
+   entrypoint exits with an error before launching anything when it is not root.
+3. **Expiring credentials.** The upstream entrypoint wipes the registration and registers
+   afresh on every start (`--replace`), which is what makes restarts safe, but it needs a
+   valid token each time. The docs recommended a 90-day PAT, so any restart after
+   expiry fails for good.
+4. **The init script gave up** after a minute without network and exited, feeding
+   Docker's growing restart backoff instead of waiting.
+
+The lock-file cleanup in the first attempt looked in `/home/runner`, where the runner
+keeps no state, and has been removed.
+
+### Fixes
+
+- ✅ `Dockerfile`: restate `CMD`, drop `USER runner`
+- ✅ `scripts/init-runner.sh`: wait for workspace and network indefinitely; accept GitHub
+  App credentials
+- ✅ `docker-compose.yaml` / `.env.example`: GitHub App authentication (`APP_ID`,
+  `APP_PRIVATE_KEY`), which does not expire
+- ✅ CI builds the image and checks, via the entrypoint's `DEBUG_ONLY` mode, that it would
+  launch `Runner.Listener` (fails on the old image, passes on the fixed one)
+- ✅ Network outage at startup (container detached from its network, then restarted): the
+  init script waits with no container restarts and the runner re-registers with `--replace`
+  once the network returns
+- ✅ NAS reboot: the runner comes back by itself with no container restarts and picks up jobs
+
+### Notes
+
+- DSM's Container Manager stops containers itself on shutdown and starts them again after boot,
+  so recovery depends on it rather than on Docker's `restart:` policy alone.
+- A setup using the upstream image directly recovered from a plain restart. Started without
+  network, it crash-looped until the network came back, then recovered.
+

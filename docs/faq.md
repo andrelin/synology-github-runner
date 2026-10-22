@@ -54,7 +54,7 @@ Yes, when properly configured:
 - ✅ Runner connects outbound only (no inbound ports needed)
 - ✅ Regular security updates via Docker image
 
-See [Security Guide](07-SECURITY.md) for more details.
+See [Security Guide](07-security.md) for more details.
 
 ### How much does this cost?
 
@@ -86,7 +86,7 @@ See [Security Guide](07-SECURITY.md) for more details.
 - 16+ GB RAM
 - 50+ GB free disk space
 
-See [Prerequisites Guide](01-PREREQUISITES.md) for detailed requirements.
+See [Prerequisites Guide](01-prerequisites.md) for detailed requirements.
 
 ### Which Synology models are supported?
 
@@ -117,7 +117,7 @@ No! Works with:
 **Quick Start:** 5-10 minutes if prerequisites are ready
 **Full Setup:** 20-30 minutes including understanding and customization
 
-See [Quick Start Guide](00-QUICK-START.md).
+See [Quick Start Guide](00-quick-start.md).
 
 ### Can I use SSH or do I need the UI?
 
@@ -127,7 +127,7 @@ You can use either:
 - **Via DSM UI:** Container Manager for management
 - **Hybrid:** SSH for setup, UI for monitoring (recommended)
 
-See [Installation Guide](02-INSTALLATION.md) for both approaches.
+See [Installation Guide](02-installation.md) for both approaches.
 
 ## Configuration Questions
 
@@ -151,7 +151,7 @@ RUNNER_CPU_SHARES=2048
 GRADLE_OPTS=-Xmx6g ...
 ```
 
-See [Configuration Guide](03-CONFIGURATION.md) for details.
+See [Configuration Guide](03-configuration.md) for details.
 
 ### Can I run multiple runners?
 
@@ -188,7 +188,7 @@ Use in workflow:
 runs-on: [self-hosted, kotlin, gradle]
 ```
 
-See [Configuration Guide](03-CONFIGURATION.md#labels).
+See [Configuration Guide](03-configuration.md#labels).
 
 ### Where are the logs stored?
 
@@ -224,7 +224,7 @@ Common reasons:
 - Use sequential jobs (orchestrator pattern)
 - Run builds during off-peak hours
 
-See [Troubleshooting Guide](05-TROUBLESHOOTING.md#slow-build-performance).
+See [Troubleshooting Guide](05-troubleshooting.md#slow-build-performance).
 
 ### How can I speed up Docker builds?
 
@@ -304,7 +304,7 @@ GRADLE_OPTS=-Xmx5g ...  # If using Gradle
 docker-compose down && docker-compose up -d
 ```
 
-See [Troubleshooting Guide](05-TROUBLESHOOTING.md#out-of-memory-oom-errors).
+See [Troubleshooting Guide](05-troubleshooting.md#out-of-memory-oom-errors).
 
 ### Container keeps restarting
 
@@ -321,7 +321,7 @@ See [Troubleshooting Guide](05-TROUBLESHOOTING.md#out-of-memory-oom-errors).
 docker-compose logs --tail=100
 ```
 
-See [Troubleshooting Guide](05-TROUBLESHOOTING.md#container-wont-start).
+See [Troubleshooting Guide](05-troubleshooting.md#container-wont-start).
 
 ### "No space left on device" error
 
@@ -338,7 +338,7 @@ rm -rf workspace/* cache/*
 df -h /volume1
 ```
 
-See [Troubleshooting Guide](05-TROUBLESHOOTING.md#disk-space-issues).
+See [Troubleshooting Guide](05-troubleshooting.md#disk-space-issues).
 
 ## Maintenance Questions
 
@@ -360,7 +360,7 @@ docker-compose down
 docker-compose up -d
 ```
 
-See [Maintenance Guide](06-MAINTENANCE.md).
+See [Maintenance Guide](06-maintenance.md).
 
 ### How often should I update?
 
@@ -381,7 +381,7 @@ docker pull myoung34/github-runner:latest
 **Critical to backup:**
 
 - ✅ `.env` file (contains secrets) - Store securely
-- ✅ `docker-compose.yml` (if customized)
+- ✅ `docker-compose.yaml` (if customized)
 - ✅ Custom scripts or configurations
 
 **No need to backup:**
@@ -427,7 +427,7 @@ docker stats github-runner --no-stream
 /volume1/scripts/runner-dashboard.sh
 ```
 
-See [Monitoring Guide](04-MONITORING.md).
+See [Monitoring Guide](04-monitoring.md).
 
 ## Security Questions
 
@@ -575,10 +575,10 @@ See [orchestrator.yml example](../examples/workflows/orchestrator.yml).
 
 **Documentation:**
 
-- [Quick Start Guide](00-QUICK-START.md)
-- [Installation Guide](02-INSTALLATION.md)
-- [Configuration Guide](03-CONFIGURATION.md)
-- [Troubleshooting Guide](05-TROUBLESHOOTING.md)
+- [Quick Start Guide](00-quick-start.md)
+- [Installation Guide](02-installation.md)
+- [Configuration Guide](03-configuration.md)
+- [Troubleshooting Guide](05-troubleshooting.md)
 
 **Community:**
 
@@ -591,7 +591,7 @@ See [orchestrator.yml example](../examples/workflows/orchestrator.yml).
 2. **Gather information:** Logs, config, steps to reproduce
 3. **Open new issue** with clear description
 
-See [Troubleshooting Guide](05-TROUBLESHOOTING.md#when-to-ask-for-help) for what to include.
+See [Troubleshooting Guide](05-troubleshooting.md#when-to-ask-for-help) for what to include.
 
 ### Can I contribute?
 
@@ -602,7 +602,7 @@ Yes! Contributions welcome:
 - ✨ New features
 - 🎨 Workflow examples
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+See [contributing.md](../contributing.md) for guidelines.
 
 ### Is there a community chat?
 
@@ -616,4 +616,4 @@ Open an issue or discussion - maintainers and community members will help!
 ---
 
 **Question not answered?** [Open a discussion](https://github.com/andrelin/synology-github-runner/discussions) or
-[check the full documentation](00-QUICK-START.md).
+[check the full documentation](00-quick-start.md).

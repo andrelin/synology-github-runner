@@ -26,20 +26,20 @@ that users can copy and customize for their projects.
 
 ### ✅ Already Complete
 
-- `docs/02-INSTALLATION.md` - Step-by-step installation guide
-- `docs/04-MONITORING.md` - Monitoring setup guide
+- `docs/02-installation.md` - Step-by-step installation guide
+- `docs/04-monitoring.md` - Monitoring setup guide
 - `CLAUDE.md` - Guide for Claude Code (AI assistant)
 - `README.md` - Enhanced with badges and workflow status
 - `.env.example` - Configuration template
-- `docker-compose.yml` - Well-commented configuration
-- `CONTRIBUTING.md` - Comprehensive contributor guide (Plan 3)
-- `CHANGELOG.md` - Version history
+- `docker-compose.yaml` - Well-commented configuration
+- `contributing.md` - Comprehensive contributor guide (Plan 3)
+- `changelog.md` - Version history
 
 ### ✅ Phase 1 Complete (Critical User Journey)
 
-- `docs/00-QUICK-START.md` - 5-minute TL;DR guide ✅
-- `docs/01-PREREQUISITES.md` - System requirements with hardware table ✅
-- `docs/03-CONFIGURATION.md` - Comprehensive config reference ✅
+- `docs/00-quick-start.md` - 5-minute TL;DR guide ✅
+- `docs/01-prerequisites.md` - System requirements with hardware table ✅
+- `docs/03-configuration.md` - Comprehensive config reference ✅
 - `examples/workflows/basic-ci.yml` - Simple CI example ✅
 - `examples/workflows/orchestrator.yml` - Sequential job pattern ✅
 - `examples/workflows/docker-build.yml` - Docker build with caching ✅
@@ -47,14 +47,14 @@ that users can copy and customize for their projects.
 
 ### ✅ Phase 2 Complete (Operational Support)
 
-- `docs/05-TROUBLESHOOTING.md` - Comprehensive troubleshooting guide ✅
-- `docs/06-MAINTENANCE.md` - Update & cleanup procedures ✅
-- `docs/FAQ.md` - Frequently asked questions (50+ Q&A) ✅
+- `docs/05-troubleshooting.md` - Comprehensive troubleshooting guide ✅
+- `docs/06-maintenance.md` - Update & cleanup procedures ✅
+- `docs/faq.md` - Frequently asked questions (50+ Q&A) ✅
 
 ### ✅ Phase 3 Complete (Advanced)
 
-- `docs/07-SECURITY.md` - Security best practices ✅
-- `docs/08-WORKFLOWS.md` - GitHub Actions workflows guide ✅
+- `docs/07-security.md` - Security best practices ✅
+- `docs/08-workflows.md` - GitHub Actions workflows guide ✅
 - `examples/workflows/nodejs-ci.yml` - Node.js/TypeScript CI ✅
 - `examples/workflows/python-ci.yml` - Python CI with pip/poetry/pipenv ✅
 - `examples/workflows/gradle-ci.yml` - Java/Kotlin/Android CI ✅
@@ -77,7 +77,7 @@ Create the core documentation that users need to get started.
 
 #### 1.1: Quick Start Guide (30 minutes)
 
-**File:** `docs/00-QUICK-START.md`
+**File:** `docs/00-quick-start.md`
 
 **Sections:**
 
@@ -96,7 +96,7 @@ Create the core documentation that users need to get started.
 
 #### 1.2: Prerequisites Guide (30 minutes)
 
-**File:** `docs/01-PREREQUISITES.md`
+**File:** `docs/01-prerequisites.md`
 
 **Sections:**
 
@@ -114,7 +114,7 @@ Create the core documentation that users need to get started.
 
 #### 1.3: Installation Guide (1 hour)
 
-**File:** `docs/02-INSTALLATION.md`
+**File:** `docs/02-installation.md`
 
 **Sections:**
 
@@ -134,7 +134,7 @@ Create the core documentation that users need to get started.
 
 #### 1.4: Configuration Guide (1 hour)
 
-**File:** `docs/03-CONFIGURATION.md`
+**File:** `docs/03-configuration.md`
 
 **Sections:**
 
@@ -157,7 +157,7 @@ Create the core documentation that users need to get started.
 
 #### 2.1: Troubleshooting Guide (1 hour)
 
-**File:** `docs/05-TROUBLESHOOTING.md`
+**File:** `docs/05-troubleshooting.md`
 
 **Sections:**
 
@@ -180,7 +180,7 @@ Create the core documentation that users need to get started.
 
 #### 2.2: Maintenance Guide (30 minutes)
 
-**File:** `docs/06-MAINTENANCE.md`
+**File:** `docs/06-maintenance.md`
 
 **Sections:**
 
@@ -201,7 +201,7 @@ Create the core documentation that users need to get started.
 
 #### 2.3: Security Guide (30 minutes)
 
-**File:** `docs/07-SECURITY.md`
+**File:** `docs/07-security.md`
 
 **Sections:**
 
@@ -223,7 +223,7 @@ Create the core documentation that users need to get started.
 
 ### Step 3: Workflow Integration Guide (1 hour)
 
-**File:** `docs/08-WORKFLOWS.md`
+**File:** `docs/08-workflows.md`
 
 **Sections:**
 
@@ -247,7 +247,7 @@ Create the core documentation that users need to get started.
 
 #### 4.1: FAQ (30 minutes)
 
-**File:** `docs/FAQ.md`
+**File:** `docs/faq.md`
 
 **Sections:**
 
@@ -266,7 +266,7 @@ Create the core documentation that users need to get started.
 
 #### 4.2: Contributing Guide (30 minutes)
 
-**File:** `CONTRIBUTING.md`
+**File:** `contributing.md`
 
 **Sections:**
 
@@ -304,7 +304,7 @@ Create the core documentation that users need to get started.
 
 #### 5.2: Changelog (30 minutes)
 
-**File:** `CHANGELOG.md`
+**File:** `changelog.md`
 
 **Structure:**
 
@@ -529,7 +529,7 @@ Brief introduction to what this section covers.
 - `examples/workflows/` - Workflow examples to be created
 - `CLAUDE.md` - Development guide
 - `plans/implementation-history.md` - Historical context
-- `plans/plan-3-repository-workflows.md` - CI/CD for this repo
+- `plans/archive/plan-3-repository-workflows.md` - CI/CD for this repo
 - `.github/workflows/` - Actual workflows (Plan 3)
 - All existing `docs/*.md` files
 

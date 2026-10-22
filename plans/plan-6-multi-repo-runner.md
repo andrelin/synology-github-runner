@@ -12,8 +12,8 @@ Determine the best approach and provide clear setup instructions.
 
 ## Current Situation
 
-- Runner is currently configured for single repository (`andrelin/planechaser`)
-- User has multiple repositories that need CI/CD (`planechaser`, `synology-github-runner`, possibly others)
+- A runner is typically registered to a single repository (`your-username/repo-a`)
+- A personal account often has several repositories that need CI/CD (`repo-a`, `repo-b`, ...)
 - Running under personal GitHub account (not an organization)
 - Want to avoid creating a GitHub Organization if possible
 
@@ -87,7 +87,7 @@ Determine the best approach and provide clear setup instructions.
 #### Task 2: Test Current Behavior
 
 - [ ] Create a test workflow in `synology-github-runner` repo
-- [ ] Try to use the runner from a different repo (`planechaser`)
+- [ ] Try to use the runner from a different repo (`repo-b`)
 - [ ] Document what happens (success/failure/error messages)
 - [ ] Test with different `runs-on` labels
 
@@ -120,7 +120,7 @@ docker exec github-runner cat /runner/.runner
 
 # Check GitHub API (requires PAT)
 curl -H "Authorization: token $GITHUB_PAT" \
-  https://api.github.com/repos/andrelin/planechaser/actions/runners
+  https://api.github.com/repos/{owner}/{repo}/actions/runners
 ```
 
 #### Task 3.5: Investigate Organization-Level Runner Support
@@ -190,7 +190,7 @@ Based on research, evaluate each option:
 
 #### Task 6: Create Multi-Repo Setup Guide
 
-- [ ] Create new documentation: `docs/09-MULTI-REPO-SETUP.md`
+- [ ] Create new documentation: `docs/09-multi-repo-setup.md`
 
 **Sections:**
 
@@ -203,15 +203,15 @@ Based on research, evaluate each option:
 
 #### Task 7: Update Existing Documentation
 
-- [ ] Update `docs/03-CONFIGURATION.md` with multi-repo info
-- [ ] Update `docs/00-QUICK-START.md` if needed
+- [ ] Update `docs/03-configuration.md` with multi-repo info
+- [ ] Update `docs/00-quick-start.md` if needed
 - [ ] Update `README.md` features section
 - [ ] Add FAQ entries for multi-repo questions
 
 #### Task 8: Update Configuration Files
 
 - [ ] Ensure `.env.example` has clear multi-repo examples
-- [ ] Update `docker-compose.yml` comments if needed
+- [ ] Update `docker-compose.yaml` comments if needed
 - [ ] Add configuration example for multi-repo setup
 
 #### Task 9: Create Migration Guide
@@ -242,14 +242,14 @@ Based on research, evaluate each option:
 
 ### Documentation
 
-- [ ] `docs/09-MULTI-REPO-SETUP.md` - Complete multi-repo guide
+- [ ] `docs/09-multi-repo-setup.md` - Complete multi-repo guide
   - Personal account multi-repo setup
   - Organization-level setup (if investigated and viable)
   - Comparison table: Personal vs Organization approach
   - When to use each approach
-- [ ] Updated `docs/03-CONFIGURATION.md` - Multi-repo configuration
-- [ ] Updated `docs/05-TROUBLESHOOTING.md` - Multi-repo issues
-- [ ] Updated `docs/FAQ.md` - Multi-repo questions
+- [ ] Updated `docs/03-configuration.md` - Multi-repo configuration
+- [ ] Updated `docs/05-troubleshooting.md` - Multi-repo issues
+- [ ] Updated `docs/faq.md` - Multi-repo questions
   - "Should I create a GitHub Organization?"
   - "Personal account vs Organization for runners?"
 
@@ -269,7 +269,7 @@ Based on research, evaluate each option:
 - [ ] Clear documentation on how to set up multi-repo access
 - [ ] Tested and verified working solution
 - [ ] Migration steps documented and tested
-- [ ] User can set up runner for both planechaser and synology-github-runner repos
+- [ ] A user can set up one runner for two or more of their repositories
 - [ ] No need to create GitHub Organization (if possible)
 
 ## Open Questions
@@ -291,18 +291,18 @@ Based on research, evaluate each option:
 
 ## Notes
 
-- User has personal GitHub account (andrelin)
-- Repositories: planechaser, synology-github-runner (possibly more)
+- Personal GitHub account (not an organization)
+- Several repositories that need CI/CD
 - Resource-constrained environment (Synology NAS)
 - Prefer simple solution over complex org setup
 - Security is important (avoid admin:org scope if possible)
 
 ## Related Files
 
-- `docs/03-CONFIGURATION.md` - Configuration guide
-- `docs/00-QUICK-START.md` - Quick start
+- `docs/03-configuration.md` - Configuration guide
+- `docs/00-quick-start.md` - Quick start
 - `.env.example` - Configuration template
-- `docker-compose.yml` - Runner configuration
+- `docker-compose.yaml` - Runner configuration
 
 ## References
 

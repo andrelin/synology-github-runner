@@ -303,8 +303,8 @@ Before proceeding to installation, verify you have:
 
 Once all prerequisites are met:
 
-1. **Quick Setup:** See [Quick Start Guide](00-QUICK-START.md) for 5-minute setup
-2. **Detailed Setup:** See [Installation Guide](02-INSTALLATION.md) for step-by-step instructions
+1. **Quick Setup:** See [Quick Start Guide](00-quick-start.md) for 5-minute setup
+2. **Detailed Setup:** See [Installation Guide](02-installation.md) for step-by-step instructions
 
 ## Troubleshooting Prerequisites
 
@@ -368,9 +368,9 @@ If any fail, check:
 If you're stuck on prerequisites:
 
 - 📖 [Synology Knowledge Base](https://kb.synology.com/)
-- 🔧 [Troubleshooting Guide](05-TROUBLESHOOTING.md)
+- 🔧 [Troubleshooting Guide](05-troubleshooting.md)
 - 🐛 [GitHub Issues](https://github.com/andrelin/synology-github-runner/issues)
 
 ---
 
-**Ready?** Proceed to [Quick Start Guide](00-QUICK-START.md) or [Installation Guide](02-INSTALLATION.md)
+**Ready?** Proceed to [Quick Start Guide](00-quick-start.md) or [Installation Guide](02-installation.md)

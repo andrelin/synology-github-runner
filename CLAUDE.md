@@ -9,6 +9,12 @@ improving scripts, or adding features.
 
 This repository is **PUBLIC** and used by the community. You MUST follow these rules:
 
+**Keep everything generic.** This is a guide for anyone's NAS, not a record of the maintainer's.
+Nothing tracked may describe the maintainer's own deployment: what their runner serves, when they deployed or
+rebooted, what credential type they use, test logs from their NAS, or what else runs on it.
+That applies to `plans/` as much as to `docs/`: plans record design decisions and generic test results only.
+The maintainer's own setup (NAS address, login, deploy notes) belongs in the gitignored `CLAUDE.local.md`.
+
 ### ✅ ALLOWED Content
 
 - ✅ Generic examples and placeholders (e.g., `your-username/your-repo`)
@@ -21,7 +27,7 @@ This repository is **PUBLIC** and used by the community. You MUST follow these r
 ### ❌ NEVER Include
 
 - ❌ Specific hardware serial numbers or unique identifiers
-- ❌ Personal domain names or URLs (except GitHub repo URLs)
+- ❌ Personal domain names or URLs (the only GitHub repo URL allowed is this repository's)
 - ❌ Container names for personal services
 - ❌ IP addresses or network details
 - ❌ Specific file paths unique to user's setup
@@ -97,7 +103,7 @@ claims are:
 
 **Deployment Method:**
 
-- **Synology Container Manager** with docker-compose.yml
+- **Synology Container Manager** with docker-compose.yaml
 - **NOT** covering manual `docker run` commands
 - Focus on Project-based Container Manager setup
 
@@ -106,20 +112,20 @@ claims are:
 ```text
 synology-github-runner/
 ├── README.md                          # Main landing page
-├── CHANGELOG.md                       # Version history
-├── docker-compose.yml                 # Runner container configuration
+├── changelog.md                       # Version history
+├── docker-compose.yaml                # Runner container configuration
 ├── .env.example                       # Configuration template
 │
 ├── docs/                              # Documentation guides
-│   ├── 00-QUICK-START.md
-│   ├── 01-PREREQUISITES.md
-│   ├── 02-INSTALLATION.md
-│   ├── 03-CONFIGURATION.md
-│   ├── 04-MONITORING.md
-│   ├── 05-TROUBLESHOOTING.md
-│   ├── 06-MAINTENANCE.md
-│   ├── 07-SECURITY.md
-│   └── 08-WORKFLOWS.md
+│   ├── 00-quick-start.md
+│   ├── 01-prerequisites.md
+│   ├── 02-installation.md
+│   ├── 03-configuration.md
+│   ├── 04-monitoring.md
+│   ├── 05-troubleshooting.md
+│   ├── 06-maintenance.md
+│   ├── 07-security.md
+│   └── 08-workflows.md
 │
 ├── scripts/
 │   ├── setup/                        # Installation scripts
@@ -281,26 +287,26 @@ docker ps | grep github-runner  # Check if runner is running
 
 **4. Cross-References:**
 
-- Link to related docs: `See [Monitoring Guide](04-MONITORING.md)`
+- Link to related docs: `See [Monitoring Guide](04-monitoring.md)`
 - Link to external resources with context
 - Keep links up-to-date
 
 ### Documentation File Naming
 
-- `00-QUICK-START.md` - TL;DR guide (number indicates reading order)
-- `01-PREREQUISITES.md` - Numbered guides read sequentially
-- `FAQ.md` - Special case, no number (alphabetical in listings)
-- Use UPPERCASE for main docs, kebab-case for specific topics
+- `00-quick-start.md` - TL;DR guide (number indicates reading order)
+- `01-prerequisites.md` - Numbered guides read sequentially
+- `faq.md` - Special case, no number (alphabetical in listings)
+- Filenames are lowercase kebab-case; only `README.md`, `CLAUDE.md` and `LICENSE` stay uppercase
 
 ## Container Manager Project Approach
 
-**IMPORTANT:** This repository focuses exclusively on **Synology Container Manager Projects** using docker-compose.yml.
+**IMPORTANT:** This repository focuses exclusively on **Synology Container Manager Projects** using docker-compose.yaml.
 
 ### Why Container Manager Projects
 
 - ✅ Native Synology UI integration
 - ✅ Easy management (Start/Stop/Build in UI)
-- ✅ Version control friendly (docker-compose.yml in repo)
+- ✅ Version control friendly (docker-compose.yaml in repo)
 - ✅ Automatic restart on NAS reboot
 - ✅ Built-in logging and monitoring
 
@@ -506,7 +512,7 @@ chore(deps): update runner image to latest version
 - [ ] Scripts pass `shellcheck`
 - [ ] Docker Compose config validates
 - [ ] Documentation is updated
-- [ ] CHANGELOG.md is updated
+- [ ] changelog.md is updated
 - [ ] Tested on Synology (if possible)
 - [ ] Commit messages follow convention
 - [ ] No secrets or `.env` files committed
@@ -579,7 +585,7 @@ Update plan files in `plans/` directory:
 
 ### Completed
 - ✅ Exported Container Manager settings
-- ✅ Backed up docker-compose.yml
+- ✅ Backed up docker-compose.yaml
 - ✅ Verified runner working
 
 ### Notes
@@ -648,7 +654,7 @@ fi
 
 **❌ Don't:**
 
-- Put secrets in docker-compose.yml
+- Put secrets in docker-compose.yaml
 - Skip resource limits
 - Ignore security options
 - Forget health checks
@@ -672,7 +678,7 @@ Follow [Semantic Versioning](https://semver.org/):
 
 ### Creating a Release
 
-1. Update `CHANGELOG.md`
+1. Update `changelog.md`
 2. Update version references in docs
 3. Create git tag: `git tag -a v1.1.0 -m "Release v1.1.0"`
 4. Push tag: `git push origin v1.1.0`
@@ -733,7 +739,7 @@ Before submitting work:
 ### Git
 
 - [ ] Conventional commit messages
-- [ ] CHANGELOG.md updated
+- [ ] changelog.md updated
 - [ ] .env.example updated (if config changed)
 - [ ] Co-authored-by attribution (if applicable)
 - [ ] **Final privacy check before push**

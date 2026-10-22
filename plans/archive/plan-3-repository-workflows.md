@@ -26,8 +26,8 @@ real-world examples of the patterns this repository teaches.
 
 ⚠️ **RESOURCE LIMITATIONS:**
 
-- All workflows run on Synology self-hosted runner
-- Very limited resources (1.5 CPU cores, 5GB RAM)
+- Originally designed to run on a self-hosted Synology runner with constrained resources
+- Since moved to GitHub-hosted runners (`ubuntu-latest`), which are free for public repositories
 - **STRICT POLICY: Only one job at a time**
 - Must use orchestrator pattern for multiple jobs
 - Queue jobs instead of running parallel
@@ -125,7 +125,7 @@ jobs:
 
       - name: Check for hardcoded secrets
         run: |
-          if grep -E '(password|token|secret|key).*=.*[^$]' docker-compose.yml; then
+          if grep -E '(password|token|secret|key).*=.*[^$]' docker-compose.yaml; then
             echo "Found potentially hardcoded secrets!"
             exit 1
           fi
@@ -417,8 +417,8 @@ jobs:
 **Tasks:**
 
 1. [x] Add workflow status badges to README
-2. [x] Document workflow triggers in CONTRIBUTING.md (created comprehensive guide)
-3. [x] Create workflow troubleshooting guide (included in CONTRIBUTING.md)
+2. [x] Document workflow triggers in contributing.md (created comprehensive guide)
+3. [x] Create workflow troubleshooting guide (included in contributing.md)
 4. [ ] Test all workflows together (will test after push)
 5. [ ] Verify workflows don't conflict (will verify after push)
 
@@ -434,7 +434,7 @@ jobs:
 - [ ] All workflows use strict concurrency controls
 - [ ] Each workflow completes in reasonable time (<10 minutes)
 - [ ] All shell scripts pass shellcheck
-- [ ] docker-compose.yml validates successfully
+- [ ] docker-compose.yaml validates successfully
 - [ ] Documentation has no broken links or spelling errors (internal)
 - [ ] No security vulnerabilities detected
 - [ ] Privacy validation passes (no personal info in repo)
@@ -495,10 +495,10 @@ These workflows demonstrate critical patterns for resource-constrained environme
 ## Related Files
 
 - `scripts/**/*.sh` - Scripts to be validated
-- `docker-compose.yml` - Configuration to validate
+- `docker-compose.yaml` - Configuration to validate
 - `docs/**/*.md` - Documentation to check
 - `.gitignore` - Ensures .env exclusion
-- `CONTRIBUTING.md` - Will document workflow expectations
+- `contributing.md` - Will document workflow expectations
 
 ## Notes
 
@@ -514,13 +514,13 @@ These workflows demonstrate critical patterns for resource-constrained environme
 - Only 3 workflows (minimal job count)
 - Combined checks in single jobs (efficiency)
 - Strict concurrency control (one job at a time)
-- All workflows run on self-hosted Synology runner
+- Designed to fit a single constrained self-hosted runner
 - Fast feedback prioritized (quality.yml < 5 min)
 - Scheduled jobs during low-traffic times (2-3 AM Sunday)
 
 **Why This Approach:**
 
-- Respects limited resources (1.5 CPU, 5GB RAM)
+- Respects limited runner resources
 - Minimizes queue wait times
 - Demonstrates best practices for users
 - Works reliably in constrained environments

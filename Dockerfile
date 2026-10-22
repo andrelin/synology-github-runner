@@ -14,8 +14,13 @@ RUN chmod +x /opt/init-runner.sh
 COPY scripts/entrypoint-wrapper.sh /opt/entrypoint-wrapper.sh
 RUN chmod +x /opt/entrypoint-wrapper.sh
 
-# Switch back to runner user
-USER runner
+# The container stays root on purpose: the base entrypoint refuses to start under
+# a non-root USER while RUN_AS_ROOT=true (its default) and exits on every boot.
+# Set RUN_AS_ROOT=false to have it drop to the runner user itself via gosu.
 
 # Use wrapper entrypoint
 ENTRYPOINT ["/opt/entrypoint-wrapper.sh"]
+
+# Setting ENTRYPOINT clears the CMD inherited from the base image, so restate it.
+# Without it the entrypoint registers the runner, has nothing to run, and exits.
+CMD ["./bin/Runner.Listener", "run", "--startuptype", "service"]

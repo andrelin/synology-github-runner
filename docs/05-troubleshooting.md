@@ -571,8 +571,8 @@ curl -I https://api.github.com
 If you use a proxy:
 
 ```bash
-# Edit docker-compose.yml
-nano docker-compose.yml
+# Edit docker-compose.yaml
+nano docker-compose.yaml
 
 # Add to environment:
 environment:
@@ -800,7 +800,7 @@ These tools commonly run Docker-in-Docker and may need this fix:
 - Using a non-standard path helps avoid conflicts with other software
 - It makes the configuration more explicit and Synology-specific
 
-**Already updated docker-compose.yml?**
+**Already updated docker-compose.yaml?**
 
 - The latest version (as of 2026-01-30) includes this fix by default
 - Pull the latest changes: `git pull origin main`
@@ -853,7 +853,7 @@ chmod 755 workspace cache
 ls -la /var/run/docker.sock
 
 # If needed, add user to docker group (on NAS)
-# This is already configured in docker-compose.yml
+# This is already configured in docker-compose.yaml
 ```
 
 **Read-Only Filesystem**
@@ -861,7 +861,7 @@ ls -la /var/run/docker.sock
 If using custom security settings:
 
 ```yaml
-# In docker-compose.yml - remove read_only if needed
+# In docker-compose.yaml - remove read_only if needed
 # But this reduces security
 ```
 
@@ -940,9 +940,9 @@ If you've tried the solutions above and still have issues:
    - Search: https://github.com/andrelin/synology-github-runner/issues
 
 3. **Review documentation:**
-   - [FAQ](FAQ.md)
-   - [Configuration Guide](03-CONFIGURATION.md)
-   - [Installation Guide](02-INSTALLATION.md)
+   - [FAQ](faq.md)
+   - [Configuration Guide](03-configuration.md)
+   - [Installation Guide](02-installation.md)
 
 ### How to Ask
 
@@ -960,9 +960,9 @@ If you've tried the solutions above and still have issues:
 **Problem:** Runner not appearing in GitHub
 
 **Environment:**
-- Synology: DS920+ with 8GB RAM
-- DSM: 7.2
-- Docker: 20.10.23
+- Synology: <model> with <RAM>
+- DSM: <DSM version>
+- Docker: <docker version>
 
 **Steps to reproduce:**
 1. Followed installation guide

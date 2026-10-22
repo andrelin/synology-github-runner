@@ -8,7 +8,25 @@ Previously, the GitHub runner container would enter a crash-loop after Synology 
 2. Rebuild the project
 3. Runner comes back up
 
-**This is now fixed.** The runner will automatically recover after NAS restart.
+The runner now recovers by itself after a NAS restart or a network outage, without
+manual steps.
+
+> **⚠️ Warning:** The first version of this fix (February 2026) shipped an image that could
+> not start the runner at all: its `ENTRYPOINT` cleared the base image's `CMD`, and its
+> `USER runner` made the base entrypoint exit because `RUN_AS_ROOT` defaults to `true`.
+> If you built the image before October 2026, rebuild it.
+
+### Why restarts are safe now
+
+On every container start the base image's entrypoint deletes the old registration and
+registers again with `--replace`. Nothing from a previous run is reused, so an unclean
+shutdown, a reboot or a runner GitHub has removed while offline cannot leave a broken
+state behind.
+
+That needs a valid credential on every start. A PAT eventually expires, and the next
+restart after that fails until you replace it. For a runner you never want to touch, use
+GitHub App credentials (`APP_ID`, `APP_PRIVATE_KEY` in `.env`), which don't expire. See
+`.env.example` for setup.
 
 ## Solution Implemented
 
@@ -22,22 +40,22 @@ Runs before the GitHub runner starts and validates:
 
 - ✅ Workspace directory is accessible (volumes mounted)
 - ✅ Network connectivity to GitHub API
-- ✅ Cleans stale lock files
 - ✅ Verifies Docker socket access
 - ✅ Checks required environment variables
 
 **Startup delay:** Configurable via `STARTUP_DELAY_SECONDS` (default: 30 seconds)
 
 - Allows network and volumes to be ready before runner starts
-- Includes retry logic (up to 12 attempts × 5 seconds = 60 seconds additional wait)
+- Then waits as long as it takes for the workspace and GitHub to be reachable, instead of
+  exiting into Docker's restart backoff
 
 #### 2. Entrypoint Wrapper (`scripts/entrypoint-wrapper.sh`)
 
 - Wraps the base image's entrypoint
 - Runs initialization script first
-- Fails fast if initialization fails (prevents crash-loop)
+- Exits only on missing configuration (`REPO_URL`, credentials), which a restart can't fix
 
-#### 3. Enhanced Health Check (docker-compose.yml)
+#### 3. Enhanced Health Check (docker-compose.yaml)
 
 ```yaml
 healthcheck:
@@ -125,7 +143,6 @@ docker logs github-runner | head -50
 # Waiting 30 seconds for system stabilization...
 # ✓ Workspace directory accessible
 # ✓ GitHub API reachable
-# ✓ Lock files cleaned
 # ✓ Docker socket accessible and working
 # ✓ Required environment variables present
 # === Initialization complete - starting runner ===
@@ -155,8 +172,7 @@ docker logs github-runner 2>&1 | grep -A 20 "Initialization"
 #### Issue: "Workspace directory not accessible"
 
 ```text
-ERROR: Workspace directory not accessible: /volume1/docker/github-runner/workspace
-FATAL: Workspace directory never became available
+Retry 12: Workspace directory not accessible yet: /volume1/docker/github-runner/workspace
 ```
 
 **Solution:**
@@ -164,12 +180,12 @@ FATAL: Workspace directory never became available
 - Volume mount is failing
 - Increase `STARTUP_DELAY_SECONDS=60`
 - Check volume path exists: `ls -la /volume1/docker/github-runner/`
-- Verify docker-compose.yml volume mounts are correct
+- Verify docker-compose.yaml volume mounts are correct
 
 #### Issue: "GitHub API not reachable"
 
 ```text
-ERROR: GitHub API not reachable after 12 attempts
+Retry 12: Waiting for GitHub connectivity...
 ```
 
 **Solution:**
@@ -222,9 +238,8 @@ docker-compose logs -f
 | ------ | ------ | ----- |
 | **Health check** | None | 30s interval, 2 min start period |
 | **Startup validation** | None | Full pre-flight checks |
-| **Network wait** | Immediate start | Waits + retries for connectivity |
+| **Network wait** | Immediate start | Waits until GitHub is reachable |
 | **Volume check** | None | Verifies mount before starting |
-| **Lock cleanup** | None | Auto-removes stale locks |
 | **Startup delay** | None | 30s configurable delay |
 
 ## How It Works
@@ -236,13 +251,12 @@ docker-compose logs -f
 3. **Container starts** → Entrypoint wrapper runs
 4. **Initialization script runs:**
    - Waits 30 seconds (configurable)
-   - Checks workspace directory (retries if not ready)
-   - Checks GitHub API connectivity (retries if not ready)
-   - Cleans stale locks
+   - Waits for the workspace directory
+   - Waits for the GitHub API
    - Validates Docker socket
    - Checks environment variables
 5. **If initialization succeeds** → GitHub runner starts normally
-6. **If initialization fails** → Container exits (no crash-loop)
+6. **If configuration is missing** → Container exits with an error naming the variable
 7. **Health check begins** after 120 seconds → Monitors runner process
 
 ### Why This Fixes the Crash-Loop
@@ -255,7 +269,7 @@ docker-compose logs -f
 
 - **First startup after reboot:** +30-60 seconds (initialization + health check grace period)
 - **Normal restarts:** No impact (initialization is fast when system is already stable)
-- **Failed starts:** Fail fast instead of crash-looping
+- **Network outages:** The runner waits instead of crash-looping
 
 ## Maintenance
 
@@ -263,6 +277,6 @@ This fix is **automatic** and requires no manual intervention. The initializatio
 
 ## Related Documentation
 
-- [Maintenance Guide](06-MAINTENANCE.md) - Regular maintenance tasks
-- [Troubleshooting Guide](05-TROUBLESHOOTING.md) - General troubleshooting
-- [Configuration Guide](03-CONFIGURATION.md) - Environment variable configuration
+- [Maintenance Guide](06-maintenance.md) - Regular maintenance tasks
+- [Troubleshooting Guide](05-troubleshooting.md) - General troubleshooting
+- [Configuration Guide](03-configuration.md) - Environment variable configuration
