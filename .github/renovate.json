@@ -1,24 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
-    "docker:enableMajor",
-    "helpers:pinGitHubActionDigests",
-    ":configMigration"
-  ],
-  "timezone": "Europe/Oslo",
-  "rangeStrategy": "bump",
-  "packageRules": [
-    {
-      "matchDatasources": ["npm", "maven"],
-      "minimumReleaseAge": "3 days"
-    },
-    {
-      "groupName": "all non-major dependencies",
-      "groupSlug": "all-non-major",
-      "matchPackageNames": ["*"],
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-      "automerge": true
-    }
-  ]
+  "extends": ["github>andrelin/dotfiles//renovate/daily-automerge-all"]
 }

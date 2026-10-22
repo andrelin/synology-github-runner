@@ -19,6 +19,7 @@ The maintainer's own setup (NAS address, login, deploy notes) belongs in the git
 
 - ✅ Generic examples and placeholders (e.g., `your-username/your-repo`)
 - ✅ This repository's URL: `andrelin/synology-github-runner` (it's public)
+- ✅ `andrelin/dotfiles` in `.github/renovate.json` only: it extends the maintainer's shared Renovate presets
 - ✅ Hardware ranges (e.g., "2-core/8GB minimum", "DS920+ tested")
 - ✅ References to **Planechaser** project (it's a public project)
 - ✅ General Synology NAS examples
@@ -27,7 +28,7 @@ The maintainer's own setup (NAS address, login, deploy notes) belongs in the git
 ### ❌ NEVER Include
 
 - ❌ Specific hardware serial numbers or unique identifiers
-- ❌ Personal domain names or URLs (the only GitHub repo URL allowed is this repository's)
+- ❌ Personal domain names or URLs (only this repository's GitHub URL, plus the Renovate preset above)
 - ❌ Container names for personal services
 - ❌ IP addresses or network details
 - ❌ Specific file paths unique to user's setup
