@@ -4,21 +4,15 @@ This directory contains the planning documents and implementation history for th
 
 ## Active Plans
 
+They land in this order, each relying on the ones before it: 2, 6, 7, 8.
+
 ### [plan-2-monitoring-setup.md](plan-2-monitoring-setup.md)
 
-**🟡 Ready to Start**
+**🔴 Not Started**
 
-Deploy monitoring scripts and configure automated health checks with DSM Task Scheduler.
-
-**What's Needed:**
-
-- Deploy scripts to NAS
-- Configure DSM Task Scheduler
-- Set up email alerts (optional)
-- Tune thresholds after observation
-
-**Priority:** High
-**Duration:** 2-3 hours
+One DSM email when the runner stops being able to take jobs, one when it recovers, silence otherwise.
+The existing health check can't be scheduled as-is (it alerts on every run), so it is rewritten around the signals
+that matter, with tests in CI.
 
 ---
 
@@ -26,24 +20,29 @@ Deploy monitoring scripts and configure automated health checks with DSM Task Sc
 
 **🔴 Not Started**
 
-Investigate and document how to configure a single runner to serve multiple repositories under a personal GitHub account.
+Run CI for several private repositories on one NAS: one runner per repository, or a free organization with one
+org-level runner.
+Fixes organization scope, which is broken today, and lets the compose file run as several projects.
 
-**Key Questions:**
+---
 
-- Can repository-level runner serve multiple repos in personal account?
-- Should users create a GitHub Organization?
-- What are pros/cons of each approach?
-- How do concurrent jobs from different repos interact?
+### [plan-7-installer.md](plan-7-installer.md)
 
-**Deliverables:**
+**🔴 Not Started**
 
-- `docs/09-multi-repo-setup.md` - Complete multi-repo guide
-- Updated configuration documentation
-- Tested migration path
-- Clear recommendation: personal vs organization approach
+Make `scripts/setup/install.sh` work: today it copies files to a folder where the image can't build, and the README
+flow leaves nothing `git pull` can update. The installer prepares the clone as the Container Manager project instead,
+writes `.env` safely, and gets tests in CI; the install docs move to one layout.
 
-**Priority:** Medium
-**Duration:** 2-3 hours
+---
+
+### [plan-8-publish-image.md](plan-8-publish-image.md)
+
+**🔴 Not Started**
+
+Build the runner image for amd64 on GitHub-hosted runners, test it, and publish it to GHCR, with the base
+image pinned by digest so Renovate keeps it current. The compose file then pulls the image instead of building on the
+NAS.
 
 ---
 
@@ -175,8 +174,10 @@ The implementation plans serve multiple purposes:
 3. ✅ **Plan 3** - CI/CD workflows
 4. ✅ **Plan 4** - Documentation & examples
 5. ✅ **Plan 5** - Restart reliability
-6. 🟡 **Plan 2** - Monitoring setup (next)
-7. 🔄 **Final Review** - Test everything, polish, prepare release
+6. 🔴 **Plan 2** - Monitoring (next)
+7. 🔴 **Plan 7** - Working installer
+8. 🔴 **Plan 8** - Published image
+9. 🔄 **Final Review** - Test everything, polish, prepare release
 
 Plan 6 (multi-repo runner) is not required for v1.0.0.
 
