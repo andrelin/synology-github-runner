@@ -197,14 +197,14 @@ places, without a RECOVERED email.
 
 **As built, after review:** run structure step 4 writes the new state to `$STATE_FILE.tmp` first, then the log line,
 then moves the state into place, so a run whose state can't be saved logs nothing. HUP, INT and TERM have their own
-trap, so a killed run still sends `internal: script ended unexpectedly (exit 143)` with a non-zero exit. Within its 24 hours a
-marker accumulates every check it has reported, and a storage alert lists only checks the incident logic would report
-(none still in their grace). `FALLBACK_TMP` (default `/tmp`) is a test knob for the marker fallback.
+trap, so a killed run still sends `internal: script ended unexpectedly (exit 143)`, exiting non-zero. Within its 24
+hours a marker accumulates every check it has reported, and a storage alert lists only checks the incident logic would
+report (none still in their grace). `FALLBACK_TMP` (default `/tmp`) is a test knob for the marker fallback.
 `ALERT_AFTER_FAILURES=0` reads `ALERT_AFTER_FAILURES must be a whole number of at least 1, got '0'`.
-`docs/04-monitoring.md`'s upgrade section still names `/volume1/scripts/runner-*.sh`, the copies to delete, so the
-grep for them finds that section only. A `jq` missing from `PATH` is tested with a copy of the script whose appended
-`PATH` points at a folder without `jq`, since CI's `/usr/bin` has one. The checks were verified against DSM 7.2's own
-tools: bash 4.4, `jq` 1.5, util-linux `flock` and GNU coreutils.
+`docs/04-monitoring.md`'s upgrade section still names `/volume1/scripts/runner-*.sh`, the copies to delete, so the grep
+for them finds that section only. A `jq` missing from `PATH` is tested with a copy of the script whose appended `PATH`
+points at a folder without `jq`, since CI's `/usr/bin` has one. The checks were verified against DSM 7.2's own tools:
+bash 4.4, `jq` 1.5, util-linux `flock` and GNU coreutils.
 
 ### Incident logic
 
