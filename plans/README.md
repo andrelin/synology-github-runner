@@ -4,18 +4,8 @@ This directory contains the planning documents and implementation history for th
 
 ## Active Plans
 
-They land in this order, each relying on the ones before it: 7, 2, 8, 6.
+Plans 7, 2 and 8 are complete; Plan 6 is the one left.
 Plan 6 is the least important and always stays last: it gets done only if the others are finished.
-
-### [plan-2-monitoring-setup.md](plan-2-monitoring-setup.md)
-
-**🟡 In Progress** (code and docs done; the NAS end-to-end check is user-run)
-
-One DSM email when the runner stops being able to take jobs, one when it recovers, silence otherwise.
-The existing health check can't be scheduled as-is (it alerts on every run), so it is rewritten around the signals
-that matter, with tests in CI.
-
----
 
 ### [plan-6-multi-repo-runner.md](plan-6-multi-repo-runner.md)
 
@@ -39,6 +29,8 @@ Completed plans live in [archive/](archive/) for reference.
   `examples/workflows/` (complete 2026-01-30)
 - [Plan 5: Restart reliability](archive/plan-5-restart-reliability.md) - runner recovers by itself after NAS
   reboots and network outages (the first fix did not work; fixed and reboot-tested in the second attempt)
+- [Plan 2: Monitoring](archive/plan-2-monitoring-setup.md) - a scheduled health check that emails once per
+  incident and once on recovery, and a dashboard (complete 2026-10-23)
 - [Plan 7: An installer that works](archive/plan-7-installer.md) - `install.sh` prepares the clone as the Container
   Manager project, with tests in CI (complete 2026-10-23)
 - [Plan 8: Publish the runner image](archive/plan-8-publish-image.md) - CI builds, tests, attests and publishes the
@@ -160,7 +152,7 @@ The implementation plans serve multiple purposes:
 4. ✅ **Plan 4** - Documentation & examples
 5. ✅ **Plan 5** - Restart reliability
 6. ✅ **Plan 7** - Working installer
-7. 🟡 **Plan 2** - Monitoring (NAS check left)
+7. ✅ **Plan 2** - Monitoring
 8. ✅ **Plan 8** - Published image
 9. 🔄 **Final Review** - Test everything, polish, prepare release
 

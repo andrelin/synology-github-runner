@@ -1,6 +1,6 @@
 # Plan 2: Monitoring - plan
 
-**Status:** 🟡 In Progress (Tasks 1-2 done; Task 3 is user-run)
+**Status:** 🟢 Complete (2026-10-23)
 **Goal:** The owner gets one DSM email when the runner stops being able to take jobs, one when it recovers, and a
 daily reminder while it stays broken; otherwise the monitoring is silent. A dashboard script shows the runner's state
 on demand, on DSM.
@@ -65,7 +65,7 @@ the monitoring copy), added `read_env_value`, the "Run script tests" CI step, th
 | --- | --- |
 | 1 · Health check that alerts once per incident | ✅ DONE |
 | 2 · Dashboard that runs on DSM and in CI | ✅ DONE |
-| 3 · End-to-end on a NAS (user-run) | ⏳ PENDING |
+| 3 · End-to-end on a NAS (user-run) | ✅ DONE |
 
 ## File map
 
@@ -403,3 +403,16 @@ After the pull request merges. The user runs or approves each step; step 3 stops
 
 Record the outcome in generic terms only ("one email per incident, none on reboot"): never names, addresses, paths,
 container names, other services, the model or software versions from the NAS.
+
+**As built:** one email per incident, none on reboot.
+
+- Steps 1, 2 and 6 passed. The hand run and the dashboard ran through a `docker` wrapper calling `sudo docker`, as
+  the account had sudo for Docker only.
+- A first scheduled task pointed at a folder that didn't exist and emailed every run with status 127. The monitoring
+  guide now says to use your own project folder and has a troubleshooting entry for it.
+- Step 3: stopping the container gave `FAIL 1/3`, `FAIL 2/3`, then one PROBLEM email naming both `container_running`
+  and `runner_online` (GitHub marked the runner offline within the grace period). The body held only the reason lines
+  and the next step. The next four runs sent nothing.
+- Step 4: one RECOVERED email at the first run after the runner showed Idle.
+- Step 5: after a reboot the container restarted by itself with a restart count of 0. One run caught the runner
+  before GitHub listed it online (`FAIL 1/3`), the next was `OK`, and no email was sent.
