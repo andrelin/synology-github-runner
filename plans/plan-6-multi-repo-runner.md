@@ -6,7 +6,10 @@ setups GitHub allows, both working out of the box and documented.
 **Approach:** Fix organization scope, which the compose file and init script break today. Make the compose file run
 as several Container Manager projects side by side without sharing a workspace. Then document how to choose between
 the two setups and how to set up each.
-**Order:** after Plan 2, before Plans 7 and 8 (the active plans land as 2, 6, 7, 8).
+**Order:** last of the active plans, which land as 7, 2, 8, 6. Plan 7 has already added the compose file's `name:`,
+`container_name: ${CONTAINER_NAME:-github-runner}`, the DSM 7.2 minimum and the "container name already in use"
+troubleshooting entry; Plan 8 has switched the compose file to the published image, so this plan's docs say "pull the
+image" where they once said "rebuild", and its clones share an image rather than a local tag.
 **Spec:** GitHub docs, "About self-hosted runners" and "Managing access to self-hosted runners using groups"
 (docs.github.com/en/actions/hosting-your-own-runners).
 
@@ -48,7 +51,7 @@ the two setups and how to set up each.
   guide, and the guide relies on Task 2. Before pushing, run markdownlint, cspell and the link check locally, and
   ShellCheck on `scripts/init-runner.sh`.
 - CI steps run under `bash -e`, so capture an expected failure (`rc=0; out=$(cmd 2>&1) || rc=$?`). The step order in
-  `quality.yml` is the one Plan 2 lists, shared by Plans 2, 6, 7 and 8.
+  `quality.yml` is the one Plan 2 lists, shared by the active plans.
 - Find lines in files other plans also edit by their text, never by line number.
 - Credential advice, the same wherever it appears: repository scope, a fine-grained PAT for that repository with
   Administration: Read and write (a classic PAT with `repo` also works); organization scope, a fine-grained PAT for
@@ -74,7 +77,7 @@ the two setups and how to set up each.
 | `docker-compose.yaml`, `.env.example`, `.github/workflows/quality.yml`, `tests/compose/fixtures/` | modify | modify | |
 | `scripts/init-runner.sh`, `docs/01-prerequisites.md` | modify | | |
 | `docs/03-configuration.md` | modify | modify | |
-| `docs/05-troubleshooting.md`, docs stating the DSM minimum | | modify | |
+| `docs/05-troubleshooting.md`, `scripts/setup/install.sh`, `tests/setup/install.test.sh` | | modify | |
 | `docs/09-multi-repo-setup.md` | | | create |
 | `README.md` | modify | modify | modify |
 | `docs/faq.md`, `CLAUDE.md` | | | modify |
@@ -129,15 +132,11 @@ the two setups and how to set up each.
 
 **Interfaces:** the `.env` variables `CONTAINER_NAME` (default `github-runner`) and `RUNNER_DATA_DIR` (default
 `/volume1/docker/github-runner`), the workspace and cache living under the latter. Plan 2's scripts and Plan 7's
-installer (which comes later) read both from the same `.env`.
+installer read both from the same `.env`.
 
 **The change:**
 
 - `docker-compose.yaml`:
-  - top-level `name: ${CONTAINER_NAME:-github-runner}`, so Compose commands run in the project folder act on the
-    project Container Manager created under that name, instead of one named after the folder (Container Manager's
-    Compose v2 resolves this);
-  - `container_name: ${CONTAINER_NAME:-github-runner}`;
   - the cache volume under `RUNNER_DATA_DIR`;
   - `RUNNER_WORKDIR`, both in the environment and on both sides of its mount (identical for Docker-in-Docker), defaults
     to `$RUNNER_DATA_DIR/workspace` through
@@ -154,23 +153,22 @@ installer (which comes later) read both from the same `.env`.
   - fit all projects' `RUNNER_MEMORY` into the NAS;
   - create the folders first:
     `sudo mkdir -p /volume1/docker/github-runner-repo-b/workspace /volume1/docker/github-runner-repo-b/cache`
-    (Plan 7 later points this at the installer);
-  - keep the clones on the same commit, since they all build the same local image tag (Plan 8 later rewrites this).
+    or run the installer in the second clone;
+  - keep the clones on the same commit, so their compose files match; they all pull the same image.
 - `docs/03-configuration.md`: `CONTAINER_NAME` and `RUNNER_DATA_DIR` sections (unique per project, set together, the
   naming rule), and how to see an existing container's project name:
   `sudo docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' github-runner`.
-- The DSM minimum: every "DSM 7.0+" statement in `README.md`, `docs/` and `CLAUDE.md`
-  (`git grep -n 'DSM 7\.0' -- README.md docs/ CLAUDE.md`) becomes DSM 7.2 or later with Container Manager, whose
-  Compose v2 the nested defaults and `name:` need. The installer's header is Plan 7's.
 - `docs/05-troubleshooting.md`: the workspace-path section's hardcoded `/volume1/docker/github-runner/workspace` says
   `$RUNNER_DATA_DIR/workspace` (default shown), and the fix it suggests is setting `RUNNER_DATA_DIR` (or
-  `RUNNER_WORKDIR`). A new entry, "container name already in use after updating": a container first started with
-  `docker-compose up` in the clone belongs to a project named after the folder; remove it once
-  (`sudo docker rm -f github-runner`) and start the project from Container Manager.
-- `README.md`: the DSM requirement line.
-- `changelog.md`: "Added" `CONTAINER_NAME` and `RUNNER_DATA_DIR`; "Changed" `RUNNER_WORKDIR` is commented out in
-  `.env.example` and defaults to `$RUNNER_DATA_DIR/workspace`, DSM 7.2 is the minimum, and the compose project is
-  named after `CONTAINER_NAME` (with the one-time fix for containers started from the command line).
+  `RUNNER_WORKDIR`).
+- `scripts/setup/install.sh`: when `CONTAINER_NAME` isn't `github-runner` but the workspace or the cache is the default
+  one under `/volume1/docker/github-runner`, warn
+  `⚠ This project shares the default workspace or cache: set RUNNER_DATA_DIR (see docs/09-multi-repo-setup.md)`;
+  the run still exits 0. Its tests add: `RUNNER_DATA_DIR` alone creates its `workspace` and `cache`; the warning prints
+  for `CONTAINER_NAME=github-runner-b` alone and with only its own `RUNNER_WORKDIR`, and not with its own
+  `RUNNER_DATA_DIR`, nor for the default name; `RUNNER_DATA_DIR` joins the variables the tests unset.
+- `changelog.md`: "Added" `RUNNER_DATA_DIR`; "Changed" `RUNNER_WORKDIR` is commented out in `.env.example` and
+  defaults to `$RUNNER_DATA_DIR/workspace`.
 
 **Tests:** a CI step "Verify compose variables", rendering each fixture with `docker compose --env-file <fixture>
 config --format json` and checking the project name, the container name, `RUNNER_WORKDIR`, and the workspace and cache
@@ -202,11 +200,11 @@ pins the workspace.
    and public repositories (neither: they stay on GitHub-hosted runners).
 3. Setup A: a second clone, its `.env` (when copying another project's, change `CONTAINER_NAME` and
    `RUNNER_DATA_DIR` and delete any `RUNNER_WORKDIR` line), its folders, its Container Manager project named after its
-   `CONTAINER_NAME`, memory sizing, and "keep the clones on the same commit, since they all build the same local image
-   tag" (this exact sentence, which Plan 8 rewrites). Monitoring: one health-check task per project, each running its
+   `CONTAINER_NAME`, memory sizing, and "keep the clones on the same commit, so their compose files match; they all
+   pull the same image". Monitoring: one health-check task per project, each running its
    own clone's script, which reads that clone's `.env` and `CONTAINER_NAME`.
 4. Setup B: create the organization, transfer the repositories, create the organization PAT, set `RUNNER_SCOPE=org`
-   and `ORG_NAME`, rebuild the project, and find the
+   and `ORG_NAME`, pull the image and recreate the project, and find the
    runner under the organization's Settings → Actions → Runners. Workflows keep `runs-on: [self-hosted, Linux, X64]`;
    runner names are unique per organization.
 5. Moving from a repository runner to B: stopping the container deregisters it; remove it by hand if it lingers.
@@ -226,7 +224,7 @@ messages is found by `grep -F` in both `scripts/init-runner.sh` and the guide.
 
 After the pull request merges, every clone on that commit. The user creates the prerequisites and runs or approves each
 step. An existing runner project on the NAS is never switched or edited; its running container keeps the image it was
-created from even though the test projects rebuild the same local tag.
+created from, since the test projects only pull the published image.
 
 **Prerequisites:** two private test repositories (`repo-a`, `repo-b`) with a `workflow_dispatch` workflow that runs
 `pwd`, `date -u` and `sleep 60`, and a fine-grained PAT limited to them; for step 4, a throwaway organization with one

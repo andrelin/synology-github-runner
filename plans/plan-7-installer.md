@@ -8,9 +8,9 @@ elsewhere: it checks prerequisites, writes `.env` from `.env.example` safely, va
 host directories the compose file mounts (read from the rendered compose file, so it follows whatever variables the
 compose file supports), and hands over to Container Manager, which creates and owns the project. A non-interactive
 mode lets CI test it.
-**Order:** after Plans 2 and 6, before Plan 8 (the active plans land as 2, 6, 7, 8). It copies Plan 2's
-`read_env_value`, uses Plan 2's test runner and CI steps, and relies on Plan 6's `CONTAINER_NAME`, `RUNNER_DATA_DIR`
-and the compose file's `name:`.
+**Order:** first of the active plans, which land as 7, 2, 8, 6. It therefore brings what it once borrowed from
+Plans 2 and 6: `read_env_value` (Plan 2 copies it from here), the CI test step and ShellCheck file list, and the
+compose file's `name:` and `CONTAINER_NAME`. `RUNNER_DATA_DIR` and the shared-workspace warning stay in Plan 6.
 
 ## Why the current installer doesn't work
 
@@ -33,8 +33,7 @@ and the compose file's `name:`.
 - Entering GitHub App credentials or organization settings: users edit those in `.env` by hand, and the installer
   accepts them.
 - Monitoring set-up: the installer only points to `docs/04-monitoring.md`.
-- Compose commands elsewhere in the docs: once Plan 6 names the project in the compose file, they work from the
-  project folder as written.
+- Running several projects side by side (`RUNNER_DATA_DIR`, the shared-workspace warning): Plan 6.
 
 ## Global constraints
 
@@ -44,9 +43,11 @@ and the compose file's `name:`.
   workspace. Existing directories keep their modes.
 - `PATH` gets `INSTALL_SYSTEM_PATH` (default `/usr/local/bin:/usr/bin:/bin`) appended, never prepended; tests set it
   empty to control which tools exist.
-- `.env` is read with `read_env_value`, copied exactly from `scripts/monitoring/runner-health-check.sh`; Plan 2's CI
-  check then covers the installer's copy too. Missing or empty means the default. `RUNNER_SCOPE` follows the rule in
-  Plan 2's global constraints.
+- `.env` is read with `read_env_value` (below); Plan 2 copies it verbatim into its scripts and adds the CI check that
+  the copies match. Missing or empty means the default.
+- `RUNNER_SCOPE` follows the upstream image's rule, so no value that registers today is rejected: lowercased, a value
+  starting `org` is organization scope, one starting `ent` is enterprise (unsupported), anything else, empty included,
+  is repository scope. Plans 2 and 6 use the same rule.
 - Docker Compose v2 through `docker compose`, which Container Manager on DSM 7.2 provides; the script's header comment
   says DSM 7.2 or later.
 - Compose always runs in `RUNNER_DIR` (`--project-directory "$RUNNER_DIR"`), with the variables the compose file reads
@@ -59,9 +60,11 @@ and the compose file's `name:`.
   exits 1. Everything goes to stdout.
 - Nothing personal in tracked files; fixtures use `ghp_xxx` and `https://github.com/your-username/test-repo` (not the
   `.env.example` placeholder, which the installer rejects).
-- Credential advice as Plan 6 states it, wherever the installer or its docs mention token rights.
+- Credential advice, wherever the installer mentions token rights (Plan 6 later brings the docs in line): repository
+  scope, a fine-grained PAT for that repository with Administration: Read and write (a classic PAT with `repo` also
+  works); organization scope, a fine-grained PAT for that organization with Self-hosted runners: Read and write.
 - Changelog entries under `## [Unreleased]`, merged into an existing heading of the same type and date.
-- Task 2 ships in the same pull request as Task 1, since docs-only changes don't trigger `quality.yml`.
+- Tasks 1 and 2 are pushed together, since docs-only changes don't trigger `quality.yml`.
 
 ## Implementation status
 
@@ -77,20 +80,43 @@ and the compose file's `name:`.
 | --- | --- | --- |
 | `scripts/setup/install.sh` | rewrite | |
 | `tests/setup/install.test.sh`, `tests/setup/stubs/*` | create | |
+| `docker-compose.yaml`, `.env.example` | modify | |
+| `.github/workflows/quality.yml`, `scripts/entrypoint-wrapper.sh`, `contributing.md` | modify | |
 | `README.md`, `docs/00-quick-start.md`, `docs/02-installation.md` | | modify |
+| `docs/05-troubleshooting.md`, docs stating the DSM minimum | | modify |
 | `docs/06-maintenance.md`, `docs/faq.md`, `docs/07-security.md` | | modify |
-| `.env.example`, `docs/09-multi-repo-setup.md` | | modify |
-| `CLAUDE.md` (repository tree: `tests/setup/`) | modify | |
+| `CLAUDE.md` (repository tree: `tests/setup/`; ShellCheck and test commands) | modify | modify |
 | `changelog.md` | modify | modify |
 
 ## Task 1 · Installer prepares the clone
 
 **Interfaces:**
 
+- `read_env_value FILE KEY` sets the globals `ENV_VALUE` and `ENV_VALUE_QUOTE` (`none`, `single` or `double`) and always
+  returns 0, also for a missing file or key (value empty, quote `none`). It is called directly, never in `$(...)`, and
+  never sources or expands anything. It follows Compose's `.env` reading where users are likely to differ:
+
+  | Line | `ENV_VALUE` | `ENV_VALUE_QUOTE` |
+  | --- | --- | --- |
+  | `KEY=v`, `export KEY=v`, indented `KEY=v`, `KEY = v`, `KEY=v` + `\r`, `KEY=v` + trailing spaces | `v` | `none` |
+  | `KEY=v # note` | `v` | `none` |
+  | `KEY=a#b`, and `KEY=a` + tab + `# b` | `a#b`, and `a` + tab + `# b` | `none` |
+  | `KEY='a #b'`, `KEY="a #b"` | `a #b` | `single`, `double` |
+  | `KEY='a' # note`, `KEY="a"b` | `a` | `single`, `double` |
+  | `KEY="a` (unterminated) | `a` | `double` |
+  | `KEY=a=b` | `a=b` | `none` |
+  | `# KEY=x`, `KEY2=x`, `OLD_KEY=x`, a blank line | not a match | |
+  | two `KEY=` lines | the last one's value | |
+
+- `docker-compose.yaml` gets a top-level `name: ${CONTAINER_NAME:-github-runner}` and
+  `container_name: ${CONTAINER_NAME:-github-runner}`, so Compose commands run in the project folder act on the project
+  Container Manager created under that name instead of one named after the folder. `.env.example` gets a commented
+  `# CONTAINER_NAME=github-runner` explaining it is the container and project name, lowercase letters, digits, `-` and
+  `_` only.
+
 - `sudo ./scripts/setup/install.sh [--non-interactive [--token-stdin]]`, from any directory. Another argument, or
   `--token-stdin` without `--non-interactive`, gives `✗ Unknown option <arg> (use --non-interactive, --token-stdin)`.
-  The project folder is `RUNNER_DIR`, the clone root two levels above the script, overridable by environment as in
-  Plan 2.
+  The project folder is `RUNNER_DIR`, the clone root two levels above the script, overridable by environment.
 - Interactive (default): prompts on stdin for `REPO_URL`, the token (hidden; the prompt states the credential advice)
   and `RUNNER_NAME` (offering the current value, else `synology-general-runner`); an empty answer keeps the current
   value, and stdin ending early counts as empty answers.
@@ -132,9 +158,8 @@ and the compose file's `name:`.
 6. Directories: from the rendered compose file (`docker compose config --format json`, kept in memory, never printed,
    read with `jq`), the source of the workspace mount (its target equals the rendered service's
    `environment.RUNNER_WORKDIR`) and of the `/cache` mount; `✗ docker-compose.yaml has no workspace or /cache mount`
-   if either is missing. Create each and print it. When `CONTAINER_NAME` isn't `github-runner` but the workspace or the
-   cache is the default one under `/volume1/docker/github-runner`, warn
-   `⚠ This project shares the default workspace or cache: set RUNNER_DATA_DIR (see docs/09-multi-repo-setup.md)`.
+   if either is missing. Create each and print it. (Plan 6 adds a warning when a second project shares the default
+   workspace.)
 7. Next steps: create a Container Manager project named `<CONTAINER_NAME>` (default `github-runner`) with path
    `<RUNNER_DIR>` and its existing `docker-compose.yaml`; the runner then appears under the repository's or
    organization's Settings → Actions → Runners; to update, `git pull` and rebuild the project; monitoring is in
@@ -143,12 +168,20 @@ and the compose file's `name:`.
 Re-running is safe: it changes only the keys it is given, creates only missing directories, and leaves existing
 directories' modes alone.
 
-**Tests** (`tests/setup/install.test.sh`, run by Plan 2's "Test monitoring scripts" step, ending with `exit $failed`).
+**CI** (`.github/workflows/quality.yml`): a step "Run script tests", after "Check for hardcoded secrets", runs every
+`tests/*/*.test.sh` and fails if none is found (Plan 2's `tests/monitoring/` joins it). ShellCheck and "Verify script
+executability" cover every `*.sh` under `scripts/` and `tests/` and every file under a `tests/*/stubs/` folder, found
+with `find` (the `scripts/**/*.sh` glob misses top-level scripts without `globstar`). The one finding this newly
+reports is an always-false `$?` check in `scripts/entrypoint-wrapper.sh`: delete the block, since `set -e` already
+stops the script when `init-runner.sh` fails. `contributing.md` and `CLAUDE.md` get the new ShellCheck command and
+how to run the tests (in CI, or in a Linux container, since they need GNU tools).
+
+**Tests** (`tests/setup/install.test.sh`, ending with `exit $failed`).
 Each case copies the repository's tracked and untracked-but-not-ignored files
 (`git ls-files -z --cached --others --exclude-standard`, so a local `.env` never comes along) into a fresh `mktemp -d`
 outside the repository (removed by an `EXIT` trap), runs `git init` there, and runs that copy's installer with
 `DATA_ROOT_OVERRIDE` set to another temporary folder and `SKIP_DOCKER_ACCESS_CHECK=1`, after unsetting `REPO_URL`,
-`GITHUB_PAT`, `RUNNER_NAME`, `RUNNER_SCOPE`, `ORG_NAME`, `CONTAINER_NAME`, `RUNNER_DATA_DIR`, `RUNNER_WORKDIR`,
+`GITHUB_PAT`, `RUNNER_NAME`, `RUNNER_SCOPE`, `ORG_NAME`, `CONTAINER_NAME`, `RUNNER_WORKDIR`,
 `INSTALL_REPO_URL` and `INSTALL_RUNNER_NAME`. Stubs log their calls and pass through to the real tools: `docker` (can
 fail `compose version` or `ps`), `mv` (can fail; records the mode before acting), `cp` (records the destination's mode
 after copying) and `chmod` (records the mode before acting), `chown` (records only), and `sed` and `awk` (record their
@@ -178,12 +211,11 @@ or `run`.
 7. App credentials with an empty `GITHUB_PAT` pass and leave it empty.
 8. Organization scope with `ORG_NAME` passes, also as `RUNNER_SCOPE=ORG`; without `ORG_NAME` fails with
    `✗ Set ORG_NAME`. An empty `RUNNER_SCOPE` and `RUNNER_SCOPE=repository` are repository scope.
-9. Directories: `RUNNER_WORKDIR` set creates that directory and the default cache, not the default workspace;
-   `RUNNER_DATA_DIR` alone creates its `workspace` and `cache`. The shared warning prints for
-   `CONTAINER_NAME=github-runner-b` alone and with only its own `RUNNER_WORKDIR`, and not with its own
-   `RUNNER_DATA_DIR`, nor for the default name; the run exits 0 either way. A re-run leaves an existing workspace's mode
-   700 alone. A compose copy without the `/cache` mount gives `✗ docker-compose.yaml has no workspace or /cache mount`.
-   With `CONTAINER_NAME=github-runner-b`, the next steps name that project.
+9. Directories: `RUNNER_WORKDIR` set creates that directory and the default cache, not the default workspace. A
+   re-run leaves an existing workspace's mode 700 alone. A compose copy without the `/cache` mount gives
+   `✗ docker-compose.yaml has no workspace or /cache mount`. With `CONTAINER_NAME=github-runner-b`, the next steps
+   name that project. A `.env` parsing row of the table above each read as the table says (`ENV_VALUE_QUOTE` checked
+   by sourcing the function alone in a subshell).
 10. Run from `/`: same as case 1.
 11. Interactive: answers set the values and the token shows in no output; empty answers or closed stdin keep `.env`
     byte-identical; a runner name answer sets it. Non-interactive `INSTALL_RUNNER_NAME` sets it; a value with a single
@@ -198,7 +230,9 @@ or `run`.
 17. Outside DSM (as in CI), the `⚠ Not running on Synology DSM` line is printed and the run still exits 0.
 
 `changelog.md`: "Fixed": the installer prepares the clone as the Container Manager project, writes `.env` safely, and
-creates the directories the compose file mounts. "Removed": copying to `/volume1/docker/github-runner`.
+creates the directories the compose file mounts. "Added": `CONTAINER_NAME`, which also names the compose project.
+"Removed": copying to `/volume1/docker/github-runner`, and the installer's copy of the monitoring scripts into
+`/volume1/scripts`.
 
 ## Task 2 · Install and update docs follow one layout
 
@@ -220,10 +254,14 @@ creates the directories the compose file mounts. "Removed": copying to `/volume1
   `docs/faq.md` and `docs/07-security.md`): `git pull` in the project folder, then Build in Container Manager (or
   `sudo docker compose up -d --build` in the project folder), while the runner is idle. The pulls of the base image
   in those procedures go too: the build pulls it.
-- `.env.example`'s "Running several runners" block and `docs/09-multi-repo-setup.md`'s Setup A: create the second
-  project's folders by running the installer in its clone, `mkdir -p` remaining the manual alternative.
+- The DSM minimum: every "DSM 7.0+" statement in `README.md`, `docs/` and `CLAUDE.md`
+  (`git grep -n 'DSM 7\.0' -- README.md docs/ CLAUDE.md`) becomes DSM 7.2 or later with Container Manager, whose
+  Compose v2 the compose file's `name:` needs.
+- `docs/05-troubleshooting.md`: a new entry, "container name already in use after updating": a container first started
+  with `docker-compose up` in the clone belongs to a project named after the folder; remove it once
+  (`sudo docker rm -f github-runner`) and start the project from Container Manager.
 - `changelog.md`: "Fixed": the installation guide created the data directories inside the clone, and the update
-  instructions never pulled this repository's changes.
+  instructions never pulled this repository's changes. "Changed": DSM 7.2 is the minimum.
 
 **Tests:** markdownlint, cspell and the link check pass locally and in CI;
 `git grep -n 'docker-compose pull' -- README.md docs/` finds nothing.
@@ -238,9 +276,9 @@ test repository and a fine-grained PAT limited to it:
    only if the user agrees to the runner going offline meanwhile: follow "Coming from the old installer" and check the
    runner comes back Idle. Then clone into `/volume1/docker/synology-github-runner-install-test`; create its `.env` from
    `.env.example` with `CONTAINER_NAME=github-runner-install-test` and
-   `RUNNER_DATA_DIR=/volume1/docker/github-runner-install-test`.
+   `RUNNER_WORKDIR=/volume1/docker/github-runner-install-test/workspace` (until Plan 6, the cache stays shared).
 2. Run the installer interactively with the test repository and PAT: exit 0, the project named
-   `github-runner-install-test`, its workspace and cache created, no shared-workspace warning.
+   `github-runner-install-test`, its workspace and cache created.
 3. Create the Container Manager project as printed: the runner shows Idle in the test repository.
 4. `git pull` and Build in the test project: the runner comes back Idle.
 5. Remove the project, both folders and the test runner, and revoke the PAT.

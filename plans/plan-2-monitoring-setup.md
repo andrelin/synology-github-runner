@@ -11,7 +11,9 @@ The script keeps state between runs and exits non-zero only when an email is wan
 "email when the script terminates abnormally" sends one email per change.
 It runs from inside the repository clone that serves as the Container Manager project, finds that folder from its
 own location, and so picks up fixes with `git pull`.
-**Order:** the active plans land as 2, 6, 7, 8; each plan may rely on the ones before it.
+**Order:** second of the active plans, which land as 7, 2, 8, 6. Plan 7 has already rewritten the installer (without
+the monitoring copy), added `read_env_value`, the "Run script tests" CI step, the ShellCheck file list and
+`CONTAINER_NAME`.
 
 ## Why the existing script can't just be scheduled
 
@@ -23,10 +25,9 @@ own location, and so picks up fixes with `git pull`.
 
 ## Out of scope
 
-- Making `scripts/setup/install.sh` work (Plan 7, which builds on this plan's `read_env_value`). This plan only
-  removes the installer's monitoring-script copy.
+- The installer (Plan 7, already landed).
 - Multi-project setups beyond reading `CONTAINER_NAME`, `RUNNER_SCOPE`, `ORG_NAME`, `RUNNER_DATA_DIR` and
-  `RUNNER_WORKDIR` from `.env` (Plan 6).
+  `RUNNER_WORKDIR` from `.env` (Plan 6, which lands last; reading `RUNNER_DATA_DIR` before it exists is harmless).
 - Running the tests on macOS. They need `flock`, `timeout` and GNU `date`, so they run in CI or in a Linux container:
 
   ```bash
@@ -75,7 +76,7 @@ own location, and so picks up fixes with `git pull`.
 | `tests/monitoring/lib.sh`, `tests/monitoring/stubs/*` | create | modify |
 | `tests/monitoring/runner-health-check.test.sh` | create | |
 | `tests/monitoring/runner-dashboard.test.sh` | | create |
-| `.github/workflows/quality.yml`, `scripts/entrypoint-wrapper.sh`, `scripts/setup/install.sh`, `.gitignore` | modify | |
+| `.github/workflows/quality.yml`, `.gitignore` | modify | |
 | `docs/04-monitoring.md` | rewrite | modify |
 | `docs/06-maintenance.md`, `docs/faq.md`, `CLAUDE.md`, `contributing.md` | modify | |
 | `README.md` | modify | modify |
@@ -102,8 +103,8 @@ own location, and so picks up fixes with `git pull`.
   | `# KEY=x`, `KEY2=x`, `OLD_KEY=x`, a blank line | not a match | |
   | two `KEY=` lines | the last one's value | |
 
-  An empty value means the key's default. The dashboard copies the function verbatim, and so does Plan 7's installer;
-  CI checks the copies match.
+  An empty value means the key's default. This is Plan 7's function from `scripts/setup/install.sh`, copied verbatim
+  into both monitoring scripts; CI checks the copies match.
 - From `.env`: `REPO_URL`, `GITHUB_PAT`, `APP_ID`, `APP_PRIVATE_KEY`, `RUNNER_NAME` (default `synology-general-runner`),
   `RUNNER_SCOPE` (default `repo`), `ORG_NAME`, `CONTAINER_NAME` (default `github-runner`), `RUNNER_WORKDIR`,
   `RUNNER_DATA_DIR`.
@@ -299,21 +300,15 @@ Cases, as runs and their exit codes:
 
 ### CI (`.github/workflows/quality.yml`)
 
-- "Test monitoring scripts" runs every `tests/*/*.test.sh` and fails if none is found (Plan 7's `tests/setup/` joins
-  it). Directly after it: "Check installer no longer copies monitoring scripts" (fails if `scripts/setup/install.sh`
-  mentions `SCRIPTS_DIR` or `/volume1/scripts`) and "Check read_env_value copies match". The latter finds every script
-  defining it (`git grep -l '^read_env_value() {' -- scripts/`, so Plan 7's installer is covered without a CI change),
+- Plan 7's "Run script tests" step picks up `tests/monitoring/` without a change. Directly after it: "Check
+  read_env_value copies match", which finds every script
+  defining it (`git grep -l '^read_env_value() {' -- scripts/`, so the installer is covered too),
   extracts each from that line to the first line that is exactly `}`, fails if fewer than two are found or any extract
   is empty, and fails if they differ; flip one character
-  locally to see it fail. The order shared by Plans 2, 6, 7 and 8, inserting only steps whose plan has landed:
+  locally to see it fail. The order shared by the active plans, inserting only steps whose plan has landed:
   "Verify runner image starts the runner", "Verify the image check can fail" (8), "Check Dockerfile pins" (8),
-  "Verify organization scope" (6), "Verify compose variables" (6), "Test monitoring scripts" and the two checks above
-  (2), "Check publish workflow permissions" (8).
-- ShellCheck and "Verify script executability" cover every `*.sh` under `scripts/` and `tests/` and every file under a
-  `tests/*/stubs/` folder, found with `find` (the `scripts/**/*.sh` glob misses top-level scripts without `globstar`).
-  The one finding this newly reports today is an always-false `$?` check in `scripts/entrypoint-wrapper.sh`: delete the
-  block, since `set -e` already stops the script when `init-runner.sh` fails. That file is part of the image, so this
-  also changes the image.
+  "Verify organization scope" (6), "Verify compose variables" (6), "Run script tests" (7) and the check above (2),
+  "Check publish workflow permissions" (8).
 
 ### Docs and housekeeping (same task)
 
@@ -332,17 +327,13 @@ Cases, as runs and their exit codes:
   `docs/06-maintenance.md` that runs `runner-health-check.sh` becomes a pointer to `docs/04-monitoring.md` (the
   `docker system prune` crontab stays). The `scp file.sh` privacy examples in
   `CLAUDE.md` stay.
-- `README.md`: the installer list loses "Install monitoring scripts", and the architecture diagram shows
-  `health-check.log` for `alerts.log`.
-- `contributing.md` and `CLAUDE.md`: the ShellCheck command uses the new file list, plus how to run the tests; `tests/`
-  joins the `CLAUDE.md` tree.
-- `scripts/setup/install.sh`: the monitoring copy, `SCRIPTS_DIR` and its directory, and the dashboard hints go; the
-  monitoring step prints only `Monitoring: see docs/04-monitoring.md`.
+- `README.md`: the architecture diagram shows `health-check.log` for `alerts.log`.
+- `CLAUDE.md`: `tests/monitoring/` joins the tree.
 - `.gitignore`: `health-check.state` and `health-check.state.lock` (`*.log` and `*.tmp` are already ignored);
   `git check-ignore health-check.state health-check.state.lock health-check.log health-check.state.tmp` lists all four.
 - `changelog.md`: "Fixed" the health check emailing every run and stopping at its first failure; "Changed" what it
   checks, once-per-incident alerts with a daily reminder, running from the clone; "Removed" the CPU, memory and log
-  checks, `alerts.log`, and the installer's copy into `/volume1/scripts`.
+  checks and `alerts.log`.
 
 ## Task 2 · Dashboard that runs on DSM and in CI
 

@@ -9,7 +9,8 @@ release tags of this repository, pushes the image by digest with no tag, re-runs
 digest, attests it, and only then points the tags at it. The Dockerfile pins its base image by digest and `anthropic`
 by version, so updates arrive as Renovate pull requests that CI tests and Renovate automerges after a waiting period.
 Once the package is public, `docker-compose.yaml` switches from `build:` to the published image.
-**Order:** last of the active plans (2, 6, 7, 8); Task 4 rewrites text Plans 6 and 7 added.
+**Order:** third of the active plans, which land as 7, 2, 8, 6; Task 4 rewrites text Plan 7 added, and Plan 6, which
+comes after, writes its docs for the published image from the start.
 
 ## Decisions
 
@@ -69,7 +70,7 @@ Once the package is public, `docker-compose.yaml` switches from `build:` to the 
 | `README.md`, `contributing.md`, `docs/00-quick-start.md`, `docs/01-prerequisites.md` | | | modify |
 | `docs/02-installation.md`, `docs/03-configuration.md` | | | modify |
 | `docs/06-maintenance.md`, `docs/07-security.md`, `docs/faq.md`, `docs/restart-reliability-fix.md` | | | modify |
-| `docs/09-multi-repo-setup.md`, `scripts/setup/install.sh` | | | modify |
+| `scripts/setup/install.sh` | | | modify |
 | `CLAUDE.md` (repository tree) | modify | modify | modify |
 | `changelog.md` | modify | modify | modify |
 
@@ -194,11 +195,8 @@ A separate pull request, opened after Task 3.
   becomes `git pull`, then `sudo docker compose pull && sudo docker compose up -d` in the project folder while the
   runner is idle, saying plainly that the NAS keeps its last pulled image until then. `docs/01-prerequisites.md`'s
   internet-access list adds `ghcr.io`.
-- Text Plans 6 and 7 added: "keep the clones on the same commit, since they all build the same local image tag" (in
-  `.env.example` and the guide's Setup A) becomes "keep the clones on the same commit, so their compose files match;
-  they all pull the same image"; "rebuild the project" in the guide's Setup B becomes "pull the image and recreate the
-  project"; the installer's next step "to update, `git pull` and rebuild the project" becomes "to update, `git pull`,
-  then pull the image as `docs/06-maintenance.md` describes".
+- Text Plan 7 added: the installer's next step "to update, `git pull` and rebuild the project" becomes "to update,
+  `git pull`, then pull the image as `docs/06-maintenance.md` describes".
 - `CLAUDE.md`: `docker-compose.build.yaml` in the tree. `changelog.md`: "Changed": the image is pulled from GHCR;
   forks that change the `Dockerfile` must use `docker-compose.build.yaml`, or they run the published image.
 

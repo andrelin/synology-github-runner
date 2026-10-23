@@ -4,27 +4,8 @@ This directory contains the planning documents and implementation history for th
 
 ## Active Plans
 
-They land in this order, each relying on the ones before it: 2, 6, 7, 8.
-
-### [plan-2-monitoring-setup.md](plan-2-monitoring-setup.md)
-
-**🔴 Not Started**
-
-One DSM email when the runner stops being able to take jobs, one when it recovers, silence otherwise.
-The existing health check can't be scheduled as-is (it alerts on every run), so it is rewritten around the signals
-that matter, with tests in CI.
-
----
-
-### [plan-6-multi-repo-runner.md](plan-6-multi-repo-runner.md)
-
-**🔴 Not Started**
-
-Run CI for several private repositories on one NAS: one runner per repository, or a free organization with one
-org-level runner.
-Fixes organization scope, which is broken today, and lets the compose file run as several projects.
-
----
+They land in this order, each relying on the ones before it: 7, 2, 8, 6.
+Plan 6 is the least important and always stays last: it gets done only if the others are finished.
 
 ### [plan-7-installer.md](plan-7-installer.md)
 
@@ -36,6 +17,16 @@ writes `.env` safely, and gets tests in CI; the install docs move to one layout.
 
 ---
 
+### [plan-2-monitoring-setup.md](plan-2-monitoring-setup.md)
+
+**🔴 Not Started**
+
+One DSM email when the runner stops being able to take jobs, one when it recovers, silence otherwise.
+The existing health check can't be scheduled as-is (it alerts on every run), so it is rewritten around the signals
+that matter, with tests in CI.
+
+---
+
 ### [plan-8-publish-image.md](plan-8-publish-image.md)
 
 **🔴 Not Started**
@@ -43,6 +34,16 @@ writes `.env` safely, and gets tests in CI; the install docs move to one layout.
 Build the runner image for amd64 on GitHub-hosted runners, test it, and publish it to GHCR, with the base
 image pinned by digest so Renovate keeps it current. The compose file then pulls the image instead of building on the
 NAS.
+
+---
+
+### [plan-6-multi-repo-runner.md](plan-6-multi-repo-runner.md)
+
+**🔴 Not Started**
+
+Run CI for several private repositories on one NAS: one runner per repository, or a free organization with one
+org-level runner.
+Fixes organization scope, which is broken today, and lets the compose file run as several projects.
 
 ---
 
@@ -174,8 +175,8 @@ The implementation plans serve multiple purposes:
 3. ✅ **Plan 3** - CI/CD workflows
 4. ✅ **Plan 4** - Documentation & examples
 5. ✅ **Plan 5** - Restart reliability
-6. 🔴 **Plan 2** - Monitoring (next)
-7. 🔴 **Plan 7** - Working installer
+6. 🔴 **Plan 7** - Working installer (next)
+7. 🔴 **Plan 2** - Monitoring
 8. 🔴 **Plan 8** - Published image
 9. 🔄 **Final Review** - Test everything, polish, prepare release
 
