@@ -1,6 +1,6 @@
 # Plan 8: Publish the Runner Image to GHCR - plan
 
-**Status:** 🟡 In Progress (Tasks 1-2 and 4 done; Task 3 step 3 and Task 5 are user-run)
+**Status:** 🟡 In Progress (Tasks 1-2 and 4 done; Task 3 steps 3-4 and Task 5 steps 3-4 open)
 **Goal:** Users run a tested, published `ghcr.io/andrelin/synology-github-runner` image instead of building on their
 NAS, and the published image stays current without anyone touching it.
 **Approach:** A workflow on GitHub-hosted runners builds and tests the image on every change, pull requests included,
@@ -55,7 +55,7 @@ comes after, writes its docs for the published image from the start.
 | 2 · Pinned Dockerfile and Renovate delay | ✅ DONE |
 | 3 · First publish (user-run) | 🚧 PARTIAL (steps 1-2 pass; step 3 and step 4 pending) |
 | 4 · Compose uses the published image | ✅ DONE |
-| 5 · NAS switch-over (user-run) | ⏳ PENDING |
+| 5 · NAS switch-over (user-run) | 🚧 PARTIAL (steps 1-2 pass) |
 
 ## File map
 
@@ -254,3 +254,8 @@ The user runs or approves each step, for each runner project on the NAS.
 
 Record outcomes in generic terms only: never names other than this repository's, addresses, paths, container names,
 other services, the model or software versions from the NAS.
+
+**As built:** steps 1-2 pass on a NAS running one runner project: `git pull`, `docker compose pull` and `up -d`
+recreated the container from the published image, which came back healthy with no restarts, and the runner was online
+and Idle within a minute. Steps 3-4 are open: the Container Manager action needs the UI, and the old local image
+stays until the user removes it.
