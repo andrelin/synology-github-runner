@@ -109,6 +109,15 @@ on_exit() {
     exit "$rc"
 }
 
+# shellcheck disable=SC2329 # called by the signal traps
+on_signal() {
+    trap - EXIT ERR HUP INT TERM
+    if [ "${#TEMP_FILES[@]}" -gt 0 ]; then
+        rm -f "${TEMP_FILES[@]}"
+    fi
+    alert_out_of_band internal "script ended unexpectedly (exit $1)"
+}
+
 # shellcheck disable=SC2329 # called by the ERR trap
 on_error() {
     # In a command substitution, leave the alert to the parent, which sees the failure
@@ -120,9 +129,9 @@ on_error() {
 trap on_exit EXIT
 trap 'on_error $LINENO' ERR
 # A killed run still ends in an email body, never an empty one
-trap 'exit 129' HUP
-trap 'exit 130' INT
-trap 'exit 143' TERM
+trap 'on_signal 129' HUP
+trap 'on_signal 130' INT
+trap 'on_signal 143' TERM
 
 is_whole_number() {
     case $1 in

@@ -196,8 +196,8 @@ places, without a RECOVERED email.
    `<DISK_PATH> is <n>% full (limit <MAX>%)` above `MAX_DISK_PERCENT`.
 
 **As built, after review:** run structure step 4 writes the new state to `$STATE_FILE.tmp` first, then the log line,
-then moves the state into place, so a run whose state can't be saved logs nothing. HUP, INT and TERM exit through the
-`EXIT` trap, so a killed run still sends `internal: script ended unexpectedly (exit 143)`. Within its 24 hours a
+then moves the state into place, so a run whose state can't be saved logs nothing. HUP, INT and TERM have their own
+trap, so a killed run still sends `internal: script ended unexpectedly (exit 143)` with a non-zero exit. Within its 24 hours a
 marker accumulates every check it has reported, and a storage alert lists only checks the incident logic would report
 (none still in their grace). `FALLBACK_TMP` (default `/tmp`) is a test knob for the marker fallback.
 `ALERT_AFTER_FAILURES=0` reads `ALERT_AFTER_FAILURES must be a whole number of at least 1, got '0'`.
