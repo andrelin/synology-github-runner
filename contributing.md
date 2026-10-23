@@ -101,8 +101,11 @@ All pull requests automatically run:
 Before pushing, run these checks locally:
 
 ```bash
-# Validate shell scripts
-shellcheck scripts/**/*.sh
+# Validate shell scripts, tests and test stubs
+find scripts tests -type f \( -name '*.sh' -o -path 'tests/*/stubs/*' \) -exec shellcheck -s bash {} +
+
+# Run the script tests (they need Docker Compose; the monitoring tests need Linux, so run those in CI or a container)
+for t in tests/*/*.test.sh; do bash "$t" || { echo "FAILED: $t"; break; }; done
 
 # Check docker-compose
 docker-compose config

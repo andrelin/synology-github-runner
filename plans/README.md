@@ -9,7 +9,7 @@ Plan 6 is the least important and always stays last: it gets done only if the ot
 
 ### [plan-7-installer.md](plan-7-installer.md)
 
-**🔴 Not Started**
+**🟡 In Progress** (code and docs done; the NAS end-to-end check is user-run)
 
 Make `scripts/setup/install.sh` work: today it copies files to a folder where the image can't build, and the README
 flow leaves nothing `git pull` can update. The installer prepares the clone as the Container Manager project instead,

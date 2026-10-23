@@ -1,0 +1,7 @@
+#!/bin/bash
+# Test stub: logs the target's mode before running the real chmod
+target=${*: -1}
+printf 'chmod %s %s\n' "$(stat -c %a "$target" 2>/dev/null || stat -f %Lp "$target")" "$*" >> "${STUB_LOG:?}"
+stub_dir=$(cd "${BASH_SOURCE[0]%/*}" && pwd)
+PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -vxF "$stub_dir" | paste -sd: -)
+exec chmod "$@"

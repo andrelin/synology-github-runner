@@ -33,17 +33,19 @@ jobs:
       # ============================================================
       # Shell Script Validation
       # ============================================================
+      # Every script, test and test stub; a scripts/**/*.sh glob misses top-level
+      # scripts, since bash runs without globstar
       - name: ShellCheck validation
         run: |
           echo "Running shellcheck on all scripts..."
-          docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable \
-            scripts/**/*.sh
+          mapfile -t files < <(find scripts tests -type f \( -name '*.sh' -o -path 'tests/*/stubs/*' \) | sort)
+          docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:stable -s bash "${files[@]}"
           echo "✓ All shell scripts passed shellcheck"
 
       - name: Verify script executability
         run: |
-          echo "Checking that all .sh files are executable..."
-          non_executable=$(find scripts -name "*.sh" -type f ! -executable 2>/dev/null || true)
+          echo "Checking that all scripts are executable..."
+          non_executable=$(find scripts tests -type f \( -name '*.sh' -o -path 'tests/*/stubs/*' \) ! -executable)
           if [ -n "$non_executable" ]; then
             echo "❌ Non-executable scripts found:"
             echo "$non_executable"
@@ -87,6 +89,19 @@ jobs:
             exit 1
           fi
           echo "✓ No hardcoded secrets found"
+
+      - name: Run script tests
+        run: |
+          shopt -s nullglob
+          tests=(tests/*/*.test.sh)
+          if [ "${#tests[@]}" -eq 0 ]; then
+            echo "❌ No tests found"
+            exit 1
+          fi
+          for t in "${tests[@]}"; do
+            echo "=== $t"
+            bash "$t"
+          done
 
       # ============================================================
       # Documentation Validation

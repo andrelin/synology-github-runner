@@ -8,7 +8,7 @@ This is the TL;DR guide. For detailed explanations, see the [full installation g
 
 Before starting, ensure you have:
 
-- ✅ Synology NAS with DSM 7.0+ and Container Manager installed
+- ✅ Synology NAS with DSM 7.2+ and Container Manager installed
 - ✅ SSH access enabled on your NAS
 - ✅ GitHub Personal Access Token with `repo` and `workflow` scopes
   - Create at: https://github.com/settings/tokens
@@ -32,6 +32,8 @@ cd /volume1/docker
 git clone https://github.com/andrelin/synology-github-runner.git
 cd synology-github-runner
 ```
+
+> **💡 Tip:** `sudo ./scripts/setup/install.sh` in the clone does Steps 2 and 3 for you; then go to Step 4.
 
 ### Step 2: Configure Environment (1 minute)
 
@@ -62,8 +64,10 @@ chmod 600 .env
 
 ### Step 3: Create Directories (30 seconds)
 
+The workspace and cache live outside the clone, where the compose file mounts them:
+
 ```bash
-mkdir -p workspace cache
+sudo mkdir -p /volume1/docker/github-runner/workspace /volume1/docker/github-runner/cache
 ```
 
 ### Step 4: Build and Start via Container Manager (2 minutes)
@@ -73,7 +77,7 @@ mkdir -p workspace cache
 3. Configure:
    - **Project Name:** `github-runner`
    - **Path:** `/volume1/docker/synology-github-runner`
-   - **Source:** `Create docker-compose.yaml`
+   - **Source:** `Use existing docker-compose.yaml`
 4. Click **Next** → **Next** → **Done**
 
 Container Manager will:

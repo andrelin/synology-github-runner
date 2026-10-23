@@ -34,33 +34,23 @@ Keep your GitHub self-hosted runner healthy, updated, and running efficiently.
 
 ## Updating the Runner
 
-### Update Docker Image
+### Pull and Rebuild
 
-The runner Docker image is updated regularly with security patches and new features.
-
-**Check for updates:**
+The project folder is a clone of this repository, and the runner image is built from its `Dockerfile` on the
+`myoung34/github-runner` base image. Update both while the runner is idle: `git pull` in the project folder, then
+**Build** the project in Container Manager, or over SSH:
 
 ```bash
-# SSH into NAS
 ssh admin@<your-nas-ip>
 cd /volume1/docker/synology-github-runner
-
-# Check current version
-docker inspect myoung34/github-runner:latest | grep Created
-
-# Pull latest image
-docker-compose pull
+git pull                            # this repository's fixes
+sudo docker compose build --pull    # rebuild the image, on the newest base image
+sudo docker compose up -d           # recreate the container from it
 ```
 
-**Apply update:**
+**Check the result:**
 
 ```bash
-# Stop and remove old container
-docker-compose down
-
-# Start with new image
-docker-compose up -d
-
 # Verify it's running
 docker ps | grep github-runner
 
@@ -559,10 +549,11 @@ crontab -e
 4. **Update security patches:**
 
    ```bash
-   # Pull latest runner image (includes security updates)
-   docker-compose pull
-   docker-compose down
-   docker-compose up -d
+   # Rebuild on the latest runner base image (includes security updates)
+   cd /volume1/docker/synology-github-runner
+   git pull
+   sudo docker compose build --pull
+   sudo docker compose up -d
    ```
 
 5. **Review access logs:**
@@ -698,16 +689,18 @@ docker system df -v
 **Reset procedure:**
 
 ```bash
+cd /volume1/docker/synology-github-runner
+
 # Stop container
-docker-compose down
+sudo docker compose down
 
 # Clean everything
-docker system prune -af --volumes
-rm -rf workspace/* cache/*
+sudo docker system prune -af --volumes
+sudo rm -rf /volume1/docker/github-runner/workspace/* /volume1/docker/github-runner/cache/*
 
 # Start fresh
-docker-compose pull
-docker-compose up -d
+sudo docker compose build --pull
+sudo docker compose up -d
 ```
 
 ## Maintenance Checklist
@@ -752,9 +745,8 @@ set -euo pipefail
 
 echo "Starting runner maintenance..."
 
-# Update runner image
-cd /volume1/docker/synology-github-runner
-docker-compose pull
+# Updating the runner stays a manual step (see "Pull and Rebuild"): recreating the
+# container from a schedule would cut off whatever job is running
 
 # Clean Docker
 docker system prune -af --filter "until=168h"
@@ -764,12 +756,8 @@ DISK_USAGE=$(df -h /volume1 | awk 'NR==2 {print $5}' | sed 's/%//')
 if [ "$DISK_USAGE" -gt 80 ]; then
     echo "Warning: Disk usage at ${DISK_USAGE}%"
     # Clean cache
-    rm -rf cache/*
+    rm -rf /volume1/docker/github-runner/cache/*
 fi
-
-# Restart runner
-docker-compose down
-docker-compose up -d
 
 echo "Maintenance complete!"
 ```

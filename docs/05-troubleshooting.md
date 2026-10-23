@@ -226,10 +226,10 @@ docker-compose up -d
 
 ```bash
 # Check permissions on workspace/cache
-ls -la workspace cache
+ls -la /volume1/docker/github-runner/
 
 # Fix ownership if needed
-sudo chown -R admin:administrators workspace cache
+sudo chown -R admin:administrators /volume1/docker/github-runner/workspace /volume1/docker/github-runner/cache
 
 # Check Docker socket permission
 ls -la /var/run/docker.sock
@@ -237,6 +237,19 @@ ls -la /var/run/docker.sock
 # Restart container
 docker-compose down
 docker-compose up -d
+```
+
+**Container Name Already in Use After Updating**
+
+**Problem:** Building or starting fails with `Conflict. The container name "/github-runner" is already in use`.
+A container first started with `docker-compose up` in the clone belongs to a Compose project named after the folder,
+while the compose file now names the project after `CONTAINER_NAME` (default `github-runner`), as Container Manager
+does.
+
+**Fix:** remove the old container once, then start the project from Container Manager:
+
+```bash
+sudo docker rm -f github-runner
 ```
 
 **Port Conflict**

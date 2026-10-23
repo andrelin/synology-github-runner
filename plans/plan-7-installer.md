@@ -1,6 +1,6 @@
 # Plan 7: An Installer That Works - plan
 
-**Status:** 🔴 Not Started
+**Status:** 🟡 In Progress (Tasks 1-2 done; Task 3 is user-run)
 **Goal:** `scripts/setup/install.sh`, run inside a clone of this repository on the NAS, leaves that clone ready to
 become a Container Manager project that starts a runner, and `git pull` keeps it current.
 **Approach:** The clone is the project folder, as in the manual installation guide. The installer stops copying files
@@ -70,8 +70,8 @@ compose file's `name:` and `CONTAINER_NAME`. `RUNNER_DATA_DIR` and the shared-wo
 
 | Task | Status |
 | --- | --- |
-| 1 · Installer prepares the clone | ⏳ PENDING |
-| 2 · Install and update docs follow one layout | ⏳ PENDING |
+| 1 · Installer prepares the clone | ✅ DONE |
+| 2 · Install and update docs follow one layout | ✅ DONE |
 | 3 · End-to-end on a NAS (user-run) | ⏳ PENDING |
 
 ## File map
@@ -165,6 +165,10 @@ compose file's `name:` and `CONTAINER_NAME`. `RUNNER_DATA_DIR` and the shared-wo
    organization's Settings → Actions → Runners; to update, `git pull` and rebuild the project; monitoring is in
    `docs/04-monitoring.md`.
 
+**As built:** `.env` is rewritten in pure Bash (no `awk` or `sed`), so the token never reaches another process, and
+the `sed` and `awk` stubs were dropped. A `.env` without a final newline gets one when a key is appended. The tests
+also run on macOS (the stubs and helpers read modes with GNU or BSD `stat`).
+
 Re-running is safe: it changes only the keys it is given, creates only missing directories, and leaves existing
 directories' modes alone.
 
@@ -253,7 +257,8 @@ creates the directories the compose file mounts. "Added": `CONTAINER_NAME`, whic
 - The update procedure, wherever the docs give one (`git grep -n 'docker-compose pull'` in `docs/06-maintenance.md`,
   `docs/faq.md` and `docs/07-security.md`): `git pull` in the project folder, then Build in Container Manager (or
   `sudo docker compose up -d --build` in the project folder), while the runner is idle. The pulls of the base image
-  in those procedures go too: the build pulls it.
+  in those procedures go too. **As built:** the SSH form is `sudo docker compose build --pull` then
+  `sudo docker compose up -d`, since a plain `--build` reuses the cached base image.
 - The DSM minimum: every "DSM 7.0+" statement in `README.md`, `docs/` and `CLAUDE.md`
   (`git grep -n 'DSM 7\.0' -- README.md docs/ CLAUDE.md`) becomes DSM 7.2 or later with Container Manager, whose
   Compose v2 the compose file's `name:` needs.

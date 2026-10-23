@@ -1,308 +1,422 @@
 #!/bin/bash
-# GitHub Self-Hosted Runner - Automated Installation Script
-# Compatible with Synology DSM 7.0+
+# GitHub Self-Hosted Runner - installer
+#
+# Prepares the clone it runs from as a Container Manager project folder: checks the
+# prerequisites, writes .env, validates the compose file and creates the host folders
+# it mounts. Container Manager then creates the project from the clone.
+# Requires DSM 7.2 or later with Container Manager (Docker Compose v2).
+#
+# Usage:
+#   sudo ./scripts/setup/install.sh                               # asks for the values
+#   sudo INSTALL_REPO_URL=https://github.com/owner/repo \
+#     ./scripts/setup/install.sh --non-interactive --token-stdin < token-file
+#
+# Non-interactive values: INSTALL_REPO_URL, INSTALL_RUNNER_NAME, and the token as the
+# first line of stdin with --token-stdin. Re-running changes only the values given.
 
-set -euo pipefail
+set -Eeu -o pipefail
+# [a-z] means ASCII letters only, whatever the locale's collation
+shopt -s globasciiranges
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Appended, never prepended, so the caller's tools keep precedence; DSM keeps docker
+# in /usr/local/bin, which sudo's PATH may lack
+INSTALL_SYSTEM_PATH=${INSTALL_SYSTEM_PATH-/usr/local/bin:/usr/bin:/bin}
+if [ -n "$INSTALL_SYSTEM_PATH" ]; then
+    PATH="$PATH:$INSTALL_SYSTEM_PATH"
+fi
 
-# Configuration
-INSTALL_DIR="/volume1/docker/github-runner"
-SCRIPTS_DIR="/volume1/scripts"
+script_dir=${BASH_SOURCE[0]%/*}
+[ "$script_dir" != "${BASH_SOURCE[0]}" ] || script_dir=.
+RUNNER_DIR=${RUNNER_DIR:-$(cd "$script_dir/../.." && pwd)}
+ENV_FILE="$RUNNER_DIR/.env"
+ENV_TMP="$ENV_FILE.tmp"
+EXAMPLE_FILE="$RUNNER_DIR/.env.example"
+COMPOSE_FILE_PATH="$RUNNER_DIR/docker-compose.yaml"
 
-# Print functions
-print_header() {
-    echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║  GitHub Self-Hosted Runner - Installation Script              ║${NC}"
-    echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
-}
+DEFAULT_RUNNER_NAME=synology-general-runner
+DEFAULT_CONTAINER_NAME=github-runner
 
-print_step() {
-    echo -e "${BLUE}▶${NC} $1"
-}
+trap 'rm -f "$ENV_TMP"' EXIT
+# A subshell leaves the message to the parent, which sees the same failure
+trap '[ "$BASH_SUBSHELL" = 0 ] || exit 1; echo "✗ unexpected error at line $LINENO"; exit 1' ERR
 
 print_success() {
-    echo -e "${GREEN}✓${NC} $1"
+    echo "✓ $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}⚠${NC} $1"
+    echo "⚠ $1"
 }
 
-print_error() {
-    echo -e "${RED}✗${NC} $1"
+fail() {
+    echo "✗ $1"
+    exit 1
 }
 
-# Check if running on Synology
-check_synology() {
-    if [ ! -f /etc/synoinfo.conf ]; then
-        print_warning "This script is designed for Synology NAS but can work on other Linux systems"
-        read -p "Continue anyway? (y/N) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            exit 1
-        fi
-    else
-        print_success "Running on Synology DSM"
+# Reads KEY from a .env file the way Docker Compose does for the forms people write,
+# without sourcing or expanding anything. Sets ENV_VALUE and ENV_VALUE_QUOTE (none,
+# single or double); a missing file or key gives an empty value. The last match wins.
+read_env_value() {
+    local file=$1 key=$2 line rest value quote
+    ENV_VALUE=''
+    ENV_VALUE_QUOTE=none
+    [ -r "$file" ] || return 0
+    while IFS= read -r line || [ -n "$line" ]; do
+        line=${line%$'\r'}
+        line=${line#"${line%%[![:space:]]*}"}
+        case $line in
+            export[[:space:]]*)
+                line=${line#export}
+                line=${line#"${line%%[![:space:]]*}"}
+                ;;
+        esac
+        [ "${line#"$key"}" != "$line" ] || continue
+        rest=${line#"$key"}
+        rest=${rest#"${rest%%[![:space:]]*}"}
+        case $rest in
+            =*) rest=${rest#=} ;;
+            *) continue ;;
+        esac
+        rest=${rest#"${rest%%[![:space:]]*}"}
+        case $rest in
+            \'*)
+                rest=${rest#\'}
+                value=${rest%%\'*}
+                quote=single
+                ;;
+            \"*)
+                rest=${rest#\"}
+                value=${rest%%\"*}
+                quote=double
+                ;;
+            *)
+                value=${rest%% \#*}
+                value=${value%"${value##*[![:space:]]}"}
+                quote=none
+                ;;
+        esac
+        ENV_VALUE=$value
+        # shellcheck disable=SC2034 # read by callers that need to know the quoting
+        ENV_VALUE_QUOTE=$quote
+    done < "$file"
+    return 0
+}
+
+# True when LINE assigns KEY, by the same rules read_env_value matches lines
+line_sets_key() {
+    local line=$1 key=$2 rest
+    line=${line%$'\r'}
+    line=${line#"${line%%[![:space:]]*}"}
+    case $line in
+        export[[:space:]]*)
+            line=${line#export}
+            line=${line#"${line%%[![:space:]]*}"}
+            ;;
+    esac
+    [ "${line#"$key"}" != "$line" ] || return 1
+    rest=${line#"$key"}
+    rest=${rest#"${rest%%[![:space:]]*}"}
+    case $rest in
+        =*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+trim() {
+    local value=$1
+    value=${value#"${value%%[![:space:]]*}"}
+    value=${value%"${value##*[![:space:]]}"}
+    printf '%s' "$value"
+}
+
+parse_arguments() {
+    NON_INTERACTIVE=0
+    TOKEN_STDIN=0
+    local arg
+    for arg in "$@"; do
+        case $arg in
+            --non-interactive) NON_INTERACTIVE=1 ;;
+            --token-stdin) TOKEN_STDIN=1 ;;
+            *) fail "Unknown option $arg (use --non-interactive, --token-stdin)" ;;
+        esac
+    done
+    if [ "$TOKEN_STDIN" = 1 ] && [ "$NON_INTERACTIVE" = 0 ]; then
+        fail "Unknown option --token-stdin (use --non-interactive, --token-stdin)"
     fi
 }
 
-# Check prerequisites
+check_project() {
+    local missing=0
+    [ -e "$RUNNER_DIR/.git" ] || missing=1
+    [ -f "$COMPOSE_FILE_PATH" ] || missing=1
+    [ -f "$EXAMPLE_FILE" ] || missing=1
+    if [ "$missing" = 0 ] && grep -q '^[[:space:]]*build:' "$COMPOSE_FILE_PATH" \
+        && [ ! -f "$RUNNER_DIR/Dockerfile" ]; then
+        missing=1
+    fi
+    if [ "$missing" = 1 ]; then
+        fail "Run this from a git clone of the repository (see docs/02-installation.md)"
+    fi
+    print_success "Project folder: $RUNNER_DIR"
+}
+
 check_prerequisites() {
-    print_step "Checking prerequisites..."
-
-    # Check Docker
-    if ! command -v docker &> /dev/null; then
-        print_error "Docker is not installed"
-        print_warning "Please install Container Manager from DSM Package Center"
-        exit 1
+    command -v jq > /dev/null 2>&1 || fail "jq not found"
+    command -v docker > /dev/null 2>&1 || fail "docker not found: install Container Manager"
+    if ! docker compose version > /dev/null 2>&1; then
+        fail "Docker Compose v2 not found (docker compose version failed)"
     fi
-    print_success "Docker is installed"
-
-    # Check Docker Compose
-    if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null 2>&1; then
-        print_error "Docker Compose is not installed"
-        exit 1
+    if [ "${SKIP_DOCKER_ACCESS_CHECK:-}" != 1 ] && ! docker ps > /dev/null 2>&1; then
+        fail "Cannot use Docker: run with sudo"
     fi
-    print_success "Docker Compose is installed"
-
-    # Check permissions
-    if ! docker ps &> /dev/null; then
-        print_error "Cannot access Docker (permission denied)"
-        print_warning "Run this script with sudo or add your user to docker group"
-        exit 1
+    print_success "Docker and Docker Compose v2 available"
+    if [ ! -f /etc/synoinfo.conf ]; then
+        print_warning "Not running on Synology DSM"
     fi
-    print_success "Docker access verified"
-
-    echo ""
 }
 
-# Create directory structure
+# Values come from the current .env, or from .env.example before one exists
+current_value() {
+    if [ -f "$ENV_FILE" ]; then
+        read_env_value "$ENV_FILE" "$1"
+    else
+        read_env_value "$EXAMPLE_FILE" "$1"
+    fi
+}
+
+scope_of() {
+    local scope
+    scope=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
+    case $scope in
+        org*) echo organization ;;
+        ent*) echo enterprise ;;
+        *) echo repository ;;
+    esac
+}
+
+SET_KEYS=()
+SET_VALUES=()
+
+give_value() {
+    local key=$1 value
+    value=$(trim "$2")
+    [ -n "$value" ] || return 0
+    case $value in
+        *$'\n'* | *\'*) fail "$key contains a character the installer can't store; edit .env by hand" ;;
+    esac
+    SET_KEYS+=("$key")
+    SET_VALUES+=("$value")
+}
+
+# Prints PROMPT and reads one line into ANSWER; a closed stdin is an empty answer
+ask() {
+    ANSWER=''
+    printf '%s' "$1"
+    IFS= read -r "${@:2}" ANSWER || true
+    echo
+}
+
+collect_values() {
+    local token=''
+    if [ "$NON_INTERACTIVE" = 1 ]; then
+        give_value REPO_URL "${INSTALL_REPO_URL:-}"
+        if [ "$TOKEN_STDIN" = 1 ]; then
+            IFS= read -r token || true
+        fi
+        give_value GITHUB_PAT "$token"
+        give_value RUNNER_NAME "${INSTALL_RUNNER_NAME:-}"
+        return 0
+    fi
+
+    current_value RUNNER_SCOPE
+    if [ "$(scope_of "$ENV_VALUE")" != organization ]; then
+        current_value REPO_URL
+        ask "Repository the runner serves [$ENV_VALUE]: "
+        give_value REPO_URL "$ANSWER"
+    fi
+
+    echo "Token: a fine-grained PAT for that repository with Administration: Read and write"
+    echo "(a classic PAT with 'repo' also works); for organization scope, a fine-grained PAT"
+    echo "for the organization with Self-hosted runners: Read and write. Empty keeps the current one."
+    ask "Token (hidden): " -s
+    give_value GITHUB_PAT "$ANSWER"
+
+    current_value RUNNER_NAME
+    ask "Runner name [${ENV_VALUE:-$DEFAULT_RUNNER_NAME}]: "
+    give_value RUNNER_NAME "$ANSWER"
+}
+
+format_value() {
+    case $1 in
+        *[!A-Za-z0-9_./:@+-]*) printf "'%s'" "$1" ;;
+        *) printf '%s' "$1" ;;
+    esac
+}
+
+# Replaces the line read_env_value would read for each given key, or appends one;
+# every other line is written back unchanged
+write_env() {
+    local -a lines=()
+    local line last_newline=1 i j found
+
+    if [ ! -f "$ENV_FILE" ]; then
+        (umask 077 && cp "$EXAMPLE_FILE" "$ENV_FILE")
+        print_success "Created .env from .env.example"
+    fi
+
+    if [ "${#SET_KEYS[@]}" -gt 0 ]; then
+        while IFS= read -r line || { [ -n "$line" ] && last_newline=0; }; do
+            lines+=("$line")
+        done < "$ENV_FILE"
+
+        for i in "${!SET_KEYS[@]}"; do
+            found=''
+            for j in "${!lines[@]}"; do
+                if line_sets_key "${lines[j]}" "${SET_KEYS[i]}"; then
+                    found=$j
+                fi
+            done
+            line="${SET_KEYS[i]}=$(format_value "${SET_VALUES[i]}")"
+            if [ -n "$found" ]; then
+                lines[found]=$line
+            else
+                lines+=("$line")
+                last_newline=1
+            fi
+        done
+
+        rm -f "$ENV_TMP"
+        (
+            umask 077
+            for i in "${!lines[@]}"; do
+                if [ "$i" -lt $((${#lines[@]} - 1)) ] || [ "$last_newline" = 1 ]; then
+                    printf '%s\n' "${lines[i]}"
+                else
+                    printf '%s' "${lines[i]}"
+                fi
+            done > "$ENV_TMP"
+        )
+        mv "$ENV_TMP" "$ENV_FILE"
+        print_success "Updated ${SET_KEYS[*]} in .env"
+    fi
+
+    chmod 600 "$ENV_FILE"
+    if [ -n "${SUDO_USER:-}" ]; then
+        chown "$SUDO_USER" "$ENV_FILE"
+    fi
+}
+
+check_values() {
+    local scope pat_placeholder repo_placeholder
+
+    read_env_value "$EXAMPLE_FILE" REPO_URL
+    repo_placeholder=$ENV_VALUE
+    read_env_value "$EXAMPLE_FILE" GITHUB_PAT
+    pat_placeholder=$ENV_VALUE
+
+    read_env_value "$ENV_FILE" RUNNER_SCOPE
+    scope=$(scope_of "$ENV_VALUE")
+    case $scope in
+        enterprise)
+            fail "Enterprise scope is not supported"
+            ;;
+        organization)
+            read_env_value "$ENV_FILE" ORG_NAME
+            if [ -z "$ENV_VALUE" ] || [ "$ENV_VALUE" = your-org ]; then
+                fail "Set ORG_NAME"
+            fi
+            ;;
+        *)
+            read_env_value "$ENV_FILE" REPO_URL
+            if [ -z "$ENV_VALUE" ] || [ "$ENV_VALUE" = "$repo_placeholder" ]; then
+                fail "Set REPO_URL (the repository the runner serves)"
+            fi
+            ;;
+    esac
+
+    read_env_value "$ENV_FILE" GITHUB_PAT
+    if [ -z "$ENV_VALUE" ] || [ "$ENV_VALUE" = "$pat_placeholder" ]; then
+        read_env_value "$ENV_FILE" APP_PRIVATE_KEY
+        if [ -z "$ENV_VALUE" ]; then
+            fail "Set GITHUB_PAT, or APP_ID and APP_PRIVATE_KEY"
+        fi
+    fi
+
+    read_env_value "$ENV_FILE" CONTAINER_NAME
+    CONTAINER_NAME=${ENV_VALUE:-$DEFAULT_CONTAINER_NAME}
+    case $CONTAINER_NAME in
+        [a-z0-9]*) ;;
+        *) fail "CONTAINER_NAME must start with a lowercase letter or digit and use only those, - and _" ;;
+    esac
+    case $CONTAINER_NAME in
+        *[!a-z0-9_-]*) fail "CONTAINER_NAME must start with a lowercase letter or digit and use only those, - and _" ;;
+    esac
+    print_success "Required values set in .env ($scope scope)"
+}
+
+# Runs docker compose on this project only: variables the compose file reads are
+# unset first, since a shell variable would override the value in .env
+compose() {
+    local -a unset_args=()
+    local var
+    # shellcheck disable=SC2016 # a literal ${ to match in the compose file
+    while IFS= read -r var; do
+        unset_args+=(-u "${var#\$\{}")
+    done < <(grep -o '\${[A-Z_][A-Z0-9_]*' "$COMPOSE_FILE_PATH")
+    env "${unset_args[@]}" docker compose --project-directory "$RUNNER_DIR" \
+        -f "$COMPOSE_FILE_PATH" "$@"
+}
+
+# Compose's own error output is never shown: it can quote values from .env
+check_compose() {
+    if ! compose config -q > /dev/null 2>&1; then
+        fail "docker-compose.yaml or .env is invalid: run 'sudo docker compose config -q' in $RUNNER_DIR to see why (its output can include values from .env)"
+    fi
+    print_success "docker-compose.yaml and .env are valid"
+}
+
 create_directories() {
-    print_step "Creating directory structure..."
-
-    mkdir -p "$INSTALL_DIR"/{data/{workspace,cache},config,logs}
-    mkdir -p "$SCRIPTS_DIR"
-
-    print_success "Directories created at $INSTALL_DIR"
-    echo ""
+    local rendered workspace cache dir
+    if ! rendered=$(compose config --format json 2> /dev/null); then
+        fail "docker-compose.yaml or .env is invalid: run 'sudo docker compose config -q' in $RUNNER_DIR to see why (its output can include values from .env)"
+    fi
+    workspace=$(printf '%s' "$rendered" | jq -r '
+        [.services[]] | first | .environment.RUNNER_WORKDIR as $wd
+        | [.volumes[]? | select($wd != null and .target == $wd) | .source] | first // empty')
+    cache=$(printf '%s' "$rendered" | jq -r '
+        [.services[]] | first
+        | [.volumes[]? | select(.target == "/cache") | .source] | first // empty')
+    if [ -z "$workspace" ] || [ -z "$cache" ]; then
+        fail "docker-compose.yaml has no workspace or /cache mount"
+    fi
+    for dir in "$workspace" "$cache"; do
+        dir="${DATA_ROOT_OVERRIDE:-}$dir"
+        (umask 022 && mkdir -p "$dir")
+        print_success "Folder ready: $dir"
+    done
 }
 
-# Copy configuration files
-setup_configuration() {
-    print_step "Setting up configuration..."
-
-    # Copy docker-compose.yaml
-    if [ -f "docker-compose.yaml" ]; then
-        cp docker-compose.yaml "$INSTALL_DIR/"
-        print_success "Copied docker-compose.yaml"
-    else
-        print_error "docker-compose.yaml not found in current directory"
-        exit 1
-    fi
-
-    # Copy .env.example
-    if [ -f ".env.example" ]; then
-        if [ -f "$INSTALL_DIR/.env" ]; then
-            print_warning ".env already exists, creating .env.example"
-            cp .env.example "$INSTALL_DIR/.env.example"
-        else
-            cp .env.example "$INSTALL_DIR/.env"
-            print_warning "Created .env file - YOU MUST EDIT THIS BEFORE STARTING"
-        fi
-    fi
-
+print_next_steps() {
     echo ""
+    echo "Next steps:"
+    echo "  1. In Container Manager, create a project named $CONTAINER_NAME with path"
+    echo "     $RUNNER_DIR, using its existing docker-compose.yaml."
+    echo "  2. The runner then appears under the repository's (or organization's)"
+    echo "     Settings → Actions → Runners."
+    echo "  3. To update, git pull in $RUNNER_DIR and rebuild the project."
+    echo "  4. Monitoring: see docs/04-monitoring.md"
 }
 
-# Install monitoring scripts
-install_monitoring() {
-    print_step "Installing monitoring scripts..."
-
-    if [ -f "scripts/monitoring/runner-health-check.sh" ]; then
-        cp scripts/monitoring/runner-health-check.sh "$SCRIPTS_DIR/"
-        chmod +x "$SCRIPTS_DIR/runner-health-check.sh"
-        print_success "Installed runner-health-check.sh"
-    fi
-
-    if [ -f "scripts/monitoring/runner-dashboard.sh" ]; then
-        cp scripts/monitoring/runner-dashboard.sh "$SCRIPTS_DIR/"
-        chmod +x "$SCRIPTS_DIR/runner-dashboard.sh"
-        print_success "Installed runner-dashboard.sh"
-    fi
-
-    echo ""
-}
-
-# Configure .env file interactively
-configure_env() {
-    print_step "Configuring environment variables..."
-
-    if [ ! -f "$INSTALL_DIR/.env" ]; then
-        print_error ".env file not found"
-        return 1
-    fi
-
-    echo ""
-    read -p "Would you like to configure .env now? (Y/n) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-        # Get repository URL
-        read -r -p "GitHub repository URL (https://github.com/owner/repo): " REPO_URL
-        sed -i.bak "s|REPO_URL=.*|REPO_URL=$REPO_URL|" "$INSTALL_DIR/.env"
-
-        # Get GitHub PAT
-        echo ""
-        print_warning "You need a GitHub Personal Access Token with 'repo' and 'workflow' scopes"
-        echo "Generate at: https://github.com/settings/tokens"
-        read -r -sp "GitHub PAT (will be hidden): " GITHUB_PAT
-        echo ""
-        sed -i.bak "s|GITHUB_PAT=.*|GITHUB_PAT=$GITHUB_PAT|" "$INSTALL_DIR/.env"
-
-        # Get runner name
-        read -r -p "Runner name (default: synology-runner): " RUNNER_NAME
-        RUNNER_NAME=${RUNNER_NAME:-synology-runner}
-        sed -i.bak "s|RUNNER_NAME=.*|RUNNER_NAME=$RUNNER_NAME|" "$INSTALL_DIR/.env"
-
-        # Clean up backup files
-        rm -f "$INSTALL_DIR/.env.bak"
-
-        print_success "Configuration saved"
-    else
-        print_warning "You must manually edit $INSTALL_DIR/.env before starting the runner"
-    fi
-
-    echo ""
-}
-
-# Test configuration
-test_configuration() {
-    print_step "Testing configuration..."
-
-    cd "$INSTALL_DIR"
-
-    # Test docker-compose config
-    if docker-compose config > /dev/null 2>&1 || docker compose config > /dev/null 2>&1; then
-        print_success "Docker Compose configuration is valid"
-    else
-        print_error "Docker Compose configuration is invalid"
-        return 1
-    fi
-
-    echo ""
-}
-
-# Start runner
-start_runner() {
-    print_step "Starting GitHub runner..."
-
-    cd "$INSTALL_DIR"
-
-    if docker-compose up -d 2>/dev/null || docker compose up -d 2>/dev/null; then
-        print_success "Runner container started"
-
-        echo ""
-        print_step "Checking runner status..."
-        sleep 5
-
-        if docker ps | grep -q github-runner; then
-            print_success "Runner is running!"
-            echo ""
-            echo "View logs: docker logs -f github-runner"
-            echo "View status: $SCRIPTS_DIR/runner-dashboard.sh"
-        else
-            print_error "Runner failed to start"
-            echo "Check logs: docker logs github-runner"
-            return 1
-        fi
-    else
-        print_error "Failed to start runner"
-        return 1
-    fi
-
-    echo ""
-}
-
-# Setup monitoring schedule
-setup_monitoring_schedule() {
-    print_step "Setting up monitoring schedule..."
-
-    echo ""
-    print_warning "To complete monitoring setup:"
-    echo "1. Open DSM Control Panel → Task Scheduler"
-    echo "2. Create → Scheduled Task → User-defined script"
-    echo "3. Run as: root"
-    echo "4. Schedule: Every 5 minutes"
-    echo "5. Script: $SCRIPTS_DIR/runner-health-check.sh"
-    echo ""
-    echo "See docs/04-monitoring.md for detailed instructions"
-    echo ""
-}
-
-# Print summary
-print_summary() {
-    echo ""
-    echo -e "${GREEN}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║  Installation Complete!                                        ║${NC}"
-    echo -e "${GREEN}╚════════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
-    echo "📍 Installation directory: $INSTALL_DIR"
-    echo "📍 Scripts directory: $SCRIPTS_DIR"
-    echo ""
-    echo "🎯 Next Steps:"
-    echo "  1. Verify runner registered: https://github.com/YOUR_REPO/settings/actions/runners"
-    echo "  2. View runner status: $SCRIPTS_DIR/runner-dashboard.sh"
-    echo "  3. Set up monitoring (see above)"
-    echo "  4. Test with a workflow"
-    echo ""
-    echo "📚 Documentation: See README.md and docs/"
-    echo ""
-    echo "🐛 Issues? Check docs/05-troubleshooting.md"
-    echo ""
-}
-
-# Main installation flow
 main() {
-    print_header
-
-    # Check if already installed
-    if [ -d "$INSTALL_DIR" ] && [ -f "$INSTALL_DIR/docker-compose.yaml" ]; then
-        print_warning "Runner appears to be already installed at $INSTALL_DIR"
-        read -p "Reinstall? This will preserve your .env file (y/N) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            exit 0
-        fi
-    fi
-
-    check_synology
+    parse_arguments "$@"
+    check_project
     check_prerequisites
+    collect_values
+    write_env
+    check_values
+    check_compose
     create_directories
-    setup_configuration
-    install_monitoring
-    configure_env
-    test_configuration
-
-    echo ""
-    read -p "Start runner now? (Y/n) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-        start_runner
-    else
-        print_warning "Runner not started. To start manually:"
-        echo "  cd $INSTALL_DIR"
-        echo "  docker-compose up -d"
-    fi
-
-    setup_monitoring_schedule
-    print_summary
+    print_next_steps
 }
 
-# Run installation
 main "$@"

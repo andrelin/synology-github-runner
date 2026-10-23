@@ -1,0 +1,10 @@
+#!/bin/bash
+# Test stub: logs the call, fails on request, otherwise runs the real docker
+printf 'docker %s\n' "$*" >> "${STUB_LOG:?}"
+case "$*" in
+    "compose version"*) [ "${FAKE_COMPOSE_VERSION_FAIL:-}" != 1 ] || exit 1 ;;
+    ps*) [ "${FAKE_PS_FAIL:-}" != 1 ] || exit 1 ;;
+esac
+stub_dir=$(cd "${BASH_SOURCE[0]%/*}" && pwd)
+PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -vxF "$stub_dir" | paste -sd: -)
+exec docker "$@"

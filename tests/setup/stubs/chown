@@ -1,0 +1,3 @@
+#!/bin/bash
+# Test stub: only logs, since tests run unprivileged
+printf 'chown %s\n' "$*" >> "${STUB_LOG:?}"

@@ -1,0 +1,7 @@
+#!/bin/bash
+# Test stub: runs the real cp, then logs the destination's mode
+stub_dir=$(cd "${BASH_SOURCE[0]%/*}" && pwd)
+PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -vxF "$stub_dir" | paste -sd: -)
+cp "$@" || exit
+dest=${*: -1}
+printf 'cp %s %s\n' "$(stat -c %a "$dest" 2>/dev/null || stat -f %Lp "$dest")" "$*" >> "${STUB_LOG:?}"

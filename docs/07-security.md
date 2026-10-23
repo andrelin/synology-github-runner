@@ -552,18 +552,14 @@ docker-compose logs > /volume1/logs/runner-archive/logs-$(date +%Y-%m).txt
 **Monthly security updates:**
 
 ```bash
-# Pull latest image
-docker-compose pull
-
-# Check what changed
-docker history myoung34/github-runner:latest | head -20
-
-# Apply update
-docker-compose down
-docker-compose up -d
+# Pull this repository's fixes and rebuild on the latest base image, while the runner is idle
+cd /volume1/docker/synology-github-runner
+git pull                            # this repository's fixes
+sudo docker compose build --pull    # rebuild the image, on the newest base image
+sudo docker compose up -d           # recreate the container from it
 
 # Verify successful update
-docker-compose logs --tail=50
+sudo docker compose logs --tail=50
 ```
 
 **Subscribe to security updates:**

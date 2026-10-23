@@ -1,0 +1,7 @@
+#!/bin/bash
+# Test stub: logs the source's mode, fails on request, otherwise runs the real mv
+printf 'mv %s %s\n' "$(stat -c %a "$1" 2>/dev/null || stat -f %Lp "$1")" "$*" >> "${STUB_LOG:?}"
+[ "${FAKE_MV_FAIL:-}" != 1 ] || exit 1
+stub_dir=$(cd "${BASH_SOURCE[0]%/*}" && pwd)
+PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -vxF "$stub_dir" | paste -sd: -)
+exec mv "$@"

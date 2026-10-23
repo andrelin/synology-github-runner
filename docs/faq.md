@@ -90,7 +90,7 @@ See [Prerequisites Guide](01-prerequisites.md) for detailed requirements.
 
 ### Which Synology models are supported?
 
-Any x86_64 (Intel/AMD) Synology NAS with DSM 7.0+:
+Any x86_64 (Intel/AMD) Synology NAS with DSM 7.2+:
 
 ✅ **Tested and confirmed:**
 
@@ -332,7 +332,7 @@ See [Troubleshooting Guide](05-troubleshooting.md#container-wont-start).
 docker system prune -af
 
 # Clean workspace
-rm -rf workspace/* cache/*
+sudo rm -rf /volume1/docker/github-runner/workspace/* /volume1/docker/github-runner/cache/*
 
 # Check space
 df -h /volume1
@@ -344,20 +344,14 @@ See [Troubleshooting Guide](05-troubleshooting.md#disk-space-issues).
 
 ### How do I update the runner?
 
-**Update Docker image:**
+While the runner is idle, `git pull` in the project folder, then **Build** the project in Container Manager, or
+over SSH:
 
 ```bash
-docker-compose pull
-docker-compose down
-docker-compose up -d
-```
-
-**Update repository configuration:**
-
-```bash
-git pull origin main
-docker-compose down
-docker-compose up -d
+cd /volume1/docker/synology-github-runner
+git pull                            # this repository's fixes
+sudo docker compose build --pull    # rebuild the image, on the newest base image
+sudo docker compose up -d           # recreate the container from it
 ```
 
 See [Maintenance Guide](06-maintenance.md).

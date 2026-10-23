@@ -12,7 +12,7 @@ the repository.
 
 Before starting, ensure you have:
 
-- ✅ **Synology NAS** with DSM 7.0 or later
+- ✅ **Synology NAS** with DSM 7.2 or later
 - ✅ **Container Manager** installed (from Package Center)
 - ✅ **Git Server** installed (from Package Center)
 - ✅ **SSH access** enabled (Control Panel → Terminal & SNMP)
@@ -65,6 +65,9 @@ You should see:
 - `.env.example` - Configuration template
 - `scripts/` - Monitoring and setup scripts
 - `docs/` - Documentation
+
+> **💡 Tip:** `sudo ./scripts/setup/install.sh` does Steps 2 and 3 for you: it asks for your repository, token and
+> runner name, writes `.env`, validates the configuration and creates the data folders. Then continue with Step 4.
 
 ### Step 2: Create .env File
 
@@ -123,21 +126,19 @@ chmod 600 .env
 
 ### Step 3: Create Required Directories
 
-Create workspace and cache directories:
+The compose file mounts the workspace and cache from `/volume1/docker/github-runner`, outside the clone:
 
 ```bash
-# Still in /volume1/docker/synology-github-runner
-mkdir -p workspace cache
+sudo mkdir -p /volume1/docker/github-runner/workspace /volume1/docker/github-runner/cache
 
 # Verify structure
-ls -la
+ls -la /volume1/docker/github-runner/
 ```
 
 You should see:
 
-- `workspace/` - Runner working directory (gitignored)
-- `cache/` - Build cache directory (gitignored)
-- `.env` - Your secrets (gitignored)
+- `workspace/` - Runner working directory (the same path inside the container, for Docker-in-Docker)
+- `cache/` - Build cache directory
 
 You can now exit SSH (type `exit`).
 
@@ -158,7 +159,7 @@ Now use the Synology Container Manager UI:
    **General Settings:**
    - **Project Name:** `github-runner`
    - **Path:** `/volume1/docker/synology-github-runner`
-   - **Source:** `Create docker-compose.yaml`
+   - **Source:** `Use existing docker-compose.yaml`
 
    Click **Next**
 
@@ -282,15 +283,14 @@ If you update `.env` or pull new changes from git:
 ```bash
 ssh admin@<your-nas-ip>
 cd /volume1/docker/synology-github-runner
-docker-compose down
-docker-compose up -d
+sudo docker compose up -d --build
 ```
 
 ## Updating the Runner
 
 ### Update from Git Repository
 
-When new versions are released:
+When new versions are released, while the runner is idle:
 
 1. **SSH into Synology:**
 
@@ -318,39 +318,52 @@ When new versions are released:
 
 **Note:** Your `.env` file is preserved (it's gitignored).
 
-### Update Docker Image
+### Update the Base Image
 
-To update the runner Docker image to latest:
+The runner image is built from this repository's `Dockerfile`. To build it on a newer `myoung34/github-runner` base
+image as well, while the runner is idle:
 
-**Via Container Manager UI:**
+```bash
+cd /volume1/docker/synology-github-runner
+sudo docker compose build --pull
+sudo docker compose up -d
+```
 
-1. Container → `github-runner` container
-2. Click **Stop**
-3. Registry → Search `myoung34/github-runner`
-4. Download `latest` tag
-5. Project → `github-runner` → **Build**
-6. New container uses latest image
+### Coming from the Old Installer
+
+Earlier versions of `install.sh` copied `docker-compose.yaml` and `.env` into `/volume1/docker/github-runner`, where
+the image can't build and `git pull` can't update. If that folder has no `.git` in it, move to the clone layout (a
+clone there already is the new layout, and nothing needs doing). The runner is offline while you do this:
+
+1. In Container Manager, delete any project named `github-runner` that points at `/volume1/docker/github-runner`,
+   keeping the folder.
+2. Clone the repository into `/volume1/docker/synology-github-runner` (Step 1) and move the old folder's `.env` into
+   the clone.
+3. In `/volume1/docker/github-runner`, delete the old `docker-compose.yaml` and `.env.example` copies, the empty
+   `config/` and `logs/` folders, and the `data/` folder, which the compose file never used. Keep `workspace/` and
+   `cache/`: the compose file mounts them.
+4. Run `sudo ./scripts/setup/install.sh` in the clone, then create the project from the clone (Step 4).
 
 ## Directory Structure
 
 After installation:
 
 ```text
-/volume1/docker/synology-github-runner/  # Repository root
+/volume1/docker/synology-github-runner/  # The clone: the Container Manager project folder
 ├── .git/                                # Git metadata
 ├── .env                                 # Your secrets (gitignored)
 ├── .env.example                         # Template
-├── docker-compose.yaml                   # Runner configuration
-├── workspace/                           # Runner workspace (gitignored)
-│   └── _work/                          # Job execution directories
-├── cache/                               # Build cache (gitignored)
-│   ├── gradle/                         # Gradle dependencies
-│   └── npm/                            # npm packages
+├── docker-compose.yaml                  # Runner configuration
+├── Dockerfile                           # The runner image
 ├── scripts/                             # Utility scripts
-│   ├── monitoring/                     # Health checks
-│   └── setup/                          # Installation helpers
-├── docs/                                # Documentation
-└── plans/                               # Implementation plans
+│   ├── monitoring/                      # Health checks
+│   └── setup/                           # The installer
+└── docs/                                # Documentation
+
+/volume1/docker/github-runner/           # Data the compose file mounts
+├── workspace/                           # Runner workspace
+│   └── _work/                           # Job execution directories
+└── cache/                               # Build cache
 ```
 
 ## Container Manager Best Practices
@@ -366,7 +379,7 @@ After installation:
 
 - Don't edit docker-compose.yaml in Container Manager UI
 - Don't manually create containers for compose projects
-- Don't delete workspace/ or cache/ directories
+- Don't delete `/volume1/docker/github-runner/workspace` or `cache` while the runner is running
 - Don't commit .env file to git
 
 ## Troubleshooting
@@ -438,25 +451,24 @@ After installation:
 
 **Solution:**
 
-1. Check docker-compose.yaml syntax:
+1. Check docker-compose.yaml and .env (the output can include values from `.env`, so don't paste it anywhere):
 
    ```bash
    ssh admin@<your-nas-ip>
    cd /volume1/docker/synology-github-runner
-   docker-compose config
+   sudo docker compose config -q
    ```
 
 2. Check .env file exists:
 
    ```bash
    ls -la .env
-   cat .env
    ```
 
 3. Check workspace/cache directories exist:
 
    ```bash
-   ls -la workspace/ cache/
+   ls -la /volume1/docker/github-runner/
    ```
 
 ## Security Best Practices

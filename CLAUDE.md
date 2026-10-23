@@ -61,7 +61,7 @@ universally applicable for any GitHub repository.
 - Docker & Docker Compose
 - Shell scripting (Bash, POSIX-compatible where possible)
 - GitHub Actions workflows (YAML)
-- Synology DSM 7.0+
+- Synology DSM 7.2+
 
 **Target Audience:**
 
@@ -136,6 +136,9 @@ synology-github-runner/
 │   │   └── runner-dashboard.sh
 │   ├── maintenance/                  # Update & cleanup scripts
 │   └── utilities/                    # Helper scripts
+│
+├── tests/
+│   └── setup/                        # Installer tests and their stubs
 │
 ├── examples/
 │   └── workflows/                    # Example GitHub Actions workflows
@@ -248,7 +251,7 @@ check_prerequisites() {
 
 **5. Validation:**
 
-- Always validate before running `shellcheck scripts/**/*.sh`
+- Always run ShellCheck before committing (the command is under Testing Changes)
 - Test on actual Synology hardware when possible
 - Include usage examples in script comments
 
@@ -448,8 +451,11 @@ print_success() {
 **1. Shell Scripts:**
 
 ```bash
-# Lint all scripts
-shellcheck scripts/**/*.sh
+# Lint all scripts, tests and test stubs
+find scripts tests -type f \( -name '*.sh' -o -path 'tests/*/stubs/*' \) -exec shellcheck -s bash {} +
+
+# Run the script tests (they need Docker Compose; the monitoring tests need Linux, so run those in CI or a container)
+for t in tests/*/*.test.sh; do bash "$t" || { echo "FAILED: $t"; break; }; done
 
 # Test script execution (dry-run if available)
 bash -n scripts/setup/install.sh

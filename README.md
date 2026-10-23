@@ -84,7 +84,7 @@
 
 ### Hardware
 
-- **Synology NAS** with DSM 7.0 or later
+- **Synology NAS** with DSM 7.2 or later
 - **2+ CPU cores** (4+ recommended)
 - **8+ GB RAM** (16+ recommended)
 - **20+ GB free disk space** (for workspace and cache)
@@ -106,27 +106,25 @@
 ### Option 1: Automated Installation (Recommended)
 
 ```bash
-# 1. Clone this repository
+# 1. SSH into the NAS and clone this repository; the clone becomes the project folder
+ssh admin@<your-nas-ip>
+cd /volume1/docker
 git clone https://github.com/andrelin/synology-github-runner.git
 cd synology-github-runner
 
-# 2. Copy to your NAS
-scp -r . admin@<your-nas-ip>:/volume1/temp/runner-setup/
-
-# 3. SSH into NAS and run installer
-ssh admin@<your-nas-ip>
-cd /volume1/temp/runner-setup
-sudo ./install.sh
+# 2. Run the installer
+sudo ./scripts/setup/install.sh
 ```
 
 The installer will:
 
 - ✅ Check prerequisites
-- ✅ Create directory structure
-- ✅ Set up configuration
-- ✅ Install monitoring scripts
-- ✅ Start the runner
-- ✅ Guide you through remaining steps
+- ✅ Write `.env` with your repository, token and runner name
+- ✅ Validate the configuration
+- ✅ Create the workspace and cache folders
+- ✅ Tell you how to create the Container Manager project from the clone
+
+Because the project folder is a git clone, `git pull` and a rebuild of the project keep it up to date.
 
 ### Option 2: Manual Installation
 

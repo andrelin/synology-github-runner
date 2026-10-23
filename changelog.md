@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed (2026-10-23)
+
+- **Installer:** `scripts/setup/install.sh` now prepares the clone it runs in as the Container Manager project:
+  it writes `.env` safely (any token characters, private from creation, only the keys it is given), validates the
+  configuration and creates the workspace and cache folders the compose file mounts. Tests run in CI.
+- **Install and update docs:** the installation guide created the data folders inside the clone instead of where the
+  compose file mounts them, and the update instructions never pulled this repository's changes.
+
+### Added (2026-10-23)
+
+- **`CONTAINER_NAME`**, which also names the Compose project, so `docker compose` commands in the project folder act on
+  the Container Manager project
+
+### Changed (2026-10-23)
+
+- **DSM 7.2 is the minimum**, for Container Manager's Docker Compose v2
+
+### Removed (2026-10-23)
+
+- **The installer's copies** into `/volume1/docker/github-runner` and of the monitoring scripts into `/volume1/scripts`
+
 ### Fixed (2026-10-22)
 
 - **Runner crash-loop on every start:** the custom image's `ENTRYPOINT` cleared the base

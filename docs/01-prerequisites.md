@@ -38,7 +38,7 @@ These Synology models have been tested and confirmed working:
 | **DS718+** | 2-core Intel Celeron J3455 | 6 GB | ⚠️ **Works** | Basic workflows only |
 | **DS1621+** | 4-core AMD Ryzen V1500B | 16-32 GB | ✅ **Excellent** | High-performance builds |
 
-**Note:** Most Synology NAS with DSM 7.0+ and x86_64 CPU should work. ARM-based models are not supported.
+**Note:** Most Synology NAS with DSM 7.2+ and x86_64 CPU should work. ARM-based models are not supported.
 
 ## Software Requirements
 
@@ -271,7 +271,7 @@ Before proceeding to installation, verify you have:
 ### Hardware & Software
 
 - [ ] Synology NAS with x86_64 CPU (Intel/AMD)
-- [ ] DSM 7.0 or later installed
+- [ ] DSM 7.2 or later installed
 - [ ] At least 2 CPU cores and 8GB RAM
 - [ ] At least 20GB free disk space (50GB recommended)
 - [ ] Container Manager installed
