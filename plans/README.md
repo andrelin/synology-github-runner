@@ -27,16 +27,6 @@ that matter, with tests in CI.
 
 ---
 
-### [plan-8-publish-image.md](plan-8-publish-image.md)
-
-**🟡 In Progress** (workflow and pins done; making the package public is user-run, then the compose switch)
-
-Build the runner image for amd64 on GitHub-hosted runners, test it, and publish it to GHCR, with the base
-image pinned by digest so Renovate keeps it current. The compose file then pulls the image instead of building on the
-NAS.
-
----
-
 ### [plan-6-multi-repo-runner.md](plan-6-multi-repo-runner.md)
 
 **🔴 Not Started**
@@ -59,6 +49,8 @@ Completed plans live in [archive/](archive/) for reference.
   `examples/workflows/` (complete 2026-01-30)
 - [Plan 5: Restart reliability](archive/plan-5-restart-reliability.md) - runner recovers by itself after NAS
   reboots and network outages (the first fix did not work; fixed and reboot-tested in the second attempt)
+- [Plan 8: Publish the runner image](archive/plan-8-publish-image.md) - CI builds, tests, attests and publishes the
+  image to GHCR; the compose file pulls it (complete 2026-10-23)
 
 ---
 
@@ -175,9 +167,9 @@ The implementation plans serve multiple purposes:
 3. ✅ **Plan 3** - CI/CD workflows
 4. ✅ **Plan 4** - Documentation & examples
 5. ✅ **Plan 5** - Restart reliability
-6. 🔴 **Plan 7** - Working installer (next)
-7. 🔴 **Plan 2** - Monitoring
-8. 🔴 **Plan 8** - Published image
+6. 🟡 **Plan 7** - Working installer (NAS check left)
+7. 🟡 **Plan 2** - Monitoring (NAS check left)
+8. ✅ **Plan 8** - Published image
 9. 🔄 **Final Review** - Test everything, polish, prepare release
 
 Plan 6 (multi-repo runner) is not required for v1.0.0.

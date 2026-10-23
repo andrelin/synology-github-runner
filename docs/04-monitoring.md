@@ -31,7 +31,8 @@ In DSM, open **Control Panel → Task Scheduler → Create → Scheduled Task �
     bash /volume1/docker/synology-github-runner/scripts/monitoring/runner-health-check.sh
     ```
 
-With several runner projects on one NAS, create one task per project, each running the script in its own clone.
+Use your own project folder's path if it isn't `/volume1/docker/synology-github-runner`. With several runner
+projects on one NAS, create one task per project, each running the script in its own clone.
 
 > **💡 Tip:** The script exits non-zero only when it wants an email, so "terminates abnormally" means "there is news".
 
@@ -146,6 +147,9 @@ Earlier versions copied the scripts to `/volume1/scripts` and logged alerts to `
 ## Troubleshooting
 
 **An email every 5 minutes:** the task runs an old copy of the script; point it at the clone.
+
+**`No such file or directory` every 5 minutes:** the task's script line names a folder that doesn't exist; use your
+project folder's path (`ls /volume1/docker/*/scripts/monitoring/runner-health-check.sh` lists the candidates).
 
 **No email when the runner is down:** check the task's email settings and DSM's test email, then run the script by
 hand as above: it should exit 1 and print the problem.

@@ -582,6 +582,14 @@ built by this repository's workflow:
 gh attestation verify oci://ghcr.io/andrelin/synology-github-runner:latest --repo andrelin/synology-github-runner
 ```
 
+If it fails with "the provided token was denied access", `gh` sent a saved Docker login for ghcr.io that the
+registry rejects. The package is public, so verify without it:
+
+```bash
+DOCKER_CONFIG=$(mktemp -d) gh attestation verify oci://ghcr.io/andrelin/synology-github-runner:latest \
+  --repo andrelin/synology-github-runner
+```
+
 ### Update DSM and Container Manager
 
 **Keep Synology software current:**

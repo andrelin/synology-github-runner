@@ -50,6 +50,15 @@ sudo docker compose up -d   # recreate the container from it
 
 `RUNNER_IMAGE_TAG` in `.env` picks the image: unset or `latest` follows `main`, and a `sha-` tag pins one build.
 
+> **💡 Tip:** Container Manager's **Image** page shows an **Update** button next to the image's tag when a newer
+> image is published, which downloads it. `git pull` is still needed for the scripts and compose file. Afterwards,
+> check that the container runs the new image: the two IDs below match, or `sudo docker compose up -d` recreates it.
+>
+> ```bash
+> sudo docker inspect -f '{{.Image}}' github-runner
+> sudo docker image inspect -f '{{.Id}}' ghcr.io/andrelin/synology-github-runner:latest
+> ```
+
 **Check the result:**
 
 ```bash

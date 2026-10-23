@@ -1,6 +1,6 @@
 # Plan 8: Publish the Runner Image to GHCR - plan
 
-**Status:** 🟡 In Progress (Tasks 1-2 and 4 done; Task 3 steps 3-4 and Task 5 steps 3-4 open)
+**Status:** 🟢 Complete (2026-10-23)
 **Goal:** Users run a tested, published `ghcr.io/andrelin/synology-github-runner` image instead of building on their
 NAS, and the published image stays current without anyone touching it.
 **Approach:** A workflow on GitHub-hosted runners builds and tests the image on every change, pull requests included,
@@ -53,9 +53,9 @@ comes after, writes its docs for the published image from the start.
 | --- | --- |
 | 1 · Test and publish workflow | ✅ DONE |
 | 2 · Pinned Dockerfile and Renovate delay | ✅ DONE |
-| 3 · First publish (user-run) | 🚧 PARTIAL (steps 1-2 pass; step 3 and step 4 pending) |
+| 3 · First publish (user-run) | ✅ DONE |
 | 4 · Compose uses the published image | ✅ DONE |
-| 5 · NAS switch-over (user-run) | 🚧 PARTIAL (steps 1-2 pass) |
+| 5 · NAS switch-over (user-run) | ✅ DONE |
 
 ## File map
 
@@ -191,9 +191,11 @@ Task 4 merges only after steps 1-3 pass.
 
 **As built:** the first publish on `main` pushed `latest` and a `sha-` tag to one digest, with its start-up check and
 attestation. The package was public: an anonymous client got the manifest, and a Docker host with no registry login
-pulled `latest` at the published digest. The attestations API lists one attestation for that digest, but
-`gh attestation verify` needs a token that can read GHCR (a fine-grained PAT can't), so step 3 is left to the user.
-Task 4 went ahead on the user's say-so without waiting for it.
+pulled `latest` at the published digest. `gh attestation verify` sends any saved Docker login for ghcr.io, and a
+rejected one fails it with "the provided token was denied access"; with `DOCKER_CONFIG=$(mktemp -d)` it verifies the
+image as built by `publish-image.yml` on `main`, and `docs/07-security.md` says so. Task 4 went ahead on the user's
+say-so before step 3 passed. The Renovate dashboard lists the base image (`dockerfile`) and `anthropic` (`regex`), and
+no dependency in the compose files.
 
 ## Task 4 · Compose uses the published image
 
@@ -257,5 +259,6 @@ other services, the model or software versions from the NAS.
 
 **As built:** steps 1-2 pass on a NAS running one runner project: `git pull`, `docker compose pull` and `up -d`
 recreated the container from the published image, which came back healthy with no restarts, and the runner was online
-and Idle within a minute. Steps 3-4 are open: the Container Manager action needs the UI, and the old local image
-stays until the user removes it.
+and Idle within a minute. Step 3: Container Manager's Image page shows an Update button next to the tag when a newer
+image is published; `docs/06-maintenance.md` describes it, with a check that the container runs the new image, since
+whether the button recreates the container wasn't tested. Step 4: the user removed the old local image.
