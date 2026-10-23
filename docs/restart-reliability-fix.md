@@ -5,7 +5,7 @@
 Previously, the GitHub runner container would enter a crash-loop after Synology NAS restart, requiring manual intervention:
 
 1. Delete container via Container Manager
-2. Rebuild the project
+2. Start the project again
 3. Runner comes back up
 
 The runner now recovers by itself after a NAS restart or a network outage, without
@@ -14,7 +14,8 @@ manual steps.
 > **⚠️ Warning:** The first version of this fix (February 2026) shipped an image that could
 > not start the runner at all: its `ENTRYPOINT` cleared the base image's `CMD`, and its
 > `USER runner` made the base entrypoint exit because `RUN_AS_ROOT` defaults to `true`.
-> If you built the image before October 2026, rebuild it.
+> If you built the image before October 2026, update as the
+> [Maintenance Guide](06-maintenance.md#pull-and-update) describes.
 
 ### Why restarts are safe now
 
@@ -221,15 +222,15 @@ If the runner still doesn't recover automatically:
 ```bash
 # Via SSH
 ssh admin@<your-nas-ip>
-cd /volume1/docker/github-runner
+cd /volume1/docker/synology-github-runner
 
-# Stop and recreate container
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
+# Stop, pull the image again and recreate the container
+sudo docker compose down
+sudo docker compose pull
+sudo docker compose up -d
 
 # Check logs
-docker-compose logs -f
+sudo docker compose logs -f
 ```
 
 ## What Changed from Previous Version

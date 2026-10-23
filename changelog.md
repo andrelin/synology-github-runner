@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed (2026-10-23)
 
+- **The runner image is pulled from GHCR:** `docker-compose.yaml` runs
+  `ghcr.io/andrelin/synology-github-runner:${RUNNER_IMAGE_TAG:-latest}` instead of building the `Dockerfile`, and
+  updating is `git pull`, `docker compose pull` and `docker compose up -d`. Forks that change the `Dockerfile` must add
+  `docker-compose.build.yaml`, or they run the published image.
 - **Pinned image dependencies:** the Dockerfile pins the base image by digest and the Anthropic SDK at 0.72.0 (the
   last release for the base image's Python 3.8); Renovate updates both after a 7-day wait
 

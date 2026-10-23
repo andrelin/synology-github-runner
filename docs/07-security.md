@@ -552,11 +552,11 @@ docker-compose logs > /volume1/logs/runner-archive/logs-$(date +%Y-%m).txt
 **Monthly security updates:**
 
 ```bash
-# Pull this repository's fixes, including base image updates, and rebuild, while the runner is idle
+# Pull this repository's fixes and the newest runner image, while the runner is idle
 cd /volume1/docker/synology-github-runner
-git pull                            # this repository's fixes
-sudo docker compose build --pull    # rebuild the image from the pinned Dockerfile
-sudo docker compose up -d           # recreate the container from it
+git pull                    # this repository's fixes
+sudo docker compose pull    # the newest published runner image
+sudo docker compose up -d   # recreate the container from it
 
 # Verify successful update
 sudo docker compose logs --tail=50
@@ -572,7 +572,7 @@ sudo docker compose logs --tail=50
 The `Dockerfile` pins the `myoung34/github-runner` base image by digest and the Anthropic SDK (`anthropic`) by
 version. Renovate proposes updates to both as pull requests; once a release is 7 days old and CI has built and
 started the new image, Renovate merges it by itself. Nobody reviews those updates by hand: this trades review for a
-runner that stays current without a maintainer. The SDK's own dependencies are not pinned, so a rebuild can pick up
+runner that stays current without a maintainer. The SDK's own dependencies are not pinned, so a new image can pick up
 newer versions of them.
 
 Images published to `ghcr.io/andrelin/synology-github-runner` carry build provenance. To check that a pulled image was

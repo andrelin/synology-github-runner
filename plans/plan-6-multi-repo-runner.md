@@ -47,6 +47,7 @@ image" where they once said "rebuild", and its clones share an image rather than
 - Nothing personal in tracked files: `your-username`, `your-org`, `repo-a`, `repo-b`, tokens `ghp_xxx`.
 - Compose fixtures live in `tests/compose/fixtures/` and are named `<name>.env.fixture`, since `.gitignore` ignores
   `*.env`.
+  Plan 8 Task 4 already created `defaults.env.fixture` and its rendering step in `quality.yml`; extend both.
 - Tasks 1-3 ship in one pull request: docs-only changes don't trigger `quality.yml`, Task 1's docs link to Task 3's
   guide, and the guide relies on Task 2. Before pushing, run markdownlint, cspell and the link check locally, and
   ShellCheck on `scripts/init-runner.sh`.

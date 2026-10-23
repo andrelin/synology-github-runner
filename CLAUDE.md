@@ -115,6 +115,7 @@ synology-github-runner/
 ├── README.md                          # Main landing page
 ├── changelog.md                       # Version history
 ├── docker-compose.yaml                # Runner container configuration
+├── docker-compose.build.yaml          # Overlay that builds the image from the clone
 ├── .env.example                       # Configuration template
 │
 ├── docs/                              # Documentation guides
@@ -141,6 +142,7 @@ synology-github-runner/
 ├── tests/
 │   ├── setup/                        # Installer tests and their stubs
 │   ├── monitoring/                   # Health check and dashboard tests (Linux)
+│   ├── compose/fixtures/             # .env files the compose file is rendered with
 │   └── ci/fixtures/                  # Workflows that each break one permissions rule
 │
 ├── examples/

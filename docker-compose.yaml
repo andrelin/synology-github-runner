@@ -4,12 +4,9 @@ name: ${CONTAINER_NAME:-github-runner}
 
 services:
   github-runner:
-    # Build custom image with Claude Code Review dependencies pre-installed
-    # This builds from the Dockerfile which extends myoung34/github-runner:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: synology-github-runner:latest  # Tag for the built image
+    # The image this repository's Dockerfile builds, published by CI; to run your
+    # own changes to the Dockerfile, add docker-compose.build.yaml (contributing.md)
+    image: ghcr.io/andrelin/synology-github-runner:${RUNNER_IMAGE_TAG:-latest}
     container_name: ${CONTAINER_NAME:-github-runner}
     restart: unless-stopped
 

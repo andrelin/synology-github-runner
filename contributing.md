@@ -108,7 +108,7 @@ find scripts tests -type f \( -name '*.sh' -o -path 'tests/*/stubs/*' \) -exec s
 for t in tests/*/*.test.sh; do bash "$t" || { echo "FAILED: $t"; break; }; done
 
 # Check docker-compose
-docker-compose config
+docker compose config -q
 
 # Test spell checking (requires Node.js)
 npm install -g cspell
@@ -117,6 +117,13 @@ npx cspell "**/*.md" --config .github/cspell.json
 # Test markdown linting (requires Node.js)
 npm install -g markdownlint-cli2
 markdownlint-cli2 "**/*.md"
+```
+
+**Testing image changes:** `docker-compose.yaml` pulls the published image, so a changed `Dockerfile` (in a fork, or
+before it merges) runs only with the build overlay, which builds the clone as `synology-github-runner:local`:
+
+```bash
+docker compose -f docker-compose.yaml -f docker-compose.build.yaml up -d --build
 ```
 
 ### 5. Commit Your Changes

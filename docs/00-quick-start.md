@@ -70,7 +70,7 @@ The workspace and cache live outside the clone, where the compose file mounts th
 sudo mkdir -p /volume1/docker/github-runner/workspace /volume1/docker/github-runner/cache
 ```
 
-### Step 4: Build and Start via Container Manager (2 minutes)
+### Step 4: Start via Container Manager (2 minutes)
 
 1. Open **Container Manager** in DSM
 2. Go to **Project** → **Create**
@@ -82,10 +82,11 @@ sudo mkdir -p /volume1/docker/github-runner/workspace /volume1/docker/github-run
 
 Container Manager will:
 
-- Build the custom runner image (includes Anthropic SDK for Claude Code Review)
+- Pull the runner image from `ghcr.io/andrelin/synology-github-runner` (includes the Anthropic SDK for Claude Code
+  Review)
 - Start the runner automatically
 
-**Note:** First build takes 2-3 minutes. Subsequent starts are instant.
+**Note:** The first pull takes a few minutes. Subsequent starts are instant.
 
 ### Step 5: Verify (30 seconds)
 
@@ -190,7 +191,7 @@ See [Monitoring Guide](04-monitoring.md) to:
    - Invalid GitHub PAT (expired or wrong scopes)
    - Incorrect REPO_URL format
    - Network connectivity issues
-3. Fix `.env` file via SSH and rebuild in Container Manager
+3. Fix the `.env` file via SSH, then apply it with `sudo docker compose up -d` in the project folder
 
 ### Out of memory errors
 
@@ -204,7 +205,7 @@ RUNNER_MEMORY=8g  # Increase from default 5g
 GRADLE_OPTS=-Xmx5g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
 ```
 
-Rebuild in Container Manager: Project → `github-runner` → Build
+Apply it: `sudo docker compose up -d` in `/volume1/docker/synology-github-runner`
 
 ## Getting Help
 

@@ -344,14 +344,13 @@ See [Troubleshooting Guide](05-troubleshooting.md#disk-space-issues).
 
 ### How do I update the runner?
 
-While the runner is idle, `git pull` in the project folder, then **Build** the project in Container Manager, or
-over SSH:
+While the runner is idle, over SSH:
 
 ```bash
 cd /volume1/docker/synology-github-runner
-git pull                            # this repository's fixes
-sudo docker compose build --pull    # rebuild the image from the pinned Dockerfile
-sudo docker compose up -d           # recreate the container from it
+git pull                    # this repository's fixes
+sudo docker compose pull    # the newest published runner image
+sudo docker compose up -d   # recreate the container from it
 ```
 
 See [Maintenance Guide](06-maintenance.md).

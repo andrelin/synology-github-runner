@@ -241,7 +241,7 @@ docker-compose up -d
 
 **Container Name Already in Use After Updating**
 
-**Problem:** Building or starting fails with `Conflict. The container name "/github-runner" is already in use`.
+**Problem:** Starting fails with `Conflict. The container name "/github-runner" is already in use`.
 A container first started with `docker-compose up` in the clone belongs to a Compose project named after the folder,
 while the compose file now names the project after `CONTAINER_NAME` (default `github-runner`), as Container Manager
 does.

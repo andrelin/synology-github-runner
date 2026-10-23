@@ -251,13 +251,18 @@ not_clone_case() {
 not_clone_case .git
 not_clone_case .env.example
 not_clone_case docker-compose.yaml
-not_clone_case Dockerfile
 
-new_case "no build and no Dockerfile passes the project check"
+new_case "not a clone: a build without a Dockerfile"
+rm "$CLONE/Dockerfile"
+awk '{ print } /^  github-runner:$/ { print "    build: ." }' "$CLONE/docker-compose.yaml" > "$CASE_DIR/c.yaml"
+grep -q '^    build: \.$' "$CASE_DIR/c.yaml" || fail_case "no build line added"
+mv "$CASE_DIR/c.yaml" "$CLONE/docker-compose.yaml"
+run_install --non-interactive < /dev/null
+expect_failure "Run this from a git clone of the repository (see docs/02-installation.md)"
+
+new_case "no Dockerfile passes the project check"
 if needs_compose; then
     rm "$CLONE/Dockerfile"
-    grep -v -E '^[[:space:]]*(build:|context:|dockerfile:)' "$CLONE/docker-compose.yaml" > "$CASE_DIR/c.yaml"
-    mv "$CASE_DIR/c.yaml" "$CLONE/docker-compose.yaml"
     write_env "REPO_URL=$REPO" "GITHUB_PAT=ghp_xxx"
     run_install --non-interactive < /dev/null
     expect_rc 0

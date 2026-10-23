@@ -437,21 +437,11 @@ GRADLE_OPTS=-Xmx3g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
 
 ## Applying Configuration Changes
 
-After editing `.env`, you must restart the container:
-
-### Via Container Manager UI
-
-1. Open **Container Manager**
-2. Go to **Project** → `github-runner`
-3. Click **Build** button
-4. Container Manager recreates container with new config
-
-### Via SSH
+After editing `.env`, recreate the container with the new settings (a restart alone keeps the old ones):
 
 ```bash
 cd /volume1/docker/synology-github-runner
-docker-compose down
-docker-compose up -d
+sudo docker compose up -d
 ```
 
 ### Verify Changes
@@ -536,7 +526,7 @@ tmpfs:  # In-memory temp storage (secure)
    ```
 
 3. Check total NAS memory: Control Panel → Resource Monitor
-4. Rebuild container: Container Manager → Project → Build
+4. Apply it: `sudo docker compose up -d` in the project folder
 
 ### Workflows are slow
 
@@ -567,7 +557,7 @@ tmpfs:  # In-memory temp storage (secure)
    LABELS=self-hosted,linux,synology,your-label
    ```
 
-2. Rebuild container to apply labels
+2. Apply them: `sudo docker compose up -d` in the project folder
 3. Check runner in GitHub: Settings → Actions → Runners
 4. Use labels in workflow:
 

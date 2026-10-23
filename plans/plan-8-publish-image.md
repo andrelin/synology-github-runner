@@ -1,6 +1,6 @@
 # Plan 8: Publish the Runner Image to GHCR - plan
 
-**Status:** 🟡 In Progress (Tasks 1-2 done; Task 3 is user-run)
+**Status:** 🟡 In Progress (Tasks 1-2 and 4 done; Task 3 step 3 and Task 5 are user-run)
 **Goal:** Users run a tested, published `ghcr.io/andrelin/synology-github-runner` image instead of building on their
 NAS, and the published image stays current without anyone touching it.
 **Approach:** A workflow on GitHub-hosted runners builds and tests the image on every change, pull requests included,
@@ -53,8 +53,8 @@ comes after, writes its docs for the published image from the start.
 | --- | --- |
 | 1 · Test and publish workflow | ✅ DONE |
 | 2 · Pinned Dockerfile and Renovate delay | ✅ DONE |
-| 3 · First publish (user-run) | ⏳ PENDING |
-| 4 · Compose uses the published image | ⏳ PENDING |
+| 3 · First publish (user-run) | 🚧 PARTIAL (steps 1-2 pass; step 3 and step 4 pending) |
+| 4 · Compose uses the published image | ✅ DONE |
 | 5 · NAS switch-over (user-run) | ⏳ PENDING |
 
 ## File map
@@ -189,6 +189,12 @@ only prepare commands.
 
 Task 4 merges only after steps 1-3 pass.
 
+**As built:** the first publish on `main` pushed `latest` and a `sha-` tag to one digest, with its start-up check and
+attestation. The package was public: an anonymous client got the manifest, and a Docker host with no registry login
+pulled `latest` at the published digest. The attestations API lists one attestation for that digest, but
+`gh attestation verify` needs a token that can read GHCR (a fine-grained PAT can't), so step 3 is left to the user.
+Task 4 went ahead on the user's say-so without waiting for it.
+
 ## Task 4 · Compose uses the published image
 
 A separate pull request, opened after Task 3.
@@ -223,6 +229,17 @@ A separate pull request, opened after Task 3.
 4. In `README.md`, `docs/`, `.env.example` and `scripts/setup/install.sh`, `git grep -n -i -E` finds none of
    `same local image tag`, `git pull.? and rebuild`, `rebuild the project`, `Build in Container Manager` and
    `up -d --build` (`contributing.md`, which documents the build overlay, isn't searched).
+
+**As built:**
+
+- Pushed to `main`, as the user asked for all of these plans, not as a separate pull request.
+- Plan 6 hadn't run, so this task created `tests/compose/fixtures/defaults.env.fixture` (only `REPO_URL` and
+  `GITHUB_PAT`, as Plan 6 specifies) beside `image-tag` and `image-tag-empty`.
+- The grep test is its own `quality.yml` step, "Check docs don't describe building the image".
+- Applying `.env` changes is documented as `sudo docker compose up -d` in the project folder, not as a Container
+  Manager action: which Container Manager action re-reads `.env` or pulls a newer image is Task 5 step 3's question.
+- The installer still rejects a compose file with `build:` and no `Dockerfile`. Its tests now add a `build:` line to
+  check that, and removing only the `Dockerfile` passes.
 
 ## Task 5 · NAS switch-over (user-run)
 

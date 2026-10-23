@@ -403,7 +403,8 @@ print_next_steps() {
     echo "     $RUNNER_DIR, using its existing docker-compose.yaml."
     echo "  2. The runner then appears under the repository's (or organization's)"
     echo "     Settings → Actions → Runners."
-    echo "  3. To update, git pull in $RUNNER_DIR and rebuild the project."
+    echo "  3. To update, git pull in $RUNNER_DIR, then pull the image as"
+    echo "     docs/06-maintenance.md describes."
     echo "  4. Monitoring: see docs/04-monitoring.md"
 }
 

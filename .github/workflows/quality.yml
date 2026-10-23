@@ -64,6 +64,36 @@ jobs:
           echo "Validating docker-compose.yaml syntax..."
           docker compose config -q
           echo "✓ docker-compose.yaml is valid"
+          unset RUNNER_IMAGE_TAG
+          fixtures=tests/compose/fixtures
+          render() { docker compose --env-file "$fixtures/$1.env.fixture" "${@:2}" config --format json; }
+          expect() {
+            # expect FIXTURE JQ_FILTER VALUE [compose -f options]
+            got=$(render "$1" "${@:4}" | jq -r "$2")
+            if [ "$got" != "$3" ]; then
+              echo "❌ $1: $2 is $got, expected $3"
+              exit 1
+            fi
+            echo "✓ $1: $2 = $3"
+          }
+          image=ghcr.io/andrelin/synology-github-runner
+          expect defaults '.services["github-runner"].image' "$image:latest"
+          expect defaults '.services["github-runner"] | has("build")' false
+          expect image-tag '.services["github-runner"].image' "$image:1.2.0"
+          expect image-tag-empty '.services["github-runner"].image' "$image:latest"
+          overlay=(-f docker-compose.yaml -f docker-compose.build.yaml)
+          expect defaults '.services["github-runner"].image' synology-github-runner:local "${overlay[@]}"
+          expect defaults '.services["github-runner"].build.context' "$PWD" "${overlay[@]}"
+
+      # The docs describe pulling the published image, not building it
+      - name: Check docs don't describe building the image
+        run: |
+          if git grep -n -i -E 'same local image tag|git pull.? and rebuild|rebuild the project|Build in Container Manager|up -d --build' \
+            -- README.md docs/ .env.example scripts/setup/install.sh; then
+            echo "❌ These lines describe building the runner image; it is pulled from GHCR"
+            exit 1
+          fi
+          echo "✓ No build instructions left"
 
       # DEBUG_ONLY makes the base entrypoint print the command it would run instead
       # of registering, so this catches an image that would exit on every start

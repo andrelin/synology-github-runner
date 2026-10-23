@@ -268,23 +268,17 @@ jobs:
 2. Select `github-runner`
 3. Click **Restart** (circular arrow icon)
 
-### Rebuilding After Configuration Changes
+### Applying Configuration Changes
 
-If you update `.env` or pull new changes from git:
-
-**Option 1: Via Container Manager UI**
-
-1. Project → `github-runner` project
-2. Click **Build** button
-3. Container Manager will recreate the container with new config
-
-**Option 2: Via SSH (if preferred)**
+After editing `.env`, recreate the container with the new settings:
 
 ```bash
 ssh admin@<your-nas-ip>
 cd /volume1/docker/synology-github-runner
-sudo docker compose up -d --build
+sudo docker compose up -d
 ```
+
+A restart alone keeps the old settings.
 
 ## Updating the Runner
 
@@ -299,19 +293,17 @@ When new versions are released, while the runner is idle:
    cd /volume1/docker/synology-github-runner
    ```
 
-2. **Pull latest changes:**
+2. **Pull the latest changes and image:**
 
    ```bash
    git pull origin main
+   sudo docker compose pull
+   sudo docker compose up -d
    ```
 
-3. **Rebuild in Container Manager:**
-   - Open Container Manager
-   - Go to **Project** → `github-runner`
-   - Click **Build**
-   - Container Manager recreates with new configuration
+   The NAS keeps running the image it last pulled until you do this.
 
-4. **Verify:**
+3. **Verify:**
    - Check container is running
    - Check logs for successful startup
    - Verify runner shows Idle in GitHub
@@ -320,13 +312,13 @@ When new versions are released, while the runner is idle:
 
 ### Base Image Updates
 
-The `Dockerfile` pins the `myoung34/github-runner` base image by digest, and this repository updates the pin, so a
-`git pull` and a rebuild (above) brings the newest tested base image.
+The `Dockerfile` pins the `myoung34/github-runner` base image by digest, and this repository updates the pin and
+publishes a new runner image, so the update above brings the newest tested base image.
 
 ### Coming from the Old Installer
 
 Earlier versions of `install.sh` copied `docker-compose.yaml` and `.env` into `/volume1/docker/github-runner`, where
-the image can't build and `git pull` can't update. If that folder has no `.git` in it, move to the clone layout (a
+`git pull` can't update them. If that folder has no `.git` in it, move to the clone layout (a
 clone there already is the new layout, and nothing needs doing). The runner is offline while you do this:
 
 1. In Container Manager, delete any project named `github-runner` that points at `/volume1/docker/github-runner`,
@@ -367,7 +359,7 @@ After installation:
 - Use Project tab for managing compose-based containers
 - Use Container tab for viewing status and logs
 - Update configuration via SSH + git pull
-- Rebuild project after config changes
+- Apply config changes with `sudo docker compose up -d`
 
 **❌ DON'T:**
 
@@ -414,7 +406,7 @@ After installation:
    - Token expired
    - Network connectivity issues
 3. Fix `.env` file via SSH
-4. Rebuild project in Container Manager
+4. Apply it with `sudo docker compose up -d` in the project folder
 
 ### Out of Memory Errors
 
@@ -436,16 +428,22 @@ After installation:
    GRADLE_OPTS=-Xmx5g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
    ```
 
-3. Rebuild in Container Manager:
-   - Project → `github-runner` → **Build**
+3. Apply it:
 
-### Project Build Fails
+   ```bash
+   sudo docker compose up -d
+   ```
 
-**Problem:** Container Manager fails to build project
+### Image Pull Fails
+
+**Problem:** Creating or updating the project fails to pull `ghcr.io/andrelin/synology-github-runner`
 
 **Solution:**
 
-1. Check docker-compose.yaml and .env (the output can include values from `.env`, so don't paste it anywhere):
+1. Check the NAS reaches ghcr.io: `curl -sI https://ghcr.io/v2/ | head -n 1` answers `HTTP/2 401` (the registry
+   asks for a token; that is fine)
+2. Check the tag exists: `RUNNER_IMAGE_TAG` in `.env` is unset, `latest`, or a tag listed on the package page
+3. Check docker-compose.yaml and .env (the output can include values from `.env`, so don't paste it anywhere):
 
    ```bash
    ssh admin@<your-nas-ip>
@@ -453,13 +451,13 @@ After installation:
    sudo docker compose config -q
    ```
 
-2. Check .env file exists:
+4. Check .env file exists:
 
    ```bash
    ls -la .env
    ```
 
-3. Check workspace/cache directories exist:
+5. Check workspace/cache directories exist:
 
    ```bash
    ls -la /volume1/docker/github-runner/
@@ -499,7 +497,7 @@ After successful installation:
 ✅ **Git-Based Config** - Version controlled, easy to update
 ✅ **Container Manager UI** - Familiar Synology interface
 ✅ **Best of Both Worlds** - Git for config, UI for management
-✅ **Easy Updates** - `git pull` + rebuild in UI
+✅ **Easy Updates** - `git pull` + `docker compose pull`
 ✅ **Secure Secrets** - `.env` file gitignored
 ✅ **Auto-Restart** - Container Manager handles restarts on NAS reboot
 

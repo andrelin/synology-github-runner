@@ -34,20 +34,21 @@ Keep your GitHub self-hosted runner healthy, updated, and running efficiently.
 
 ## Updating the Runner
 
-### Pull and Rebuild
+### Pull and Update
 
-The project folder is a clone of this repository, and the runner image is built from its `Dockerfile`, which pins
-the `myoung34/github-runner` base image by digest; base image updates arrive as commits here. Update while the runner
-is idle: `git pull` in the project folder, then
-**Build** the project in Container Manager, or over SSH:
+The project folder is a clone of this repository, and the runner image is published from its `Dockerfile` to
+`ghcr.io/andrelin/synology-github-runner`; base image updates arrive as commits here and as new images there. The NAS
+keeps running the image it last pulled until you update. Update while the runner is idle:
 
 ```bash
 ssh admin@<your-nas-ip>
 cd /volume1/docker/synology-github-runner
-git pull                            # this repository's fixes
-sudo docker compose build --pull    # rebuild the image from the pinned Dockerfile
-sudo docker compose up -d           # recreate the container from it
+git pull                    # this repository's fixes
+sudo docker compose pull    # the newest published runner image
+sudo docker compose up -d   # recreate the container from it
 ```
+
+`RUNNER_IMAGE_TAG` in `.env` picks the image: unset or `latest` follows `main`, and a `sha-` tag pins one build.
 
 **Check the result:**
 
@@ -544,10 +545,10 @@ once per incident.
 4. **Update security patches:**
 
    ```bash
-   # Rebuild on the latest runner base image (includes security updates)
+   # Pull the latest runner image (includes base image security updates)
    cd /volume1/docker/synology-github-runner
    git pull
-   sudo docker compose build --pull
+   sudo docker compose pull
    sudo docker compose up -d
    ```
 
@@ -694,7 +695,7 @@ sudo docker system prune -af --volumes
 sudo rm -rf /volume1/docker/github-runner/workspace/* /volume1/docker/github-runner/cache/*
 
 # Start fresh
-sudo docker compose build --pull
+sudo docker compose pull
 sudo docker compose up -d
 ```
 
@@ -740,7 +741,7 @@ set -euo pipefail
 
 echo "Starting runner maintenance..."
 
-# Updating the runner stays a manual step (see "Pull and Rebuild"): recreating the
+# Updating the runner stays a manual step (see "Pull and Update"): recreating the
 # container from a schedule would cut off whatever job is running
 
 # Clean Docker

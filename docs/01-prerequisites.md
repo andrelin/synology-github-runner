@@ -119,6 +119,7 @@ If successful, you'll see a login prompt for your NAS.
 The runner needs outbound internet access to:
 
 - ✅ GitHub API (api.github.com, github.com)
+- ✅ GitHub Container Registry (ghcr.io, for the runner image)
 - ✅ Docker Hub (for pulling images during builds)
 - ✅ NPM, PyPI, Maven, etc. (dependency downloads)
 

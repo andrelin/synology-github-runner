@@ -1,0 +1,9 @@
+# Builds the runner image from this clone instead of pulling the published one,
+# for changes to the Dockerfile and for forks:
+#   docker compose -f docker-compose.yaml -f docker-compose.build.yaml up -d --build
+services:
+  github-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: synology-github-runner:local

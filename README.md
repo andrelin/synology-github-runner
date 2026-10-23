@@ -124,7 +124,8 @@ The installer will:
 - ✅ Create the workspace and cache folders
 - ✅ Tell you how to create the Container Manager project from the clone
 
-Because the project folder is a git clone, `git pull` and a rebuild of the project keep it up to date.
+Because the project folder is a git clone, `git pull` and a pull of the published runner image keep it up to date
+(see the [Maintenance Guide](docs/06-maintenance.md#pull-and-update)).
 
 ### Option 2: Manual Installation
 
