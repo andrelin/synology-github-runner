@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   configuration and creates the workspace and cache folders the compose file mounts. Tests run in CI.
 - **Install and update docs:** the installation guide created the data folders inside the clone instead of where the
   compose file mounts them, and the update instructions never pulled this repository's changes.
+- **Health check:** it emailed on every run and stopped at its first failed check (`set -e` with `((ERRORS++))`), its
+  memory check misread `700MiB / 5GiB`, and it needed `bc`, which DSM doesn't ship
+- **Dashboard:** it failed on DSM (`bc`) and without a terminal; it now reads the container name and workspace from
+  `.env` and shows the health check's log
 
 ### Added (2026-10-23)
 
@@ -23,10 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed (2026-10-23)
 
 - **DSM 7.2 is the minimum**, for Container Manager's Docker Compose v2
+- **Health check:** it checks what keeps jobs from running (configuration, container, GitHub's view of the runner,
+  restarts, disk) and emails once per incident, with a daily reminder and a recovery email; it runs from the clone
+  and keeps its state and log there. See [docs/04-monitoring.md](docs/04-monitoring.md).
 
 ### Removed (2026-10-23)
 
 - **The installer's copies** into `/volume1/docker/github-runner` and of the monitoring scripts into `/volume1/scripts`
+- **The CPU, memory and log checks**, and `alerts.log`
 
 ### Fixed (2026-10-22)
 

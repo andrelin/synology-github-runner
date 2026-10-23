@@ -1,0 +1,59 @@
+#!/bin/bash
+# Test stub: answers inspect, stats, ps and info from FAKE_* variables and logs every call
+printf 'docker%s %s\n' "${STUB_VIA_TIMEOUT:+[t]}" "$*" >> "${STUB_LOG:?}"
+if [ "${FAKE_DOCKER_UNREACHABLE:-}" = 1 ]; then
+    printf 'Cannot connect to the Docker daemon at unix:///var/run/docker.sock\nSTUBERR second line\n' >&2
+    exit 1
+fi
+if [ -n "${FAKE_DOCKER_EXIT:-}" ]; then
+    # The first line is what the health check quotes; the rest must never reach stdout
+    printf '%s\nSTUBERR second line\n' "${FAKE_DOCKER_STDERR:-docker error}" >&2
+    exit "$FAKE_DOCKER_EXIT"
+fi
+format=''
+args=("$@")
+for ((i = 0; i < ${#args[@]}; i++)); do
+    [ "${args[i]}" != --format ] || format=${args[i + 1]}
+done
+name=${args[${#args[@]} - 1]}
+render() {
+    local out=$1
+    out=${out//'{{.Id}}'/${FAKE_CONTAINER_ID:-abc123}}
+    out=${out//'{{.Name}}'/\/${FAKE_CONTAINER_NAME:-github-runner}}
+    out=${out//'{{.State.Status}}'/${FAKE_STATUS:-running}}
+    out=${out//'{{.State.StartedAt}}'/2026-01-01T00:00:00Z}
+    out=${out//'{{.RestartCount}}'/${FAKE_RESTARTS:-0}}
+    out=${out//'{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}'/${FAKE_HEALTH:-healthy}}
+    out=${out//'{{.CPUPerc}}'/${FAKE_CPU-12.50%}}
+    out=${out//'{{.MemUsage}}'/${FAKE_MEM_USAGE-700MiB / 5GiB}}
+    out=${out//'{{.MemPerc}}'/${FAKE_MEM-13.67%}}
+    out=${out//'{{.ServerVersion}}'/24.0.2}
+    printf '%s\n' "$out"
+}
+case $1 in
+    inspect)
+        if [ "${FAKE_INSPECT_FAIL:-}" = 1 ]; then
+            echo "STUBERR inspect failed" >&2
+            exit 1
+        fi
+        if [ "${FAKE_DOCKER_MISSING:-}" = 1 ] || [ "$name" != "${FAKE_CONTAINER_NAME:-github-runner}" ]; then
+            echo "STUBERR Error: No such container: $name" >&2
+            exit 1
+        fi
+        render "$format"
+        ;;
+    stats)
+        if [ "${FAKE_STATS_FAIL:-}" = 1 ]; then
+            echo "STUBERR stats failed" >&2
+            exit 1
+        fi
+        render "$format"
+        ;;
+    info | version)
+        render "${format:-24.0.2}"
+        ;;
+    *)
+        echo "STUBERR unexpected docker call: $*" >&2
+        exit 1
+        ;;
+esac

@@ -1,6 +1,6 @@
 # Plan 2: Monitoring - plan
 
-**Status:** 🔴 Not Started
+**Status:** 🟡 In Progress (Tasks 1-2 done; Task 3 is user-run)
 **Goal:** The owner gets one DSM email when the runner stops being able to take jobs, one when it recovers, and a
 daily reminder while it stays broken; otherwise the monitoring is silent. A dashboard script shows the runner's state
 on demand, on DSM.
@@ -63,8 +63,8 @@ the monitoring copy), added `read_env_value`, the "Run script tests" CI step, th
 
 | Task | Status |
 | --- | --- |
-| 1 · Health check that alerts once per incident | ⏳ PENDING |
-| 2 · Dashboard that runs on DSM and in CI | ⏳ PENDING |
+| 1 · Health check that alerts once per incident | ✅ DONE |
+| 2 · Dashboard that runs on DSM and in CI | ✅ DONE |
 | 3 · End-to-end on a NAS (user-run) | ⏳ PENDING |
 
 ## File map
@@ -78,7 +78,7 @@ the monitoring copy), added `read_env_value`, the "Run script tests" CI step, th
 | `tests/monitoring/runner-dashboard.test.sh` | | create |
 | `.github/workflows/quality.yml`, `.gitignore` | modify | |
 | `docs/04-monitoring.md` | rewrite | modify |
-| `docs/06-maintenance.md`, `docs/faq.md`, `CLAUDE.md`, `contributing.md` | modify | |
+| `docs/06-maintenance.md`, `docs/faq.md`, `CLAUDE.md` | modify | |
 | `README.md` | modify | modify |
 | `changelog.md` | modify | modify |
 
@@ -194,6 +194,17 @@ places, without a RECOVERED email.
    passes, since `container_running` reports it.
 6. `disk_space`: the use percentage of `DISK_PATH` from `df -P`. `df failed for <DISK_PATH>`, or
    `<DISK_PATH> is <n>% full (limit <MAX>%)` above `MAX_DISK_PERCENT`.
+
+**As built, after review:** run structure step 4 writes the new state to `$STATE_FILE.tmp` first, then the log line,
+then moves the state into place, so a run whose state can't be saved logs nothing. HUP, INT and TERM exit through the
+`EXIT` trap, so a killed run still sends `internal: script ended unexpectedly (exit 143)`. Within its 24 hours a
+marker accumulates every check it has reported, and a storage alert lists only checks the incident logic would report
+(none still in their grace). `FALLBACK_TMP` (default `/tmp`) is a test knob for the marker fallback.
+`ALERT_AFTER_FAILURES=0` reads `ALERT_AFTER_FAILURES must be a whole number of at least 1, got '0'`.
+`docs/04-monitoring.md`'s upgrade section still names `/volume1/scripts/runner-*.sh`, the copies to delete, so the
+grep for them finds that section only. A `jq` missing from `PATH` is tested with a copy of the script whose appended
+`PATH` points at a folder without `jq`, since CI's `/usr/bin` has one. The checks were verified against DSM 7.2's own
+tools: bash 4.4, `jq` 1.5, util-linux `flock` and GNU coreutils.
 
 ### Incident logic
 

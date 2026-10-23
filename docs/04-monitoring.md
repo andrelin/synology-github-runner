@@ -1,425 +1,159 @@
-# Phase 6: Monitoring Setup - Installation Guide
+# Monitoring
 
 ## Overview
 
-This guide will help you set up comprehensive monitoring for your GitHub self-hosted runner on Synology NAS.
+A health check, run every 5 minutes by DSM Task Scheduler, emails you once when the runner stops being able to take
+jobs, a daily reminder while it stays broken, and once when it recovers. Otherwise it is silent. A dashboard script
+shows the runner's state on demand.
 
-**Components:**
+Both scripts run from the project folder, the clone of this repository that Container Manager uses
+(`/volume1/docker/synology-github-runner` in the [Installation Guide](02-installation.md)), so `git pull` updates
+them too. They read the runner's settings from that folder's `.env`.
 
-- ✅ Health check script (automated monitoring)
-- ✅ Dashboard script (manual status viewing)
-- ✅ DSM Task Scheduler integration
-- ✅ Alert logging system
+## Prerequisites
 
-**Estimated Time:** 30 minutes
+- The runner installed as a Container Manager project from a clone of this repository
+- DSM email notifications: **Control Panel → Notification → Email**, with SMTP settings and a recipient, and a test
+  email that arrives
 
----
+## Schedule the Health Check
 
-## Step 1: Copy Scripts to Synology NAS
+In DSM, open **Control Panel → Task Scheduler → Create → Scheduled Task → User-defined script**:
 
-### 1.1 Create Scripts Directory
+- **General:** task name `GitHub Runner Health Check`, user `root` (Docker needs it), enabled
+- **Schedule:** daily, every 5 minutes, from 00:00 to 23:55
+- **Task Settings:**
+  - **Send run details by email:** checked, with your address
+  - **Send run details only when the script terminates abnormally:** checked
+  - **User-defined script:**
 
-SSH into your Synology NAS:
+    ```bash
+    bash /volume1/docker/synology-github-runner/scripts/monitoring/runner-health-check.sh
+    ```
 
-```bash
-ssh admin@<your-nas-ip>
-```
+With several runner projects on one NAS, create one task per project, each running the script in its own clone.
 
-Create the scripts directory:
+> **💡 Tip:** The script exits non-zero only when it wants an email, so "terminates abnormally" means "there is news".
 
-```bash
-mkdir -p /volume1/scripts
-mkdir -p /volume1/docker/github-runner/logs
-```
+## What the Emails Mean
 
-### 1.2 Upload Scripts
+The subject is DSM's; the body's first line is `Runner health check (github-runner): <kind>`, the kind being one of:
 
-From your local machine, copy the scripts to the NAS:
+- **PROBLEM:** a check has failed, listed as `- <check>: <reason>`, followed by a `Next step:` line. Container and
+  GitHub problems get a grace of 3 runs (about 15 minutes), so a NAS reboot sends nothing. A broken configuration, a
+  bad setting or repeated restarts alert at once. A check that starts failing during an incident sends PROBLEM again.
+- **REMINDER:** the same problem, still there a day after the last email.
+- **RECOVERED:** everything passes again. While the container keeps restarting (3 or more restarts in 6 hours), it
+  stays silent rather than reporting a recovery between restarts.
 
-```bash
-# Option A: Using scp
-scp runner-health-check.sh admin@<your-nas-ip>:/volume1/scripts/
-scp runner-dashboard.sh admin@<your-nas-ip>:/volume1/scripts/
+Problems with the monitor itself (`internal`, `lock`, `storage`) arrive as PROBLEM once a day each, sooner if another
+check starts failing, with a next step such as running the script by hand. If the script can't keep a marker in
+`TMPDIR` or `/tmp`, they arrive on every run.
 
-# Option B: Using rsync
-rsync -avz runner-health-check.sh admin@<your-nas-ip>:/volume1/scripts/
-rsync -avz runner-dashboard.sh admin@<your-nas-ip>:/volume1/scripts/
-```
-
-### 1.3 Set Permissions
-
-SSH back into the NAS and set executable permissions:
-
-```bash
-ssh admin@<your-nas-ip>
-chmod +x /volume1/scripts/runner-health-check.sh
-chmod +x /volume1/scripts/runner-dashboard.sh
-```
-
----
-
-## Step 2: Test Scripts Manually
-
-### 2.1 Test Health Check Script
-
-```bash
-sudo /volume1/scripts/runner-health-check.sh
-```
-
-**Expected Output:**
+Example:
 
 ```text
-[2026-01-29 13:00:00] Starting health check for 'github-runner'...
-[2026-01-29 13:00:01] ✅ All health checks passed
+Runner health check (github-runner): PROBLEM
+- container_running: container github-runner is exited
+
+Next step: docker logs github-runner
 ```
 
-**If there are errors:**
+## What Is Checked
 
-- Check that the container name matches (default: `github-runner`)
-- Verify Docker is accessible: `docker ps`
-- Check logs: `cat /volume1/docker/github-runner/health-check.log`
+| Check | Fails when |
+| --- | --- |
+| `settings` | A knob below isn't a whole number |
+| `configuration` | `.env` is missing, the scope is enterprise (unsupported), `REPO_URL` (or `ORG_NAME` for organization scope) is empty, or there are no credentials |
+| `container_running` | The container is missing, not running (restarting counts), or its healthcheck reports unhealthy |
+| `runner_online` | GitHub doesn't list the runner as online, or rejects the token |
+| `no_new_restarts` | The container restarted since the last run |
+| `disk_space` | The workspace's file system is more than `MAX_DISK_PERCENT` full |
 
-### 2.2 Test Dashboard Script
+From `.env` it reads `REPO_URL`, `GITHUB_PAT`, `APP_ID`, `APP_PRIVATE_KEY`, `RUNNER_NAME`, `RUNNER_SCOPE`, `ORG_NAME`,
+`CONTAINER_NAME`, `RUNNER_WORKDIR` and `RUNNER_DATA_DIR`, as `KEY=value` lines (quotes and inline comments after a
+space are fine). It never takes these from the environment.
+
+The online check needs `GITHUB_PAT`: with GitHub App credentials it is skipped, and the container's own healthcheck
+covers a runner that stopped. The token is sent to GitHub's API with `curl` and never appears on a command line.
+
+## Knobs
+
+Set these as environment variables in the scheduled task's script line, for example
+`MAX_DISK_PERCENT=85 bash .../runner-health-check.sh`:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `MAX_DISK_PERCENT` | 90 | Disk use above which `disk_space` fails |
+| `ALERT_AFTER_FAILURES` | 3 | Failing runs before PROBLEM |
+| `REMIND_AFTER_SECONDS` | 86400 | Time between reminders (0 reminds on every failing run) |
+| `DISK_PATH` | `RUNNER_WORKDIR`, else `RUNNER_DATA_DIR`, else `/volume1/docker/github-runner` if it exists, else the project folder | The path whose file system is checked |
+| `STATE_FILE` | `<project folder>/health-check.state` | What the script remembers between runs |
+| `LOG_FILE` | `<project folder>/health-check.log` | One line per run, the last 1000 kept |
+
+## Run It by Hand
+
+To see what the scheduled task would report, without touching its state:
 
 ```bash
-/volume1/scripts/runner-dashboard.sh
+cd /volume1/docker/synology-github-runner
+state=$(mktemp) log=$(mktemp)
+sudo env STATE_FILE="$state" LOG_FILE="$log" ALERT_AFTER_FAILURES=1 \
+  bash scripts/monitoring/runner-health-check.sh
+echo "exit $?"   # 0 and no output: healthy
+sudo rm -f "$state" "$state.lock" "$log"
 ```
 
-**Expected Output:**
+Put the variables after `sudo env`: `sudo` drops variables set in front of it. Don't run it by hand without
+`STATE_FILE`: a hand run records any email it prints, and the scheduled task then stays silent about it.
+
+## Is the Monitor Alive?
+
+The log's last line is at most 5 minutes old while the task runs:
+
+```bash
+tail -n 3 /volume1/docker/synology-github-runner/health-check.log
+```
 
 ```text
-╔════════════════════════════════════════════════════════════════╗
-║     GitHub Self-Hosted Runner - Status Dashboard              ║
-╚════════════════════════════════════════════════════════════════╝
-
-📅 2026-01-29 13:00:00
-
-━━━ Container Status ━━━
-Status:      ✅ Running
-Started:     2026-01-28T20:00:00.000000000Z
-Restarts:    0
-
-━━━ Resource Usage ━━━
-CPU:         45.2%
-Memory:      2.1GiB / 5GiB (42%)
-Network I/O: 1.2MB / 3.4MB
-Block I/O:   450MB / 1.2GB
-...
+2026-01-29T12:55:00Z OK
+2026-01-29T13:00:00Z FAIL 1/3 container_running
+2026-01-29T13:05:00Z OK
 ```
 
-**Continuous Mode:**
+## Dashboard
 
 ```bash
-/volume1/scripts/runner-dashboard.sh --continuous
+cd /volume1/docker/synology-github-runner
+sudo bash scripts/monitoring/runner-dashboard.sh               # once
+sudo bash scripts/monitoring/runner-dashboard.sh --continuous  # every 10 seconds; Ctrl+C stops
 ```
 
-This will refresh the dashboard every 10 seconds. Press Ctrl+C to stop.
-
----
-
-## Step 3: Schedule Health Checks with DSM Task Scheduler
-
-### 3.1 Open Task Scheduler
-
-1. Log into DSM web interface
-2. Open **Control Panel** → **Task Scheduler**
-
-### 3.2 Create Scheduled Task
-
-Click **Create** → **Scheduled Task** → **User-defined script**
-
-#### Basic Settings
-
-- **Task Name:** `GitHub Runner Health Check`
-- **User:** `root` (required for Docker access)
-- **Enabled:** ✅ Checked
-
-#### Schedule Settings
-
-- **Run on the following days:** Daily
-- **First run time:** 00:00
-- **Frequency:** Every 5 minutes
-- **Last run time:** 23:55
-
-#### Task Settings
-
-- **Send run details by email:** (Optional - configure if you want email alerts)
-- **User-defined script:**
-
-```bash
-/volume1/scripts/runner-health-check.sh
-```
-
-#### Notification Settings (Optional)
-
-- **Send run details only when the script terminates abnormally:** ✅ Checked
-- This will email you if the health check fails
-
-### 3.3 Save and Enable
-
-Click **OK** to save the task. The health check will now run every 5 minutes.
-
----
-
-## Step 4: Configure Alert Notifications (Optional)
-
-### 4.1 Email Notifications via DSM
-
-**Enable Email Notifications:**
-
-1. Go to **Control Panel** → **Notification** → **Email**
-2. Configure SMTP settings (Gmail, Outlook, etc.)
-3. Add recipient email addresses
-4. Test the email configuration
-
-**Enable Task Scheduler Notifications:**
-
-1. Go back to **Task Scheduler**
-2. Edit your health check task
-3. Check **Send run details by email**
-4. Select **Send run details only when the script terminates abnormally**
-
-Now you'll receive emails when the health check fails.
-
-### 4.2 View Alert Logs Manually
-
-Alert logs are stored at: `/volume1/docker/github-runner/alerts.log`
-
-```bash
-# View recent alerts
-tail -f /volume1/docker/github-runner/alerts.log
-
-# View all alerts
-cat /volume1/docker/github-runner/alerts.log
-```
-
----
-
-## Step 5: Create Dashboard Shortcuts (Optional)
-
-### 5.1 Add to Shell Profile
-
-Add aliases to your shell profile for quick access:
-
-```bash
-# SSH into NAS
-ssh admin@<your-nas-ip>
-
-# Add to ~/.bashrc or ~/.zshrc
-cat >> ~/.bashrc << 'EOF'
-# GitHub Runner Monitoring
-alias runner-status='/volume1/scripts/runner-dashboard.sh'
-alias runner-watch='/volume1/scripts/runner-dashboard.sh --continuous'
-alias runner-logs='docker logs -f github-runner'
-alias runner-health='sudo /volume1/scripts/runner-health-check.sh'
-EOF
-
-# Reload profile
-source ~/.bashrc
-```
-
-Now you can use:
-
-- `runner-status` - Show current status
-- `runner-watch` - Live dashboard (refreshes every 10s)
-- `runner-logs` - Follow runner logs
-- `runner-health` - Run health check manually
-
----
-
-## Step 6: Monitor Logs and Adjust Thresholds
-
-### 6.1 Log Files
-
-**Health Check Log:**
-
-- Path: `/volume1/docker/github-runner/health-check.log`
-- Rotates automatically (keeps last 1000 lines)
-
-**Alert Log:**
-
-- Path: `/volume1/docker/github-runner/alerts.log`
-- Contains only alerts/warnings
-
-**View Logs:**
-
-```bash
-# Health check log
-tail -f /volume1/docker/github-runner/health-check.log
-
-# Alerts only
-tail -f /volume1/docker/github-runner/alerts.log
-```
-
-### 6.2 Adjust Thresholds
-
-Edit the health check script to adjust alert thresholds:
-
-```bash
-nano /volume1/scripts/runner-health-check.sh
-```
-
-**Default Thresholds:**
-
-```bash
-MAX_MEMORY_PERCENT=90  # Alert if container uses >90% of memory limit
-MAX_CPU_PERCENT=150    # Alert if CPU usage >150%
-MAX_DISK_PERCENT=80    # Alert if disk usage >80%
-```
-
-Change these values based on your observed usage patterns.
-
----
-
-## Step 7: Verify Monitoring is Working
-
-### 7.1 Wait for First Scheduled Run
-
-The health check will run automatically every 5 minutes. Wait 5 minutes and check:
-
-```bash
-# Check that the log file was created
-ls -lh /volume1/docker/github-runner/health-check.log
-
-# View recent entries
-tail /volume1/docker/github-runner/health-check.log
-```
-
-### 7.2 Simulate a Failure (Optional)
-
-Test that alerts work by temporarily stopping the runner:
-
-```bash
-# Stop the runner
-docker stop github-runner
-
-# Wait 5 minutes for health check to run
-# Check alert log
-cat /volume1/docker/github-runner/alerts.log
-
-# Restart the runner
-docker start github-runner
-```
-
-You should see alerts in the log file and (if configured) receive an email.
-
----
+It shows the container's status, restarts, health, CPU and memory, the disk use of the workspace's file system, and
+the last 5 lines of the health-check log, the last one in red when it is more than 15 minutes old (the monitor may have
+stopped). `REFRESH_SECONDS` sets the `--continuous` interval.
+
+## Upgrading From the Old Scripts
+
+Earlier versions copied the scripts to `/volume1/scripts` and logged alerts to `alerts.log`:
+
+1. Point the scheduled task at the clone's script, as above, with the email settings above.
+2. Remove any crontab entry that runs `/volume1/scripts/runner-health-check.sh`.
+3. Delete `/volume1/scripts/runner-health-check.sh`, `/volume1/scripts/runner-dashboard.sh`,
+   `/volume1/docker/github-runner/alerts.log` and `/volume1/docker/github-runner/health-check.log`; the new log lives in
+   the project folder.
 
 ## Troubleshooting
 
-### Health Check Script Fails
+**An email every 5 minutes:** the task runs an old copy of the script; point it at the clone.
 
-**Issue:** "Cannot find container 'github-runner'"
+**No email when the runner is down:** check the task's email settings and DSM's test email, then run the script by
+hand as above: it should exit 1 and print the problem.
 
-- **Fix:** Update `CONTAINER_NAME` in the script to match your container name
-- Check actual name: `docker ps --format '{{.Names}}'`
+**`internal: jq not found` (or `flock`, `timeout`, `cksum`, `curl`):** the tool is missing from the task's `PATH` and
+from `/usr/local/bin`, `/usr/bin` and `/bin`, where the script also looks. DSM 7.2 ships all of them; check that
+`command -v jq` finds it over SSH.
 
-**Issue:** Permission denied when running script
+**`lock: held for over 15 minutes`:** a run hangs; `ps aux | grep runner-health-check` shows it.
 
-- **Fix:** Run with sudo: `sudo /volume1/scripts/runner-health-check.sh`
-- Or add your user to docker group: `sudo synogroup --add docker $USER`
-
-**Issue:** bc: command not found
-
-- **Fix:** Install bc package via DSM Package Center → Developer Tools
-
-### Task Scheduler Not Running
-
-**Issue:** Task shows "Last Result: 127" or "Command not found"
-
-- **Fix:** Use absolute paths in the script: `/volume1/scripts/runner-health-check.sh`
-- Verify script has execute permissions: `ls -l /volume1/scripts/`
-
-**Issue:** Task runs but no logs generated
-
-- **Fix:** Check log directory permissions: `ls -ld /volume1/docker/github-runner/`
-- Create directory if missing: `mkdir -p /volume1/docker/github-runner/logs`
-
-### Email Notifications Not Working
-
-**Issue:** No emails received when health check fails
-
-- **Fix:** Verify SMTP settings in Control Panel → Notification
-- Test email: Control Panel → Notification → Send test email
-- Check Task Scheduler notification settings
-
----
-
-## Success Criteria
-
-✅ Health check script runs every 5 minutes
-✅ Dashboard shows real-time runner status
-✅ Logs are created and rotated automatically
-✅ Alerts are generated when thresholds exceeded
-✅ Email notifications work (if configured)
-✅ No false positives in alert log
-
----
-
-## Next Steps
-
-After monitoring is set up:
-
-1. **Observe for 24-48 hours** - Watch for patterns and false alerts
-2. **Tune thresholds** - Adjust based on normal usage patterns
-3. **Update runner plan** - Mark Phase 6 as COMPLETE
-4. **Document** - Add monitoring details to project documentation
-
----
-
-## Quick Reference
-
-### Common Commands
-
-```bash
-# View dashboard
-/volume1/scripts/runner-dashboard.sh
-
-# Live dashboard (auto-refresh)
-/volume1/scripts/runner-dashboard.sh --continuous
-
-# Run health check manually
-sudo /volume1/scripts/runner-health-check.sh
-
-# View logs
-tail -f /volume1/docker/github-runner/health-check.log
-tail -f /volume1/docker/github-runner/alerts.log
-
-# View runner logs
-docker logs -f github-runner
-
-# Restart runner
-docker restart github-runner
-
-# Check runner resource usage
-docker stats github-runner
-```
-
-### Log Locations
-
-| Log File | Path |
-| -------- | ---- |
-| Health Check | `/volume1/docker/github-runner/health-check.log` |
-| Alerts | `/volume1/docker/github-runner/alerts.log` |
-| Runner Logs | `docker logs github-runner` |
-
-### Monitoring Thresholds
-
-| Metric | Threshold | Action |
-| ------ | --------- | ------ |
-| Memory | >90% | Alert |
-| CPU | >150% | Alert |
-| Disk | >80% | Alert |
-| Container Down | N/A | Alert + Email |
-| GitHub Unreachable | N/A | Alert |
-
----
-
-## Support
-
-If you encounter issues:
-
-1. Check the troubleshooting section above
-2. Review logs: `tail -f /volume1/docker/github-runner/health-check.log`
-3. Test manually: `sudo /volume1/scripts/runner-health-check.sh`
-4. Check DSM Task Scheduler history for errors
+**`storage: cannot write ...`:** the project folder is full or not writable by root; the email names the folder.

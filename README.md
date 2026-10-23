@@ -181,7 +181,7 @@ See [Installation Guide](docs/02-installation.md) for step-by-step instructions.
 │ │ Monitoring Scripts                        │   │
 │ │ ├─ Health Check (every 5 min)            │   │
 │ │ ├─ Dashboard (on-demand)                 │   │
-│ │ └─ Alerts (/volume1/.../alerts.log)      │   │
+│ │ └─ Log (<project>/health-check.log)      │   │
 │ └───────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────┘
 ```
@@ -330,28 +330,30 @@ See [Security Guide](docs/07-security.md) for complete hardening checklist.
 Run the included dashboard script:
 
 ```bash
-/volume1/scripts/runner-dashboard.sh
+sudo bash /volume1/docker/synology-github-runner/scripts/monitoring/runner-dashboard.sh
 ```
 
 ```text
-╔════════════════════════════════════════════════════════════════╗
-║  GitHub Self-Hosted Runner - Status Dashboard                 ║
-╚════════════════════════════════════════════════════════════════╝
-
-━━━ Container Status ━━━
+━━━ Container Status (github-runner) ━━━
 Status:      ✅ Running
 Started:     2026-01-28T20:00:00Z
 Restarts:    0
+Health:      healthy
 
 ━━━ Resource Usage ━━━
-CPU:         45.2%
-Memory:      2.1GiB / 5GiB (42%)
-Network I/O: 1.2MB / 3.4MB
+CPU:         45.20%
+Memory:      2.1GiB / 5GiB (42.00%)
 
-━━━ Runner Connectivity ━━━
-GitHub API:  ✅ Reachable
-Runner:      ✅ Listening for Jobs
+━━━ Disk Usage ━━━
+Disk:        /volume1/docker/github-runner/workspace: 1117.6 GiB / 3725.3 GiB (30%)
+
+━━━ Health-check log ━━━
+  2026-01-29T12:55:00Z OK
+  2026-01-29T13:00:00Z OK
 ```
+
+A scheduled health check emails you once when the runner can't take jobs and once when it recovers; see the
+[Monitoring Guide](docs/04-monitoring.md).
 
 ## 🤝 Contributing
 

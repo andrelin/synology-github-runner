@@ -463,24 +463,18 @@ docker stats github-runner
 **Use monitoring script:**
 
 ```bash
-# Run health check
-/volume1/scripts/runner-health-check.sh
+cd /volume1/docker/synology-github-runner
+
+# Run health check (what the scheduled task would report)
+sudo env STATE_FILE=$(mktemp) LOG_FILE=$(mktemp) ALERT_AFTER_FAILURES=1 \
+  bash scripts/monitoring/runner-health-check.sh
 
 # View dashboard
-/volume1/scripts/runner-dashboard.sh
+sudo bash scripts/monitoring/runner-dashboard.sh
 ```
 
-See [Monitoring Guide](04-monitoring.md) for setup.
-
-**Create monitoring cron job:**
-
-```bash
-# Edit crontab
-crontab -e
-
-# Add health check every 5 minutes
-*/5 * * * * /volume1/scripts/runner-health-check.sh
-```
+Schedule the health check with DSM Task Scheduler as the [Monitoring Guide](04-monitoring.md) describes; it emails
+once per incident.
 
 ## Security Maintenance
 

@@ -103,6 +103,33 @@ jobs:
             bash "$t"
           done
 
+      # The installer and the monitoring scripts each carry read_env_value, since they
+      # run standalone; the copies must not drift apart
+      - name: Check read_env_value copies match
+        run: |
+          mapfile -t files < <(git grep -l '^read_env_value() {' -- scripts/)
+          if [ "${#files[@]}" -lt 2 ]; then
+            echo "❌ Expected at least two copies of read_env_value, found ${#files[@]}"
+            exit 1
+          fi
+          first=''
+          for f in "${files[@]}"; do
+            body=$(awk '/^read_env_value\(\) \{/ { on = 1 } on { print } on && /^}$/ { exit }' "$f")
+            if [ -z "$body" ]; then
+              echo "❌ Could not extract read_env_value from $f"
+              exit 1
+            fi
+            if [ -z "$first" ]; then
+              first=$body
+              first_file=$f
+            elif [ "$body" != "$first" ]; then
+              echo "❌ read_env_value in $f differs from $first_file:"
+              diff <(printf '%s\n' "$first") <(printf '%s\n' "$body") || true
+              exit 1
+            fi
+          done
+          echo "✓ ${#files[@]} copies of read_env_value match"
+
       # ============================================================
       # Documentation Validation
       # ============================================================

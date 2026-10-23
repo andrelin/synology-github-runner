@@ -1,0 +1,5 @@
+#!/bin/bash
+# Test stub: DSM has no bc, so any call is a failure
+printf 'bc %s\n' "$*" >> "${STUB_LOG:?}"
+echo "STUBERR bc is not available on DSM" >&2
+exit 1

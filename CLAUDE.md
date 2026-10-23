@@ -138,7 +138,8 @@ synology-github-runner/
 │   └── utilities/                    # Helper scripts
 │
 ├── tests/
-│   └── setup/                        # Installer tests and their stubs
+│   ├── setup/                        # Installer tests and their stubs
+│   └── monitoring/                   # Health check and dashboard tests (Linux)
 │
 ├── examples/
 │   └── workflows/                    # Example GitHub Actions workflows
@@ -531,9 +532,9 @@ chore(deps): update runner image to latest version
 **Good:**
 
 ```markdown
-Run the health check script:
+Show the runner's status:
 ```bash
-sudo /volume1/scripts/runner-health-check.sh
+sudo bash scripts/monitoring/runner-dashboard.sh
 ```
 
 **Bad:**

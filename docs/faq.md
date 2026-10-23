@@ -418,7 +418,7 @@ docker stats github-runner --no-stream
 **Via monitoring script:**
 
 ```bash
-/volume1/scripts/runner-dashboard.sh
+sudo bash /volume1/docker/synology-github-runner/scripts/monitoring/runner-dashboard.sh
 ```
 
 See [Monitoring Guide](04-monitoring.md).

@@ -19,7 +19,7 @@ writes `.env` safely, and gets tests in CI; the install docs move to one layout.
 
 ### [plan-2-monitoring-setup.md](plan-2-monitoring-setup.md)
 
-**🔴 Not Started**
+**🟡 In Progress** (code and docs done; the NAS end-to-end check is user-run)
 
 One DSM email when the runner stops being able to take jobs, one when it recovers, silence otherwise.
 The existing health check can't be scheduled as-is (it alerts on every run), so it is rewritten around the signals

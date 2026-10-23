@@ -1,0 +1,16 @@
+#!/bin/bash
+# Test stub: logs its arguments and its stdin config, writes FAKE_API_JSON to --output
+printf 'curl %s\n' "$*" >> "${STUB_LOG:?}"
+cat >> "${STUB_LOG%/*}/curl.stdin"
+output=''
+args=("$@")
+for ((i = 0; i < ${#args[@]}; i++)); do
+    [ "${args[i]}" != --output ] || output=${args[i + 1]}
+done
+if [ -n "${FAKE_CURL_EXIT:-}" ]; then
+    echo "STUBERR curl failed" >&2
+    exit "$FAKE_CURL_EXIT"
+fi
+default_json='{"runners":[{"name":"synology-general-runner","status":"online"}]}'
+printf '%s' "${FAKE_API_JSON-$default_json}" > "$output"
+printf '%s' "${FAKE_HTTP_CODE:-200}"

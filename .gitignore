@@ -17,6 +17,8 @@ cache/
 logs/
 *.log
 runner-registration-token.txt
+health-check.state
+health-check.state.lock
 
 # ==============================================================================
 # Backup Files

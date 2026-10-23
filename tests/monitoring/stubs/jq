@@ -1,0 +1,10 @@
+#!/bin/bash
+# Test stub: fails on request, otherwise runs the real jq
+printf 'jq %s\n' "$*" >> "${STUB_LOG:?}"
+if [ "${FAKE_JQ_FAIL:-}" = 1 ]; then
+    echo "STUBERR jq failed" >&2
+    exit 3
+fi
+stub_dir=$(cd "${BASH_SOURCE[0]%/*}" && pwd)
+PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -vxF "$stub_dir" | paste -sd: -)
+exec jq "$@"

@@ -1,0 +1,9 @@
+#!/bin/bash
+# Test stub: marks calls made with the expected limits, then runs the real timeout
+printf 'timeout %s\n' "$*" >> "${STUB_LOG:?}"
+if [ "$1 $2 $3" = "-k 5 20" ]; then
+    export STUB_VIA_TIMEOUT=1
+fi
+stub_dir=$(cd "${BASH_SOURCE[0]%/*}" && pwd)
+real=$(PATH=$(printf '%s' "$PATH" | tr ':' '\n' | grep -vxF "$stub_dir" | paste -sd: -) command -v timeout)
+exec "$real" "$@"

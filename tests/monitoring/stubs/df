@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test stub: df -P output from FAKE_DF_* variables
+printf 'df%s %s\n' "${STUB_VIA_TIMEOUT:+[t]}" "$*" >> "${STUB_LOG:?}"
+if [ "${FAKE_DF_FAIL:-}" = 1 ]; then
+    echo "STUBERR df: cannot read" >&2
+    exit 1
+fi
+blocks=${FAKE_DF_BLOCKS:-1048576}
+used=${FAKE_DF_USED:-104858}
+echo "Filesystem     1024-blocks      Used Available Capacity Mounted on"
+echo "/dev/fake      $blocks $used $((blocks - used)) ${FAKE_DF_PERCENT:-10}% /"
