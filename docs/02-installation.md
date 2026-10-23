@@ -318,16 +318,10 @@ When new versions are released, while the runner is idle:
 
 **Note:** Your `.env` file is preserved (it's gitignored).
 
-### Update the Base Image
+### Base Image Updates
 
-The runner image is built from this repository's `Dockerfile`. To build it on a newer `myoung34/github-runner` base
-image as well, while the runner is idle:
-
-```bash
-cd /volume1/docker/synology-github-runner
-sudo docker compose build --pull
-sudo docker compose up -d
-```
+The `Dockerfile` pins the `myoung34/github-runner` base image by digest, and this repository updates the pin, so a
+`git pull` and a rebuild (above) brings the newest tested base image.
 
 ### Coming from the Old Installer
 

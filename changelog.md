@@ -21,10 +21,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added (2026-10-23)
 
+- **Published image:** `.github/workflows/publish-image.yml` builds and tests the runner image on every change and, on
+  `main` and release tags, publishes it to `ghcr.io/andrelin/synology-github-runner` with build provenance
+
 - **`CONTAINER_NAME`**, which also names the Compose project, so `docker compose` commands in the project folder act on
   the Container Manager project
 
 ### Changed (2026-10-23)
+
+- **Pinned image dependencies:** the Dockerfile pins the base image by digest and the Anthropic SDK at 0.72.0 (the
+  last release for the base image's Python 3.8); Renovate updates both after a 7-day wait
 
 - **DSM 7.2 is the minimum**, for Container Manager's Docker Compose v2
 - **Health check:** it checks what keeps jobs from running (configuration, container, GitHub's view of the runner,

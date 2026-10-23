@@ -134,12 +134,14 @@ synology-github-runner/
 │   ├── monitoring/                   # Health checks & dashboards
 │   │   ├── runner-health-check.sh
 │   │   └── runner-dashboard.sh
+│   ├── ci/                           # CI checks: image start-up, workflow permissions, Renovate
 │   ├── maintenance/                  # Update & cleanup scripts
 │   └── utilities/                    # Helper scripts
 │
 ├── tests/
 │   ├── setup/                        # Installer tests and their stubs
-│   └── monitoring/                   # Health check and dashboard tests (Linux)
+│   ├── monitoring/                   # Health check and dashboard tests (Linux)
+│   └── ci/fixtures/                  # Workflows that each break one permissions rule
 │
 ├── examples/
 │   └── workflows/                    # Example GitHub Actions workflows

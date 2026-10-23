@@ -1,10 +1,12 @@
-FROM myoung34/github-runner:latest
+# Pinned by digest; Renovate proposes new digests
+FROM myoung34/github-runner:latest@sha256:d031f064e729d3d64ee22c580dead5c7a70730628466643e9fb310ee3abd752c
 
 # Install Claude Code Review dependencies
 USER root
 
-# Install Anthropic SDK
-RUN pip3 install --no-cache-dir anthropic
+# Install Anthropic SDK (0.72.0 is the last release for the base image's Python 3.8)
+# renovate: datasource=pypi depName=anthropic
+RUN pip3 install --no-cache-dir anthropic==0.72.0
 
 # Copy initialization script
 COPY scripts/init-runner.sh /opt/init-runner.sh

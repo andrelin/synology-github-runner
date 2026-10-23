@@ -1,0 +1,225 @@
+name: Publish Image
+
+# Builds and tests the runner image on every change to it; on main and on release tags
+# of this repository, publishes it to ghcr.io/andrelin/synology-github-runner.
+# Only the publish job can write to the registry, and it runs only for pushes here.
+on:
+  push:
+    branches: [main]
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+    paths:
+      - 'Dockerfile'
+      - 'scripts/init-runner.sh'
+      - 'scripts/entrypoint-wrapper.sh'
+      - 'scripts/ci/verify-image.sh'
+      - '.github/workflows/publish-image.yml'
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'scripts/init-runner.sh'
+      - 'scripts/entrypoint-wrapper.sh'
+      - 'scripts/ci/verify-image.sh'
+      - '.github/workflows/publish-image.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/andrelin/synology-github-runner
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build the image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: candidate
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify the image starts the runner
+        run: scripts/ci/verify-image.sh candidate
+
+  publish:
+    needs: test
+    if: github.repository == 'andrelin/synology-github-runner' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+    # A newer main push may replace a pending main publish; nothing replaces a pending tag publish
+    concurrency:
+      group: publish-image-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image metadata
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE }}
+          flavor: latest=false
+          tags: |
+            type=sha,format=short,prefix=sha-,enable={{is_default_branch}}
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
+          labels: |
+            org.opencontainers.image.description=Self-hosted GitHub Actions runner image for Synology NAS
+            org.opencontainers.image.licenses=MIT
+
+      # Published tags never change content: the tags must be exactly the ones this ref
+      # should get, a commit or release tag must not exist yet, and latest moves only
+      # while this commit is still the head of main
+      - name: Check tags
+        id: tags
+        env:
+          META_TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          short=${GITHUB_SHA:0:7}
+          case $GITHUB_REF in
+            refs/heads/main)
+              expected="$IMAGE:sha-$short $IMAGE:latest"
+              immutable="$IMAGE:sha-$short"
+              ;;
+            refs/tags/v*)
+              version=${GITHUB_REF#refs/tags/v}
+              if ! [[ $version =~ ^([0-9]+)\.([0-9]+)\.[0-9]+$ ]]; then
+                echo "❌ $GITHUB_REF is not a vX.Y.Z release tag"
+                exit 1
+              fi
+              major=${BASH_REMATCH[1]}
+              minor=${BASH_REMATCH[2]}
+              expected="$IMAGE:$version $IMAGE:$major.$minor"
+              # The {{major}} rule is disabled for 0.x versions
+              [ "$major" = 0 ] || expected="$expected $IMAGE:$major"
+              immutable="$IMAGE:$version"
+              ;;
+            *)
+              echo "❌ Unexpected ref $GITHUB_REF"
+              exit 1
+              ;;
+          esac
+          got=$(printf '%s\n' "$META_TAGS" | sed '/^$/d' | sort)
+          want=$(printf '%s\n' $expected | sort)
+          if [ "$got" != "$want" ]; then
+            echo "❌ metadata-action tags differ from the expected ones"
+            printf 'got:\n%s\nexpected:\n%s\n' "$got" "$want"
+            exit 1
+          fi
+          # Only "not found" means absent; any other registry error stops the run
+          if err=$(docker buildx imagetools inspect "$immutable" 2>&1 > /dev/null); then
+            echo "❌ $immutable already exists; a published tag never changes content"
+            exit 1
+          elif ! grep -qiE 'not found|manifest unknown|name unknown' <<< "$err"; then
+            echo "❌ Could not tell whether $immutable exists: $err"
+            exit 1
+          fi
+          tags=$want
+          if [ "$GITHUB_REF" = refs/heads/main ]; then
+            # latest moves only if no later commit on main changed the image
+            git fetch --quiet origin main
+            if [ "$(git rev-parse FETCH_HEAD)" != "$GITHUB_SHA" ] && {
+              ! git merge-base --is-ancestor "$GITHUB_SHA" FETCH_HEAD ||
+              ! git diff --quiet "$GITHUB_SHA" FETCH_HEAD -- Dockerfile scripts/init-runner.sh \
+                scripts/entrypoint-wrapper.sh scripts/ci/verify-image.sh .github/workflows/publish-image.yml
+            }; then
+              echo "⚠ A later commit on main changes the image; leaving latest to its run"
+              tags=$(printf '%s\n' "$tags" | grep -Fvx "$IMAGE:latest")
+            fi
+          else
+            # X.Y and X move only to the highest release in their series
+            releases=$(git ls-remote --tags --refs origin 'v*' | sed 's|.*refs/tags/v||' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' || true)
+            for series in "$major.$minor" "$major"; do
+              highest=$(printf '%s\n' "$releases" "$version" | grep -E "^${series//./\\.}\." | sort -V | tail -n 1)
+              if [ "$highest" != "$version" ]; then
+                echo "⚠ v$highest is newer in the $series series; leaving $IMAGE:$series alone"
+                tags=$(printf '%s\n' "$tags" | grep -Fvx "$IMAGE:$series" || true)
+              fi
+            done
+          fi
+          {
+            echo 'list<<EOF'
+            printf '%s\n' "$tags"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+          printf 'Tags to publish:\n%s\n' "$tags"
+
+      - name: Build and push by digest
+        id: build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          provenance: false
+          sbom: false
+          cache-from: type=gha
+
+      - name: Verify the pushed image starts the runner
+        run: scripts/ci/verify-image.sh "$IMAGE@${{ steps.build.outputs.digest }}"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+      - name: Point the tags at the digest
+        env:
+          TAGS: ${{ steps.tags.outputs.list }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          args=()
+          while IFS= read -r tag; do
+            [ -n "$tag" ] && args+=(-t "$tag")
+          done <<< "$TAGS"
+          docker buildx imagetools create --prefer-index=false "${args[@]}" "$IMAGE@$DIGEST"
+
+      - name: Check every tag resolves to the digest
+        env:
+          TAGS: ${{ steps.tags.outputs.list }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          while IFS= read -r tag; do
+            [ -n "$tag" ] || continue
+            got=$(docker buildx imagetools inspect "$tag" --format '{{json .Manifest}}' | jq -r .digest)
+            if [ "$got" != "$DIGEST" ]; then
+              echo "❌ $tag resolves to $got, expected $DIGEST"
+              exit 1
+            fi
+            echo "✓ $tag → $DIGEST"
+          done <<< "$TAGS"

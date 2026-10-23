@@ -1,4 +1,36 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>andrelin/dotfiles//renovate/daily-automerge-all"]
+  "extends": [
+    "github>andrelin/dotfiles//renovate/daily-automerge-all"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Versions pinned in the Dockerfile after a '# renovate:' comment",
+      "managerFilePatterns": [
+        "/(^|/)Dockerfile$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n[^\\n]*?==(?<currentValue>[^\\s\\\\]+)"
+      ]
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Image dependencies wait a week before Renovate proposes them",
+      "matchDatasources": [
+        "docker",
+        "pypi"
+      ],
+      "minimumReleaseAge": "7 days",
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
+    },
+    {
+      "description": "anthropic 0.72.1 and later need Python 3.9; the base image has 3.8",
+      "matchPackageNames": [
+        "anthropic"
+      ],
+      "allowedVersions": "<=0.72.0"
+    }
+  ]
 }

@@ -1,6 +1,6 @@
 # Plan 8: Publish the Runner Image to GHCR - plan
 
-**Status:** 🔴 Not Started
+**Status:** 🟡 In Progress (Tasks 1-2 done; Task 3 is user-run)
 **Goal:** Users run a tested, published `ghcr.io/andrelin/synology-github-runner` image instead of building on their
 NAS, and the published image stays current without anyone touching it.
 **Approach:** A workflow on GitHub-hosted runners builds and tests the image on every change, pull requests included,
@@ -51,8 +51,8 @@ comes after, writes its docs for the published image from the start.
 
 | Task | Status |
 | --- | --- |
-| 1 · Test and publish workflow | ⏳ PENDING |
-| 2 · Pinned Dockerfile and Renovate delay | ⏳ PENDING |
+| 1 · Test and publish workflow | ✅ DONE |
+| 2 · Pinned Dockerfile and Renovate delay | ✅ DONE |
 | 3 · First publish (user-run) | ⏳ PENDING |
 | 4 · Compose uses the published image | ⏳ PENDING |
 | 5 · NAS switch-over (user-run) | ⏳ PENDING |
@@ -128,6 +128,13 @@ builds `runner-under-test` and calls it.
 - `CLAUDE.md`: `scripts/ci/`, `tests/ci/` and the workflow in the tree. `changelog.md`: "Added": the image is built,
   tested and published to GHCR.
 
+**As built:** the pushed image is a single manifest (`provenance: false`, `sbom: false`; the GitHub attestation is the
+provenance), and `imagetools create --prefer-index=false` tags that digest as it is. For `0.x` releases the `{{major}}`
+rule is disabled, and the expected tags leave out `X`. `latest` is kept when later commits on `main` don't touch the
+image's paths; `X.Y` and `X` move only to the highest release in their series (from `git ls-remote --tags`). Only a "not
+found" from the registry counts as a tag being absent. Fixtures are named `<rule>--<variant>.yml`; the checker treats
+any file under `tests/ci/fixtures/` as a copy of `publish-image.yml`.
+
 **Tests:** both new `quality.yml` steps run on every pull request that `quality.yml` doesn't skip; the `test` job runs
 on the pull request that adds the workflow; after merge, the publish job's checks in steps 2 and 7 verify the result
 on `main`.
@@ -161,6 +168,12 @@ on `main`.
    that version documents.
 
 The `test` job of `publish-image.yml` builds and verifies the pinned image on this pull request.
+
+**As built:** the base image has Python 3.8, and `anthropic` 0.72.1 and later need 3.9, so the pin is `0.72.0` (0.72.1
+already needs 3.9) and a second package rule (`allowedVersions: <=0.72.0`) keeps Renovate from proposing releases that
+can't install. `renovate-config-validator` runs from `renovate@44.148.3` with no file argument, so it validates the
+repository config rather than a global one. `docs/02`, `docs/06`, `docs/07` and `docs/faq.md` now say base image updates
+arrive through `git pull`, since `build --pull` no longer moves a pinned digest.
 
 ## Task 3 · First publish (user-run)
 

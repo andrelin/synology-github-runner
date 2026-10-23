@@ -29,7 +29,7 @@ that matter, with tests in CI.
 
 ### [plan-8-publish-image.md](plan-8-publish-image.md)
 
-**🔴 Not Started**
+**🟡 In Progress** (workflow and pins done; making the package public is user-run, then the compose switch)
 
 Build the runner image for amd64 on GitHub-hosted runners, test it, and publish it to GHCR, with the base
 image pinned by digest so Renovate keeps it current. The compose file then pulls the image instead of building on the

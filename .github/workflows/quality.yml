@@ -14,6 +14,9 @@ on:
       - '*.md'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 # Per-workflow, per-branch concurrency control
 # Cancels older runs of THIS workflow on THIS branch, but allows other workflows/branches to queue
 # The single runner will still execute jobs one at a time
@@ -67,19 +70,46 @@ jobs:
       - name: Verify runner image starts the runner
         run: |
           docker build -t runner-under-test .
-          output=$(docker run --rm \
-            -e DEBUG_ONLY=true \
-            -e STARTUP_DELAY_SECONDS=0 \
-            -e RUNNER_WORKDIR=/tmp \
-            -e REPO_URL=https://github.com/your-username/your-repo \
-            -e ACCESS_TOKEN=unused \
-            runner-under-test 2>&1) || { echo "$output"; exit 1; }
-          echo "$output"
-          if ! echo "$output" | grep -q "Running ./bin/Runner.Listener run"; then
-            echo "❌ Container would not launch Runner.Listener"
+          scripts/ci/verify-image.sh runner-under-test
+
+      # The check above must be able to fail: an image that prints nothing, one that
+      # prints the marker but exits 1, and one that never exits
+      - name: Verify the image check can fail
+        run: |
+          build() { printf 'FROM runner-under-test\nENTRYPOINT %s\nCMD []\n' "$2" | docker build -q -t "$1" - > /dev/null; }
+          build verify-silent '["true"]'
+          build verify-exit-1 '["sh", "-c", "echo Running ./bin/Runner.Listener run; exit 1"]'
+          build verify-hang '["sleep", "infinity"]'
+          for image in verify-silent verify-exit-1 verify-hang; do
+            if VERIFY_TIMEOUT=5 scripts/ci/verify-image.sh "$image" > /dev/null; then
+              echo "❌ verify-image.sh accepted $image"
+              exit 1
+            fi
+            echo "✓ verify-image.sh rejects $image"
+          done
+          if [ -n "$(docker ps -aq --filter name=verify-image)" ]; then
+            echo "❌ verify-image.sh left a container behind"
             exit 1
           fi
-          echo "✓ Container launches Runner.Listener"
+
+      # Renovate's validator and the documentation tools need Node 24
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.22.1'
+
+      - name: Check Dockerfile pins
+        run: |
+          if ! grep -qE '^FROM [^ ]+@sha256:[0-9a-f]{64}' Dockerfile; then
+            echo "❌ The Dockerfile's FROM line has no sha256 digest"
+            exit 1
+          fi
+          if ! grep -qE 'anthropic==[0-9]+(\.[0-9]+)+' Dockerfile; then
+            echo "❌ anthropic is not pinned to an exact version"
+            exit 1
+          fi
+          python3 scripts/ci/check-renovate-manager.py
+          npx --yes -p renovate@44.148.3 renovate-config-validator --strict
 
       - name: Check for hardcoded secrets
         run: |
@@ -130,14 +160,27 @@ jobs:
           done
           echo "✓ ${#files[@]} copies of read_env_value match"
 
+      # Each fixture breaks one rule; the checker must name that rule
+      - name: Check publish workflow permissions
+        run: |
+          python3 -c 'import yaml' || { echo "❌ PyYAML is missing from the runner image"; exit 1; }
+          python3 scripts/ci/check-workflow-permissions.py \
+            .github/workflows/publish-image.yml .github/workflows/quality.yml
+          for fixture in tests/ci/fixtures/*.yml; do
+            rule=$(basename "$fixture" .yml)
+            rule=${rule%%--*}
+            rc=0
+            out=$(python3 scripts/ci/check-workflow-permissions.py "$fixture") || rc=$?
+            if [ "$rc" != 1 ] || [[ $out != "rule $rule failed"* ]]; then
+              echo "❌ $fixture: expected rule $rule to fail, got exit $rc: $out"
+              exit 1
+            fi
+            echo "✓ $fixture fails rule $rule"
+          done
+
       # ============================================================
       # Documentation Validation
       # ============================================================
-      - name: Setup Node.js for documentation tools
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
-        with:
-          node-version: '24.22.1'
-
       - name: Install documentation tools
         run: |
           echo "Installing documentation validation tools..."

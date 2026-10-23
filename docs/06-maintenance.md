@@ -36,15 +36,16 @@ Keep your GitHub self-hosted runner healthy, updated, and running efficiently.
 
 ### Pull and Rebuild
 
-The project folder is a clone of this repository, and the runner image is built from its `Dockerfile` on the
-`myoung34/github-runner` base image. Update both while the runner is idle: `git pull` in the project folder, then
+The project folder is a clone of this repository, and the runner image is built from its `Dockerfile`, which pins
+the `myoung34/github-runner` base image by digest; base image updates arrive as commits here. Update while the runner
+is idle: `git pull` in the project folder, then
 **Build** the project in Container Manager, or over SSH:
 
 ```bash
 ssh admin@<your-nas-ip>
 cd /volume1/docker/synology-github-runner
 git pull                            # this repository's fixes
-sudo docker compose build --pull    # rebuild the image, on the newest base image
+sudo docker compose build --pull    # rebuild the image from the pinned Dockerfile
 sudo docker compose up -d           # recreate the container from it
 ```
 
