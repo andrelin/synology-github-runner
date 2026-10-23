@@ -1,6 +1,6 @@
 # Plan 7: An Installer That Works - plan
 
-**Status:** 🟡 In Progress (Tasks 1-2 done; Task 3 is user-run)
+**Status:** 🟢 Complete (2026-10-23)
 **Goal:** `scripts/setup/install.sh`, run inside a clone of this repository on the NAS, leaves that clone ready to
 become a Container Manager project that starts a runner, and `git pull` keeps it current.
 **Approach:** The clone is the project folder, as in the manual installation guide. The installer stops copying files
@@ -72,7 +72,7 @@ compose file's `name:` and `CONTAINER_NAME`. `RUNNER_DATA_DIR` and the shared-wo
 | --- | --- |
 | 1 · Installer prepares the clone | ✅ DONE |
 | 2 · Install and update docs follow one layout | ✅ DONE |
-| 3 · End-to-end on a NAS (user-run) | ⏳ PENDING |
+| 3 · End-to-end on a NAS (user-run) | ✅ DONE |
 
 ## File map
 
@@ -290,3 +290,15 @@ test repository and a fine-grained PAT limited to it:
 
 Record the outcome in generic terms only: never names, addresses, paths, container names, other services, the model or
 software versions from the NAS.
+
+**As built**, after Plan 8 switched the compose file to the published image, on a NAS whose runner project is already a
+clone (so step 1 didn't apply):
+
+- Step 2: the interactive installer, given its answers on stdin, exited 0, named the project after `CONTAINER_NAME`,
+  created the test workspace and reused the shared cache folder. It wrote `.env` mode 600 with one token line.
+- Step 3: the project was started with `docker compose up -d` in the clone rather than created in Container Manager's
+  UI. The test runner was online and Idle in the test repository within a minute, and the existing runner stayed
+  healthy.
+- Step 4: `git pull`, `docker compose pull` and `up -d --force-recreate` brought it back Idle.
+- Step 5: `docker compose down` deregistered the runner by itself; the folders were removed. The token was the NAS's
+  existing one, used only on the NAS, so there was nothing to revoke. Deleting the test repository is the user's.

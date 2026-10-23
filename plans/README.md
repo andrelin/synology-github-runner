@@ -7,16 +7,6 @@ This directory contains the planning documents and implementation history for th
 They land in this order, each relying on the ones before it: 7, 2, 8, 6.
 Plan 6 is the least important and always stays last: it gets done only if the others are finished.
 
-### [plan-7-installer.md](plan-7-installer.md)
-
-**🟡 In Progress** (code and docs done; the NAS end-to-end check is user-run)
-
-Make `scripts/setup/install.sh` work: today it copies files to a folder where the image can't build, and the README
-flow leaves nothing `git pull` can update. The installer prepares the clone as the Container Manager project instead,
-writes `.env` safely, and gets tests in CI; the install docs move to one layout.
-
----
-
 ### [plan-2-monitoring-setup.md](plan-2-monitoring-setup.md)
 
 **🟡 In Progress** (code and docs done; the NAS end-to-end check is user-run)
@@ -49,6 +39,8 @@ Completed plans live in [archive/](archive/) for reference.
   `examples/workflows/` (complete 2026-01-30)
 - [Plan 5: Restart reliability](archive/plan-5-restart-reliability.md) - runner recovers by itself after NAS
   reboots and network outages (the first fix did not work; fixed and reboot-tested in the second attempt)
+- [Plan 7: An installer that works](archive/plan-7-installer.md) - `install.sh` prepares the clone as the Container
+  Manager project, with tests in CI (complete 2026-10-23)
 - [Plan 8: Publish the runner image](archive/plan-8-publish-image.md) - CI builds, tests, attests and publishes the
   image to GHCR; the compose file pulls it (complete 2026-10-23)
 
@@ -167,7 +159,7 @@ The implementation plans serve multiple purposes:
 3. ✅ **Plan 3** - CI/CD workflows
 4. ✅ **Plan 4** - Documentation & examples
 5. ✅ **Plan 5** - Restart reliability
-6. 🟡 **Plan 7** - Working installer (NAS check left)
+6. ✅ **Plan 7** - Working installer
 7. 🟡 **Plan 2** - Monitoring (NAS check left)
 8. ✅ **Plan 8** - Published image
 9. 🔄 **Final Review** - Test everything, polish, prepare release
