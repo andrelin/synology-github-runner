@@ -1,5 +1,5 @@
 # Pinned by digest; Renovate proposes new digests
-FROM myoung34/github-runner:latest@sha256:4feb0ec41e71e861a15702af7a5436a568f140280b7337789c715daefde11abd
+FROM myoung34/github-runner:latest@sha256:ca22557c8e87ec11ffdba18b856d5fc40c8efed7e7840611f26ccf27a3f86c87
 
 # Install Claude Code Review dependencies
 USER root
