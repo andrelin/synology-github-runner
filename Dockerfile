@@ -1,12 +1,15 @@
 # Pinned by digest; Renovate proposes new digests
-FROM myoung34/github-runner:latest@sha256:ca22557c8e87ec11ffdba18b856d5fc40c8efed7e7840611f26ccf27a3f86c87
+FROM myoung34/github-runner:latest@sha256:7112edfdcdbddbe35b057022e70235c1b4b185d0ac3a2b1f0a605a2abb6e6e31
 
 # Install Claude Code Review dependencies
 USER root
 
-# Install Anthropic SDK (0.72.0 is the last release for the base image's Python 3.8)
+# Workflows run `python3` and import the SDK. Ubuntu's system Python refuses pip installs (PEP 668), and pip can't
+# upgrade the packages apt put there, so the SDK goes in a venv first on PATH that still sees the system packages
+RUN python3 -m venv --system-site-packages /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 # renovate: datasource=pypi depName=anthropic
-RUN pip3 install --no-cache-dir anthropic==0.72.0
+RUN pip install --no-cache-dir anthropic==2.8.0
 
 # Copy initialization script
 COPY scripts/init-runner.sh /opt/init-runner.sh

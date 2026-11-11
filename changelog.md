@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed (2026-11-12)
+
+- **Base image:** `myoung34/github-runner:latest` moved from Ubuntu 20.04 (Python 3.8) to Ubuntu 26.04 (Python 3.14);
+  the image now follows it. The Anthropic SDK goes from 0.72.0 to 2.8.0, and Renovate no longer holds it at the last
+  release for Python 3.8
+
 ### Fixed (2026-10-23)
 
 - **Installer:** `scripts/setup/install.sh` now prepares the clone it runs in as the Container Manager project:
