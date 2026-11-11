@@ -24,13 +24,6 @@
       ],
       "minimumReleaseAge": "7 days",
       "minimumReleaseAgeBehaviour": "timestamp-optional"
-    },
-    {
-      "description": "anthropic 0.72.1 and later need Python 3.9; the base image has 3.8",
-      "matchPackageNames": [
-        "anthropic"
-      ],
-      "allowedVersions": "<=0.72.0"
     }
   ]
 }
