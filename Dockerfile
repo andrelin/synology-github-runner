@@ -1,5 +1,5 @@
 # Pinned by digest; Renovate proposes new digests
-FROM myoung34/github-runner:latest@sha256:a2e87baa2ae854e4480f62005153b9d2517d9a08a324b53eabc4ec0eb1d990c4
+FROM myoung34/github-runner:latest@sha256:675bce422c689214c717624ffbacfc7d4517274f9a6ef17fef9aa63de270ec1d
 
 # Install Claude Code Review dependencies
 USER root
@@ -9,7 +9,7 @@ USER root
 RUN python3 -m venv --system-site-packages /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 # renovate: datasource=pypi depName=anthropic
-RUN pip install --no-cache-dir anthropic==2.11.0
+RUN pip install --no-cache-dir anthropic==2.12.0
 
 # Copy initialization script
 COPY scripts/init-runner.sh /opt/init-runner.sh
